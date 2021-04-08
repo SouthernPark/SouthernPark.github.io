@@ -1,9 +1,4 @@
 #result_display {
-    position: relative;
-    left:370px;
-}
-
-#box {
-    position: relative;
-    top: -180px;
+    position: absolute;
+    left:700px;
 }

@@ -91,24 +91,18 @@ sdasfa
 
 <!-- result display -->
 
- <div id="board_and_display">
-    <div id="result_display">
+<!-- result display -->
+<div id="result_display">
 
-    <li>
-        The number of points created: <a id="monte_counter">0</a>
-    </li>
+    <li>The number of points created: <a id="monte_counter" >0</a></li>
 
-    <li>
-        The number of points inside the bounding box: <a id="in_counter">0</a>
-    </li>
+    <li>The number of points inside the bounding box: <a id="in_counter">0</a></li>
 
-    <li>
-        The area of the bounding box is: <a id="b_area">0</a>
-    </li>
+    <li>The area of the bounding box is: <a id="b_area">0</a></li>
 
-    <li>
-        The approximate area of the polygon is: <a id="apro_area">0</a>
-    </li>
+    <li>The approximate area of the polygon is: <a id="apro_area">0</a></li>
+
+    <li>The actual area of the polygon is: <a id="actual_area">0</a></li>
 
     <div>
         <!-- get input -->
@@ -117,29 +111,27 @@ sdasfa
         <button type="button" onclick="clearBoard();ini_points();ini_monte_counter()">create points</button>
 
     </div>
-    
     <div>
         <button type="button" onclick="clearBoard()">clear board</button>
     </div>
-    
     <div>
         <!--button-->
         <!--button-->
-        <button type="button" onclick="monte_carlo();counter_display()">Monte Carlo Start</button>
+        <button type="button" onclick="monte_carlo()">Monte Carlo Start</button>
     </div>
-    
     <div>
         <button type="button" onclick="stopAnimation()">Monte Carlo Stop</button>
     </div>
-</div>
-    <!--create an empty panel-->
-    <div id="box" class="jxgbox" style="width:350px; height:350px;"></div>
+
 </div>
 
+<!--create an empty panel-->
+<div id="box" class="jxgbox" style="width:350px; height:350px;"></div>
 
 <script type="text/javascript">
     <!-- create a board coordinate in the panel with axis an bounding box-->
     var board = JXG.JSXGraph.initBoard('box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true,});
+
 
     <!-- create a list to hold  all the points-->
     var p1 = board.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1, color:'black'});
@@ -147,6 +139,8 @@ sdasfa
     var p3 = board.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1, color:'black'});
     var points = [p1,p2,p3];
     var poly = board.create('polygon', points, { borders:{strokeColor:'black'} });
+
+
     <!-- get input -->
     function output(){
         var point_num = document.getElementById("point_num").value;
@@ -174,7 +168,9 @@ sdasfa
         }
 
         poly = board.create('polygon',points, { borders:{strokeColor:'black'} });
+
     }
+
     <!-- bounding box -->
     var box_points = [];
     var bounding_box;
@@ -184,6 +180,8 @@ sdasfa
     var in_counter=0;
     var range;  <!-- minX, maxX, minY, maxY -->
     var refreshIntervalID;  <!-- ID to control the animation -->
+    var actual_area = 0
+
     function ini_monte_counter(){
         ran_x = 0;
         ran_y = 0;
@@ -193,10 +191,16 @@ sdasfa
         document.getElementById("in_counter").innerHTML = in_counter;
         document.getElementById("b_area").innerHTML = 0;
         document.getElementById("apro_area").innerHTML = 0;
+        document.getElementById("actual_area").innerHTML = actual_area;
+
     }
+
     function monte_carlo(){
+        <!-- display the actual area of the polygon -->
+        document.getElementById("actual_area").innerHTML = poly.Area();
         <!-- 1 step: bound the polygon(find the min & max of X, Y) -->
         range = createBoundingBox();  <!-- [minX, maxX, minY, maxY] -->
+
         <!-- 2 step: fix the points after creating bounding box -->
         fix_points(points);
         fix_points(box_points);
@@ -225,10 +229,13 @@ sdasfa
             },10);
     }
 
+
+
     <!-- stop the animation -->
     function stopAnimation(){
         clearInterval(refreshIntervalID);
     }
+
 
     var intersection_num;
     var line;
@@ -267,11 +274,14 @@ sdasfa
     }
     <!-- y=a1*x+b1 and y=a2*x+b2 , range_x: the domain range of the segment; r_x, r_y: random point -->
     function segment_intersection_checking(segment, r_x, r_y){
+
+
         var pt1 = segment[0];
         var pt2 = segment[1];
 
         var range_x = [];
         var range_y = [];
+
         <!-- create range_x:[minX, maxX] -->
         if(pt1[0]>pt2[0]){
             range_x.push(pt2[0]);
@@ -281,6 +291,7 @@ sdasfa
             range_x.push(pt1[0])
             range_x.push(pt2[0]);
         }
+
         <!-- create range_y:[minY, maxY] -->
         if(pt1[1]>pt2[1]){
             range_y.push(pt2[1]);
@@ -291,12 +302,15 @@ sdasfa
             range_y.push(pt2[1]);
         }
         <!-- calculate a and b of the segment -->
+
+
         if(pt1[0] === pt2[0]){  <!-- case study: vertical line does not have line express -->
             <!-- if the intersection is on the right side and intersection with the line then there is an intersection -->
             if(pt1[0]>r_x && r_y>range_y[0] && r_y<range_y[1]){
                 return true;
             }
         }
+
         <!-- calculate a and b -->
         var a = (pt1[1] - pt2[1])/(pt1[0] - pt2[0]);
         var b = pt1[1] - a*pt1[0];
@@ -312,6 +326,8 @@ sdasfa
                 return false;
             }
         }
+
+
         <!-- else there is an intersection -->
         <!-- calculate intersection with the horizontal line-->
         var inter_x = (b-r_y)/(0-a);
@@ -417,7 +433,10 @@ sdasfa
          JXG.JSXGraph.freeBoard(board);
          board = JXG.JSXGraph.initBoard('box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true,});
     }
+
 </script>
+
+
 
 ## Sphere
 

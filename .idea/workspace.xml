@@ -4,11 +4,10 @@
     <list default="true" id="a616d316-199e-4ef3-9c8d-de02b4018b63" name="Default Changelist" comment="beautify the web">
       <change afterPath="$PROJECT_DIR$/../FYP/WEB/interactive web/pi.html" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/../FYP/WEB/js/result_display.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/assets/css/result_display.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../FYP/WEB/interactive web/monte_carlo.html" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/WEB/interactive web/monte_carlo.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/_posts/2021-04-07-monte_carlo.markdown" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_posts/2021-04-07-monte_carlo.markdown" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/about.markdown" beforeDir="false" afterPath="$PROJECT_DIR$/docs/about.markdown" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/assets/css/result_display.css" beforeDir="false" afterPath="$PROJECT_DIR$/docs/assets/css/result_display.css" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -88,7 +87,14 @@
       <option name="project" value="LOCAL" />
       <updated>1617817884506</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="circle delivered">
+      <created>1617880789065</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1617880789065</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -109,6 +115,7 @@
     <MESSAGE value="change conf" />
     <MESSAGE value="change title" />
     <MESSAGE value="beautify the web" />
-    <option name="LAST_COMMIT_MESSAGE" value="beautify the web" />
+    <MESSAGE value="circle delivered" />
+    <option name="LAST_COMMIT_MESSAGE" value="circle delivered" />
   </component>
 </project>
