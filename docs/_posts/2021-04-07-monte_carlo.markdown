@@ -1,78 +1,152 @@
 ---
 layout: post
-title:  "Monte_Carlo"
+title:  "Mathematical property measuring using Monte Carlo Method "
 date:   2021-04-07 15:27:01 +0800
 categories: jekyll update
 ---
-You’ll find this post in your `_posts` directory. Go ahead and edit it
-and re-build the site to see your changes. You can rebuild the site in
-many different ways, but the most common way is to run `jekyll serve`,
-which launches a web server and auto-regenerates your site when a file
-is updated.
+## Brief Description
 
-Jekyll requires blog post files to be named according to the following format:
 
-`YEAR-MONTH-DAY-title.MARKUP`
+In this project, Monte Carlo method will be used to measure:
 
-Where `YEAR` is a four-digit number, `MONTH` and `DAY` are both two-digit numbers, and `MARKUP` is the file extension representing the format used in the file. After that, include the necessary front matter. Take a look at the source for this post to get an idea about how it works.
+- [`area of a circle`](#circle)
+- [`pi`](#pi)
+- [`area of an eclipse`](#eclipse)
+- [`area of irregular polygons`](#polygon--irregular-polygon)
+- [`the volume of a sphere`](#sphere)
 
-Jekyll also offers powerful support for code snippets:
 
-{% highlight ruby %}
-def print_hi(name)
-  puts "Hi, #{name}"
-end
-print_hi('Tom')
-#=> prints 'Hi, Tom' to STDOUT.
-{% endhighlight %}
+Monte Carlo method is a general way to solve numeric problems based on
+`Random Sampling technique` and `Probability Event`.
 
- [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
+`Random Sampling Technique` in this project is using randomized number
+generators to generate a huge amount of random points in 2D or 3D
+boundary. `Probability Event` means dividing the number of points inside
+the points by the number of total points.
 
+I have tried mang programming languages like Python and JavaScript to
+visualise the process. Python is good for its plenty of libraries such
+as matplotlib and numpy. However, when it comes to user interaction
+JavaScript will win because it can be nested in HTML. I have implemented
+Monte Carlo Method (MCM) using both python and js. However, in this web
+page you will only see MCM implemented by js because I have't found a
+good way for python to interact with html so smoothly like js. But, I
+have put all the code including python version and js version in my
+[github repo][github-repo].
+
+Thanks to [JSXGraph][jsx-graph] which is a cross-browser JavaScript
+library for interactive geometry. Without JSXGraph, I have to say I
+could not finish my FYP so smoothly. Once again, Thanks to [JSXGraph][jsx-graph].
 
 <script src="{{ base.url | prepend: site.url }}/assets/js/jsxgraphcore.js"></script>
 <link rel="stylesheet" type="text/css" href="{{ base.url | prepend: site.url }}/assets/css/jsxgraph.css"/>
+<link rel="stylesheet" type="text/css" href="{{ base.url | prepend: site.url }}/assets/css/result_display.css"/>
 
-<!-- get input -->
-<div>
-    <input id="point_num" type="text" name="point_num" value="3">
-    <!-- initialise the points and the counters used in monte carlo -->
-    <button type="button" onclick="ini_points();ini_monte_counter()">create points</button>
-</div>
-<div>
-    <input id="monte_point" type="text" name="monte_point" value="100">
-    <button type="button" onclick="monte_carlo();counter_display()">Monte Carlo Start</button>
-    <button type="button" onclick="stopAnimation()">Monte Carlo Stop</button>
+## Circle
+This section a circle and a box bounding that circle will be created.
+After that, a lot of random points will be generated within the bounding
+box. Points will be decided whether inside the circle or not. Then, the
+area of the circle will be calculated using probability event after enough
+loops.
 
-</div>
+The pseudo code for the whole process is showing below.
+
+{% highlight ruby %}
+
+Algorithm:  
+def circle_area(loop_num):  
+    set the radius r of t set the radius r of the circle;  
+    create a circle whose center is the origin;  
+    create a boudning box with points (-r,-r), (r,-r), (r,r), (-r,r)
+
+    set counter = 0; #count the total number of points generatedhe circle;  
+    create a circle whose center is the origin;  
+    create a boudning box with;  
+    points (-r,-r), (r,-r), (r,r), (-r,r)  
+    set counter = 0; #count the total number of points generated
+
+    set set in_counter = 0; #count the number of points inside the circle
+
+    for(i = 0 to loop_num):  
+        counter = counter + 1; in_counter = 0; #count the number of points inside the circle
+
+
+        create random real number x in (-r,r)  
+        create random real number y in (-r,r)
+
+
+        if (x^2 + y^2) < r^2:  
+            in counter = in_counter + 1;
+
+    return (counter/in_counter)*(2*r)
+
+
+{% endhighlight %}
+
+## Pi
+
+## Eclipse
+sdasfa
+## Polygon & Irregular Polygon
+
 <!-- result display -->
-<div >The number of points created:</div>
-<div id="monte_counter">0</div>
 
-<div >The number of points inside the bounding box:</div>
-<div id="in_counter">0</div>
+ <div id="board_and_display">
+    <div id="result_display">
 
-<div >The area of the bounding box is:</div>
-<div id="b_area">0</div>
+    <li>
+        The number of points created: <a id="monte_counter">0</a>
+    </li>
 
-<div >The approximate area of the polygon is:</div>
-<div id="apro_area">0</div>
+    <li>
+        The number of points inside the bounding box: <a id="in_counter">0</a>
+    </li>
 
-<!--create an empty panel-->
-<div id="box" class="jxgbox" style="width:500px; height:500px;"></div>
+    <li>
+        The area of the bounding box is: <a id="b_area">0</a>
+    </li>
+
+    <li>
+        The approximate area of the polygon is: <a id="apro_area">0</a>
+    </li>
+
+    <div>
+        <!-- get input -->
+        <input id="point_num" type="text" name="point_num" value="3">
+        <!-- initialise the points and the counters used in monte carlo -->
+        <button type="button" onclick="clearBoard();ini_points();ini_monte_counter()">create points</button>
+
+    </div>
+    
+    <div>
+        <button type="button" onclick="clearBoard()">clear board</button>
+    </div>
+    
+    <div>
+        <!--button-->
+        <!--button-->
+        <button type="button" onclick="monte_carlo();counter_display()">Monte Carlo Start</button>
+    </div>
+    
+    <div>
+        <button type="button" onclick="stopAnimation()">Monte Carlo Stop</button>
+    </div>
+</div>
+    <!--create an empty panel-->
+    <div id="box" class="jxgbox" style="width:350px; height:350px;"></div>
+</div>
+
 
 <script type="text/javascript">
     <!-- create a board coordinate in the panel with axis an bounding box-->
     var board = JXG.JSXGraph.initBoard('box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true,});
 
-
     <!-- create a list to hold  all the points-->
-    var p1 = board.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1});
-    var p2 = board.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1});
-    var p3 = board.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1});
+    var p1 = board.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1, color:'black'});
+    var p2 = board.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1, color:'black'});
+    var p3 = board.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1, color:'black'});
     var points = [p1,p2,p3];
     var poly = board.create('polygon', points, { borders:{strokeColor:'black'} });
-
-
     <!-- get input -->
     function output(){
         var point_num = document.getElementById("point_num").value;
@@ -94,15 +168,13 @@ print_hi('Tom')
             var x = Math.floor(getRandom(-10, 10));
             var y = Math.floor(getRandom(-10, 10));
             <!-- create a point with size 0.1 -->
-            var p = board.create('point',[x, y],{face:'o', size:0.1});
+            var p = board.create('point',[x, y],{face:'o', size:0.1, color:'black'});
 
             points.push(p);
         }
 
         poly = board.create('polygon',points, { borders:{strokeColor:'black'} });
-
     }
-
     <!-- bounding box -->
     var box_points = [];
     var bounding_box;
@@ -112,18 +184,19 @@ print_hi('Tom')
     var in_counter=0;
     var range;  <!-- minX, maxX, minY, maxY -->
     var refreshIntervalID;  <!-- ID to control the animation -->
-
     function ini_monte_counter(){
         ran_x = 0;
         ran_y = 0;
         counter = 0;
         in_counter = 0;
+        document.getElementById("monte_counter").innerHTML = counter;
+        document.getElementById("in_counter").innerHTML = in_counter;
+        document.getElementById("b_area").innerHTML = 0;
+        document.getElementById("apro_area").innerHTML = 0;
     }
-
     function monte_carlo(){
         <!-- 1 step: bound the polygon(find the min & max of X, Y) -->
         range = createBoundingBox();  <!-- [minX, maxX, minY, maxY] -->
-
         <!-- 2 step: fix the points after creating bounding box -->
         fix_points(points);
         fix_points(box_points);
@@ -152,13 +225,10 @@ print_hi('Tom')
             },10);
     }
 
-
-
     <!-- stop the animation -->
     function stopAnimation(){
         clearInterval(refreshIntervalID);
     }
-
 
     var intersection_num;
     var line;
@@ -197,14 +267,11 @@ print_hi('Tom')
     }
     <!-- y=a1*x+b1 and y=a2*x+b2 , range_x: the domain range of the segment; r_x, r_y: random point -->
     function segment_intersection_checking(segment, r_x, r_y){
-
-
         var pt1 = segment[0];
         var pt2 = segment[1];
 
         var range_x = [];
         var range_y = [];
-
         <!-- create range_x:[minX, maxX] -->
         if(pt1[0]>pt2[0]){
             range_x.push(pt2[0]);
@@ -214,7 +281,6 @@ print_hi('Tom')
             range_x.push(pt1[0])
             range_x.push(pt2[0]);
         }
-
         <!-- create range_y:[minY, maxY] -->
         if(pt1[1]>pt2[1]){
             range_y.push(pt2[1]);
@@ -225,15 +291,12 @@ print_hi('Tom')
             range_y.push(pt2[1]);
         }
         <!-- calculate a and b of the segment -->
-
-
         if(pt1[0] === pt2[0]){  <!-- case study: vertical line does not have line express -->
             <!-- if the intersection is on the right side and intersection with the line then there is an intersection -->
             if(pt1[0]>r_x && r_y>range_y[0] && r_y<range_y[1]){
                 return true;
             }
         }
-
         <!-- calculate a and b -->
         var a = (pt1[1] - pt2[1])/(pt1[0] - pt2[0]);
         var b = pt1[1] - a*pt1[0];
@@ -249,8 +312,6 @@ print_hi('Tom')
                 return false;
             }
         }
-
-
         <!-- else there is an intersection -->
         <!-- calculate intersection with the horizontal line-->
         var inter_x = (b-r_y)/(0-a);
@@ -352,10 +413,37 @@ print_hi('Tom')
         return Math.random() * (max - min) + min;
     }
 
+    function clearBoard(){
+         JXG.JSXGraph.freeBoard(board);
+         board = JXG.JSXGraph.initBoard('box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true,});
+    }
 </script>
 
+## Sphere
 
+Jekyll also offers powerful support for code snippets:
+
+{% highlight ruby %}
+def print_hi(name)
+  puts "Hi, #{name}"
+end
+print_hi('Tom')
+#=> prints 'Hi, Tom' to STDOUT.
+{% endhighlight %}
+
+ [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
+
+
+
+
+
+# Acknowledgement:
+
+This is a blog Final Year Project for Qiangqiang Liu who studied in
+Liverpool University.
 
 [jekyll-docs]: https://jekyllrb.com/docs/home
 [jekyll-gh]:   https://github.com/jekyll/jekyll
 [jekyll-talk]: https://talk.jekyllrb.com/
+[github-repo]: https://github.com/SouthernPark/FYP
+[jsx-graph]: https://jsxgraph.uni-bayreuth.de/wp/index.html
