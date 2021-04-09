@@ -1,4 +1,9 @@
 #result_display {
     position: absolute;
-    left:700px;
+    left:950px;
+}
+
+#result_display_pi {
+    position: absolute;
+    left:950px;
 }

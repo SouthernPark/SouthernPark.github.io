@@ -49,7 +49,7 @@ box. Points will be decided whether inside the circle or not. Then, the
 area of the circle will be calculated using probability event after enough
 loops.
 
-The pseudo code for the whole process is showing below.
+The pseudo code for the whole process is showing below:
 
 {% highlight ruby %}
 
@@ -60,10 +60,6 @@ def circle_area(loop_num):
     create a boudning box with points (-r,-r), (r,-r), (r,r), (-r,r)
 
     set counter = 0; #count the total number of points generatedhe circle;  
-    create a circle whose center is the origin;  
-    create a boudning box with;  
-    points (-r,-r), (r,-r), (r,r), (-r,r)  
-    set counter = 0; #count the total number of points generated
 
     set set in_counter = 0; #count the number of points inside the circle
 
@@ -83,20 +79,257 @@ def circle_area(loop_num):
 
 {% endhighlight %}
 
+
+I have implemented the above algorithm using JavaScript and the
+visualisation process is also achieved in the following `interactive
+board`. You can use the following `interactive board` to see how it
+works for MCM to calculate the approximate area of a circle.
+
+# Interactive Board
+Point 'O' is the origin of the circle. Point 'A' is a point on the
+circle. By dragging 'A', you can get circle in different size. Choose a
+circle and then click on the "Monte Carlo Start" button on the right
+side. Then you will see the visualisation process of MCM. On the right
+side, you can also see data about area, point number and so on.
+
+<!-- circle -->
+<!-- result display -->
+<div id="result_display_ci">
+
+    <li>The number of points created: <a id="counter_ci" >0</a></li>
+
+    <li>The number of points inside the circle: <a id="in_counter_ci">0</a></li>
+
+    <li>The area of the bounding box is: <a id="b_area_ci">0</a></li>
+
+    <li>The approximate area of the circle using MCM is: <a id="apro_area_ci">0</a></li>
+
+    <li>The actual area of the polygon is: <a id="actual_area_ci">0</a></li>
+
+
+    <div>
+        <button type="button" onclick="clearBoard_ci();init_ci()">clear board</button>
+    </div>
+    <div>
+        <!--button-->
+        <button type="button" onclick="monte_ci()">Monte Carlo Start</button>
+    </div>
+    <div>
+        <button type="button" onclick="stopAnimation_ci()">Monte Carlo Stop</button>
+    </div>
+
+</div>
+<!--create an empty panel-->
+<div id="ci_box" class="jxgbox" style="width:350px; height:350px;"></div>
+
+<script>
+    var board_ci = JXG.JSXGraph.initBoard('ci_box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true});
+    var p1_ci = board_ci.create('point', [0,0], {name:'O', size:1, face:'o', color:'black', fixed:true});
+    var p2_ci = board_ci.create('point', [5,0], {name:'A', size:1, face:'o', color:'black'});
+    var ci = board_ci.createElement('circle',[p1_ci, p2_ci], {strokeColor:'black',strokeWidth:1, fillColor:'green', fillOpacity:0.2});
+
+    //TODO: need to initialise circle after clearBoard_ci
+
+    function init_ci(){
+        p1_ci = board_ci.create('point', [0,0], {name:'O', size:1, face:'o', color:'black', fixed:true});
+        p2_ci = board_ci.create('point', [5,0], {name:'A', size:1, face:'o', color:'black'});
+        ci = board_ci.createElement('circle',[p1_ci, p2_ci], {strokeColor:'black',strokeWidth:1, fillColor:'green', fillOpacity:0.2});
+
+        counter_ci = 0;
+        document.getElementById("counter_ci").innerHTML = counter_ci;
+        in_counter_ci = 0;
+        document.getElementById("in_counter_ci").innerHTML = in_counter_ci;
+        document.getElementById("b_area_ci").innerHTML = 0;
+        document.getElementById("actual_area_ci").innerHTML = 0;
+        document.getElementById("apro_area_ci").innerHTML = 0;
+    }
+
+    function monte_ci(){
+
+        <!-- 1 step: calculate the radius useing origin and a point on the circle -->
+        var r = Math.sqrt(p2_ci.X()*p2_ci.X() + p2_ci.Y()*p2_ci.Y());
+
+        document.getElementById("b_area_ci").innerHTML = 4*r*r;
+        document.getElementById("actual_area_ci").innerHTML = ci.Area();
+
+        <!-- 2 step: bounding box -->
+        var bp1 = board_ci.create('point', [-r,-r], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+        var bp2 = board_ci.create('point', [r,-r], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+        var bp3 = board_ci.create('point', [r,r], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+        var bp4 = board_ci.create('point', [-r,r], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+        board_ci.create('polygon', [bp1, bp2, bp3, bp4],  { borders:{strokeColor:'black'}, fillColor:'white', withLabel:false });
+
+        p2_ci.setAttribute({fixed:true});
+
+        <!-- 3 step: generate random numbers-->
+        var counter_ci = 0;
+        var in_counter_ci = 0;
+        refreshIntervalID_ci = setInterval(
+            function draw(){
+                var ran_x_ci = getRandom(-r, r);
+                var ran_y_ci = getRandom(-r, r);
+                counter_ci++;
+                document.getElementById("counter_ci").innerHTML = counter_ci;
+                if(ran_x_ci*ran_x_ci + ran_y_ci*ran_y_ci <= r*r){
+                    in_counter_ci++;
+                    document.getElementById("in_counter_ci").innerHTML = in_counter_ci;
+                    //Draw a red point
+                    board_ci.create('point',[ran_x_ci, ran_y_ci],{face:'o', size:0.1, strokeColor: 'red', withLabel:false});
+                }
+                else{
+                    //Draw a blue point
+                    board_ci.create('point',[ran_x_ci, ran_y_ci],{face:'o', size:0.1, strokeColor: 'blue', withLabel:false});
+                }
+                document.getElementById("apro_area_ci").innerHTML = (in_counter_ci/counter_ci) * 4*r*r;
+            },10);
+    }
+
+
+    function clearBoard_ci(){
+         JXG.JSXGraph.freeBoard(board_ci);
+         board_ci = JXG.JSXGraph.initBoard('ci_box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true,});
+    }
+
+    <!-- stop the animation -->
+    function stopAnimation_ci(){
+        clearInterval(refreshIntervalID_ci);
+    }
+</script>
+
 ## Pi
+In this section, we will discuss how to use MCM to approximate Pi. The
+area of a circle can be expressed 'S = pi*r*r' (S is the area of a
+circle). If we can use MCM approximate S, we then can approximate pi
+because we know r already.
+{% highlight ruby %}
+
+Algorithm:  
+def pi():
+
+    using MCM to approximate the area `S` of a circle with radius `r` which is
+    what we have done in previous section.
+
+    return S/(r*r)
+
+
+{% endhighlight %}
+
+<!-- circle -->
+<!-- result display -->
+<div id="result_display_pi">
+
+    <li>The number of points created: <a id="counter_pi" >0</a></li>
+
+    <li>The number of points inside the circle: <a id="in_counter_pi">0</a></li>
+
+    <li>The area of the bounding box is: <a id="b_area_pi">0</a></li>
+
+    <li>The approximate area of the circle using MCM is: <a id="apro_area_pi">0</a></li>
+
+    <li>The actual area of the polygon is: <a id="actual_area_pi">0</a></li>
+
+
+    <div>
+        <button type="button" onclick="clearBoard_pi();init_cir()">clear board</button>
+    </div>
+    <div>
+        <!--button-->
+        <button type="button" onclick="monte_pi()">Monte Carlo Start</button>
+    </div>
+    <div>
+        <button type="button" onclick="stopAnimation_pi()">Monte Carlo Stop</button>
+    </div>
+
+</div>
+<!--create an empty panel-->
+<div id="pi_box" class="jxgbox" style="width:350px; height:350px;"></div>
+
+<script>
+    var board_pi = JXG.JSXGraph.initBoard('pi_box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true});
+    var p1_pi = board_pi.create('point', [0,0], {name:'O', size:1, face:'o', color:'black', fixed:true});
+    var p2_pi = board_pi.create('point', [5,0], {name:'A', size:1, face:'o', color:'black'});
+    var ci = board_pi.createElement('circle',[p1_pi, p2_pi], {strokeColor:'black',strokeWidth:1, fillColor:'green', fillOpacity:0.2});
+
+    //TODO: need to initialise circle after clearBoard_pi
+
+    function init_cir(){
+        p1_pi = board_pi.create('point', [0,0], {name:'O', size:1, face:'o', color:'black', fixed:true});
+        p2_pi = board_pi.create('point', [5,0], {name:'A', size:1, face:'o', color:'black'});
+        ci = board_pi.createElement('circle',[p1_pi, p2_pi], {strokeColor:'black',strokeWidth:1, fillColor:'green', fillOpacity:0.2});
+
+        counter_pi = 0;
+        document.getElementById("counter_pi").innerHTML = counter_pi;
+        in_counter_pi = 0;
+        document.getElementById("in_counter_pi").innerHTML = in_counter_pi;
+        document.getElementById("b_area_pi").innerHTML = 0;
+        document.getElementById("actual_area_pi").innerHTML = 0;
+        document.getElementById("apro_area_pi").innerHTML = 0;
+    }
+
+    function monte_pi(){
+
+        <!-- 1 step: calculate the radius useing origin and a point on the circle -->
+        var r = Math.sqrt(p2_pi.X()*p2_pi.X() + p2_pi.Y()*p2_pi.Y());
+
+        document.getElementById("b_area_pi").innerHTML = 4*r*r;
+        document.getElementById("actual_area_pi").innerHTML = ci.Area();
+
+        <!-- 2 step: bounding box -->
+        var bp1 = board_pi.create('point', [-r,-r], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+        var bp2 = board_pi.create('point', [r,-r], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+        var bp3 = board_pi.create('point', [r,r], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+        var bp4 = board_pi.create('point', [-r,r], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+        board_pi.create('polygon', [bp1, bp2, bp3, bp4],  { borders:{strokeColor:'black'}, fillColor:'white', withLabel:false });
+
+        p2_pi.setAttribute({fixed:true});
+
+        <!-- 3 step: generate random numbers-->
+        var counter_pi = 0;
+        var in_counter_pi = 0;
+        refreshIntervalID_pi = setInterval(
+            function draw(){
+                var ran_x_pi = getRandom(-r, r);
+                var ran_y_pi = getRandom(-r, r);
+                counter_pi++;
+                document.getElementById("counter_pi").innerHTML = counter_pi;
+                if(ran_x_pi*ran_x_pi + ran_y_pi*ran_y_pi <= r*r){
+                    in_counter_pi++;
+                    document.getElementById("in_counter_pi").innerHTML = in_counter_pi;
+                    //Draw a red point
+                    board_pi.create('point',[ran_x_pi, ran_y_pi],{face:'o', size:0.1, strokeColor: 'red', withLabel:false});
+                }
+                else{
+                    //Draw a blue point
+                    board_pi.create('point',[ran_x_pi, ran_y_pi],{face:'o', size:0.1, strokeColor: 'blue', withLabel:false});
+                }
+                document.getElementById("apro_area_pi").innerHTML = (in_counter_pi/counter_pi) * 4*r*r;
+            },10);
+    }
+
+
+    function clearBoard_pi(){
+         JXG.JSXGraph.freeBoard(board_pi);
+         board_pi = JXG.JSXGraph.initBoard('pi_box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true,});
+    }
+
+    <!-- stop the animation -->
+    function stopAnimation_pi(){
+        clearInterval(refreshIntervalID_pi);
+    }
+</script>
 
 ## Eclipse
 sdasfa
 ## Polygon & Irregular Polygon
 
-<!-- result display -->
 
+<!-- Polygon -->
 <!-- result display -->
 <div id="result_display">
 
     <li>The number of points created: <a id="monte_counter" >0</a></li>
 
-    <li>The number of points inside the bounding box: <a id="in_counter">0</a></li>
+    <li>The number of points inside the polygon: <a id="in_counter">0</a></li>
 
     <li>The area of the bounding box is: <a id="b_area">0</a></li>
 
