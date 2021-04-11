@@ -11,7 +11,7 @@ In this project, Monte Carlo method will be used to measure:
 
 - [`area of a circle`](#circle)
 - [`pi`](#pi)
-- [`area of an eclipse`](#eclipse)
+- [`area of an ellipse`](#ellipse)
 - [`area of irregular polygons`](#polygon--irregular-polygon)
 - [`the volume of a sphere`](#sphere)
 
@@ -24,7 +24,7 @@ generators to generate a huge amount of random points in 2D or 3D
 boundary. `Probability Event` means dividing the number of points inside
 the points by the number of total points.
 
-I have tried mang programming languages like Python and JavaScript to
+I have tried many programming languages like Python and JavaScript to
 visualise the process. Python is good for its plenty of libraries such
 as matplotlib and numpy. However, when it comes to user interaction
 JavaScript will win because it can be nested in HTML. I have implemented
@@ -43,10 +43,10 @@ could not finish my FYP so smoothly. Once again, Thanks to [JSXGraph][jsx-graph]
 <link rel="stylesheet" type="text/css" href="{{ base.url | prepend: site.url }}/assets/css/result_display.css"/>
 
 ## Circle
-This section a circle and a box bounding that circle will be created.
-After that, a lot of random points will be generated within the bounding
-box. Points will be decided whether inside the circle or not. Then, the
-area of the circle will be calculated using probability event after enough
+In this section, a circle and a bounding box will be created. After
+that, a lot of random points will be generated within the bounding box.
+Points will be decided whether inside the circle or not. Then, the area
+of the circle will be calculated using probability event after enough
 loops.
 
 The pseudo code for the whole process is showing below:
@@ -55,18 +55,17 @@ The pseudo code for the whole process is showing below:
 
 Algorithm:  
 def circle_area(loop_num):  
-    set the radius r of t set the radius r of the circle;  
+    set the radius `r` of the circle;  
     create a circle whose center is the origin;  
-    create a boudning box with points (-r,-r), (r,-r), (r,r), (-r,r)
+    create a boudning box with points (-r,-r), (r,-r), (r,r), (-r,r);
 
     set counter = 0; #count the total number of points generatedhe circle;  
 
-    set set in_counter = 0; #count the number of points inside the circle
+    set in_counter = 0; #count the number of points inside the circle
 
     for(i = 0 to loop_num):  
-        counter = counter + 1; in_counter = 0; #count the number of points inside the circle
-
-
+        counter = counter + 1; 
+        
         create random real number x in (-r,r)  
         create random real number y in (-r,r)
 
@@ -74,7 +73,7 @@ def circle_area(loop_num):
         if (x^2 + y^2) < r^2:  
             in counter = in_counter + 1;
 
-    return (counter/in_counter)*(2*r)
+    return (counter/in_counter)*(4*r*r)
 
 
 {% endhighlight %}
@@ -95,7 +94,8 @@ side, you can also see data about area, point number and so on.
 <!-- circle -->
 <!-- result display -->
 <div id="result_display_ci">
-
+    <b>Result display:</b>
+    <br>
     <li>The number of points created: <a id="counter_ci" >0</a></li>
 
     <li>The number of points inside the circle: <a id="in_counter_ci">0</a></li>
@@ -214,19 +214,33 @@ def pi():
 
 {% endhighlight %}
 
-<!-- circle -->
+I have implemented the above algorithm using
+JavaScript and the visualisation process is also achieved in the
+following `interactive board`. You can use the following `interactive
+board` to see how it works for MCM to calculate the approximate value of
+pi.
+
+# Interactive Board
+Point 'O' is the origin of the circle. Point 'A' is a point on the
+circle. By dragging 'A', you can get circle in different size. Choose a
+circle and then click on the "Monte Carlo Start" button on the right
+side. Then you will see the visualisation process of MCM. On the right
+side, you can also see data about approximate value of pi, point number
+and so on.
+<!-- pi -->
 <!-- result display -->
 <div id="result_display_pi">
-
+    <b>Result display:</b>
+    <br>
     <li>The number of points created: <a id="counter_pi" >0</a></li>
 
     <li>The number of points inside the circle: <a id="in_counter_pi">0</a></li>
 
     <li>The area of the bounding box is: <a id="b_area_pi">0</a></li>
 
-    <li>The approximate area of the circle using MCM is: <a id="apro_area_pi">0</a></li>
+    <li>The approximate value of pi using MCM is: <a id="apro_area_pi">0</a></li>
 
-    <li>The actual area of the polygon is: <a id="actual_area_pi">0</a></li>
+    <li>The actual value of the pi is: <a id="actual_area_pi">0</a></li>
 
 
     <div>
@@ -272,7 +286,7 @@ def pi():
         var r = Math.sqrt(p2_pi.X()*p2_pi.X() + p2_pi.Y()*p2_pi.Y());
 
         document.getElementById("b_area_pi").innerHTML = 4*r*r;
-        document.getElementById("actual_area_pi").innerHTML = ci.Area();
+        document.getElementById("actual_area_pi").innerHTML = Math.PI;
 
         <!-- 2 step: bounding box -->
         var bp1 = board_pi.create('point', [-r,-r], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
@@ -302,7 +316,8 @@ def pi():
                     //Draw a blue point
                     board_pi.create('point',[ran_x_pi, ran_y_pi],{face:'o', size:0.1, strokeColor: 'blue', withLabel:false});
                 }
-                document.getElementById("apro_area_pi").innerHTML = (in_counter_pi/counter_pi) * 4*r*r;
+
+                document.getElementById("apro_area_pi").innerHTML = (in_counter_pi/counter_pi) * 4;
             },10);
     }
 
@@ -318,14 +333,211 @@ def pi():
     }
 </script>
 
-## Eclipse
-sdasfa
+## Ellipse
+In this section, an ellipse and a bounding box will be created. After
+that, a lot of random points will be generated within the bounding box.
+Points will be decided whether inside the ellipse or not. Then, the area
+of the ellipse will be calculated using probability event after enough
+loops.
+
+{% highlight ruby %}
+
+Algorithm:  
+def ellipse_area(loop_num):
+
+    set focus c and the major semi axis a;  
+    a must be greater than c;
+    b = sqrt(a^2 - c^2);  
+    create an ellipse;  
+    create a boudning box with points (-a,-b), (a,-b), (a,b), (-a,b);
+
+    set counter = 0; #count the total number of points generatedhe circle;  
+    set in_counter = 0; #count the number of points inside the circle
+
+    for(i = 0 to loop_num):  
+        counter = counter + 1; 
+
+
+        create random real number x in (-a,a)  
+        create random real number y in (-b,b)
+
+
+        if (x^2/a^2 + y^2/b^2) < 1:  
+            in counter = in_counter + 1;
+
+    return (counter/in_counter)*(4*a*b)
+
+{% endhighlight %}
+
+I have implemented the above algorithm using JavaScript and the
+visualisation process is also achieved in the following `interactive
+board`. You can use the following `interactive board` to see how it
+works for MCM to calculate the approximate value of an ellipse area.
+
+# Interactive Board
+Point 'A' and 'B' are the two focus of an ellipse. Point 'C' is a point
+on the circle. By dragging 'C', you can get ellipse in different size.
+Also, you can set 'a' and 'b' in the right side panel. Choose an ellipse
+and then click on the "Monte Carlo Start" button on the right side. Then
+you will see the visualisation process of MCM. On the right side, you
+can also see data about area, point number and so on.
+
+
+
+
+<!-- ellipse -->
+<div id="create_ellipse">
+    <t>The half of the focal length. c: </t>
+    <input id="focal_el" type="text" name="point_num" value="3">
+    <br>
+    <t>The short semi axis, b: </t>
+    <input id="short_el" type="text" name="point_num" value="2">
+    <!--button-->
+    <br>
+    <button type="button" onclick="create_el()">Create New Ellipse</button>
+</div>
+<!-- result display -->
+<div id="result_display_el">
+    <b>Result display:</b>
+    <br>
+
+    <li>The number of points created: <a id="counter_el" >0</a></li>
+
+    <li>The number of points inside the circle: <a id="in_counter_el">0</a></li>
+
+    <li>The area of the bounding box is: <a id="b_area_el">0</a></li>
+
+    <li>The approximate area of the ellipse using MCM is: <a id="apro_area_el">0</a></li>
+
+    <li>The actual area of the ellipse is: <a id="actual_area_el">0</a></li>
+    
+    <div>
+        <button type="button" onclick="clearBoard_el();init_el()">clear board</button>
+    </div>
+    <div>
+        <!--button-->
+        <button type="button" onclick="monte_el()">Monte Carlo Start</button>
+    </div>
+    <div>
+        <button type="button" onclick="stopAnimation_el()">Monte Carlo Stop</button>
+    </div>
+
+</div>
+
+<!--create an empty panel-->
+<div id="el_box" class="jxgbox" style="width:350px; height:350px;"></div>
+<script>
+    var board_el = JXG.JSXGraph.initBoard('el_box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true});
+    var focus1 = board_el.create('point', [-3,0], {name:'A', size:1, face:'o', color:'black', fixed:true});
+    var focus2 = board_el.create('point', [3,0], {name:'B', size:1, face:'o', color:'black', fixed:true});
+    var top_point = board_el.create('point', [0,2], {name:'C', size:1, face:'o', color:'black'});
+    //create the ellipse
+    var el = board_el.create('ellipse',[focus1, focus2, top_point], {strokeColor:'black',strokeWidth:1, fillColor:'green', fillOpacity:0.2});
+
+
+    function create_el(){
+        clearBoard_el();    
+        
+        var focal = parseInt(document.getElementById("focal_el").value);
+        var short_b = parseInt(document.getElementById("short_el").value);    
+        focus1 = board_el.create('point', [-focal,0], {name:'A', size:1, face:'o', color:'black', fixed:true});
+        focus2 = board_el.create('point', [focal,0], {name:'B', size:1, face:'o', color:'black', fixed:true});    
+        top_point = board_el.create('point', [0,short_b], {name:'C', size:1, face:'o', color:'black'});   
+        el = board_el.create('ellipse',[focus1, focus2, top_point], {strokeColor:'black',strokeWidth:1, fillColor:'green', fillOpacity:0.2});
+           
+    }
+
+    function init_el(){
+        focus1 = board_el.create('point', [-3,0], {name:'A', size:1, face:'o', color:'black', fixed:true});
+        focus2 = board_el.create('point', [3,0], {name:'B', size:1, face:'o', color:'black', fixed:true});
+        top_point = board_el.create('point', [0,2], {name:'C', size:1, face:'o', color:'black'});
+        el = board_el.create('ellipse',[focus1, focus2, top_point], {strokeColor:'black',strokeWidth:1, fillColor:'green', fillOpacity:0.2});
+    
+        
+        counter_el = 0;
+        document.getElementById("counter_el").innerHTML = counter_el;
+        in_counter_el = 0;
+        document.getElementById("in_counter_el").innerHTML = in_counter_el;
+        document.getElementById("b_area_el").innerHTML = 0;
+        document.getElementById("actual_area_el").innerHTML = 0;
+        document.getElementById("apro_area_el").innerHTML = 0;
+    }
+
+    function monte_el(){
+        
+        <!-- 1 step: calculate a of the ellipse -->
+        x_el = top_point.X();
+        y_el = top_point.Y(); 
+        a_func = 1;  
+        b_func = -(focus2.X()*focus2.X() + x_el*x_el + y_el*y_el);  
+        c_func = focus2.X()*focus2.X() * x_el*x_el;
+        delta = Math.sqrt(b_func*b_func-4*a_func*c_func);
+        
+        a_el = Math.sqrt((-b_func+Math.sqrt(b_func*b_func-4*a_func*c_func))/(2*a_func));
+        
+        b_el = Math.sqrt(a_el*a_el - focus2.X()*focus2.X());
+
+        
+        document.getElementById("b_area_el").innerHTML = 4*a_el*b_el;
+        document.getElementById("actual_area_el").innerHTML = Math.PI * a_el * b_el;
+            
+        
+        <!-- 2 step: bounding box -->
+        var b1_el = board_el.create('point', [-a_el,-b_el], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+            
+        var b2_el = board_el.create('point', [a_el,-b_el], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+        var b3_el = board_el.create('point', [a_el,b_el], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+        var b4_el = board_el.create('point', [-a_el, b_el], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
+          
+        board_el.create('polygon', [b1_el, b2_el, b3_el, b4_el],  { borders:{strokeColor:'black'}, fillColor:'white', withLabel:false });
+
+        
+
+        <!-- 3 step: generate random numbers-->
+        var counter_el = 0;
+        var in_counter_el = 0;
+        refreshIntervalID_el = setInterval(
+            function draw(){
+                var ran_x_el = getRandom(-a_el, a_el);
+                var ran_y_el = getRandom(-b_el, b_el);
+                counter_el++;
+                document.getElementById("counter_el").innerHTML = counter_el;
+                if(ran_x_el*ran_x_el/(a_el*a_el) + ran_y_el*ran_y_el/(b_el*b_el) <= 1){
+                    in_counter_el++;
+                    document.getElementById("in_counter_el").innerHTML = in_counter_el;
+                    //Draw a red point
+                    board_el.create('point',[ran_x_el, ran_y_el],{face:'o', size:0.1, strokeColor: 'red', withLabel:false});
+                }
+                else{
+                    //Draw a blue point
+                    board_el.create('point',[ran_x_el, ran_y_el],{face:'o', size:0.1, strokeColor: 'blue', withLabel:false});
+                }
+
+                document.getElementById("apro_area_el").innerHTML = (in_counter_el/counter_el) * 4 * a_el *b_el;
+            },10);
+    }
+
+
+    function clearBoard_el(){
+         JXG.JSXGraph.freeBoard(board_el);
+         board_el = JXG.JSXGraph.initBoard('el_box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true,});
+    }
+
+    <!-- stop the animation -->
+    function stopAnimation_el(){
+        clearInterval(refreshIntervalID_el);
+    }
+</script>
+
+
 ## Polygon & Irregular Polygon
 
 
 <!-- Polygon -->
 <!-- result display -->
 <div id="result_display">
+    <b>Result display:</b>
+    <br>
 
     <li>The number of points created: <a id="monte_counter" >0</a></li>
 
