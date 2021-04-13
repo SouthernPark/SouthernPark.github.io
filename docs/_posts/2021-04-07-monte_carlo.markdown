@@ -531,7 +531,242 @@ can also see data about area, point number and so on.
 
 
 ## Polygon & Irregular Polygon
+Compared with other geometric figures like circle and ellipse, polygon
+is relative harder to compute area using MCM. The reason is that you can
+not find an equation/function for that figure. Therefore, there are no
+way for you to detect whether a point is inside a polygon or not using
+equation. Hence some other algorithms are needed to solve this problem.
 
+# In out testing Algorithm:
+The first algorithm I want to introduce here is: [ray casting
+algorithm][ray-casting]. In this algorithm, if we want to know whether a
+point is inside the polygon or not, we will create a ray that will reach
+to infinity and count how many intersection points `n` has been crossed
+by the ray. If `n` is an odd number, the point is inside the polygon,
+otherwise, it is outside. In the following inter active board, you will
+see how things work:
+
+<!--In out testing board-->
+# Interactive Board
+<div id="result_display_algo">
+    <b>Result display:</b>
+    <br>
+    <li>The number of intersection points is: <a id="inter_num" >0</a></li>
+    <li>The intersection points are: <a id="inter_po" ></a></li>
+    <div>
+        <!-- get input -->
+        <input id="point_num_algo" type="text" name="point_num" value="3">
+        <!-- initialise the points and the counters used in monte carlo -->
+        <button type="button" onclick="clearBoard_algo();ini_points_algo()">create polygon</button>
+
+    </div>
+    <div>
+        <button type="button" onclick="clearBoard_algo()">clear board</button>   
+    </div>
+    <div>
+        <!--button-->
+        <!--button-->
+        <button type="button" onclick="ray_cast()">Ray Cast Test</button>
+    </div>
+
+</div>
+
+<!--create an empty panel-->
+<div id="box_algo" class="jxgbox" style="width:350px; height:350px;"></div>
+
+<script type="text/javascript">
+    <!-- create a board coordinate in the panel with axis an bounding box-->
+    var board_algo = JXG.JSXGraph.initBoard('box_algo', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true});
+
+
+    <!-- create a list to hold  all the points-->
+    var p1_algo = board_algo.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1, color:'black'});
+    var p2_algo = board_algo.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1, color:'black'});
+    var p3_algo = board_algo.create('point',[Math.floor(getRandom(-10, 10)), Math.floor(getRandom(-10, 10))],{face:'o', size:0.1, color:'black'});
+
+    var points_algo = [p1_algo,p2_algo,p3_algo];
+    var poly_algo = board_algo.create('polygon', points_algo, { borders:{strokeColor:'black'} });
+
+    var in_out_point = board_algo.create('point',[-1,1],{face:'o', size:0.1, color:'red'});  <!-- where ray start -->
+
+    var infinity_point;
+    var ray;
+    var inter_points_algo;
+
+    function ray_cast(){
+
+        infinity_point = board_algo.create('point',[100,in_out_point.Y()],{face:'o', size:0.1, color:'red'});
+
+        ray = board_algo.create('line',[in_out_point, infinity_point], {straightFirst:false, straightLast:false, strokeColor:'red',strokeWidth:2});
+        inter_points_algo = in_out_checking_algo(in_out_point.X(), in_out_point.Y());
+        <!-- show the intersection points-->
+
+        if(inter_points_algo !== null){
+            for(i=0; i<inter_points_algo.length; i++){
+                board_algo.create('point',[inter_points_algo[i][0], inter_points_algo[i][1]],{face:'o', size:0.5, color:'yellow', withLabel:false});
+            }
+            document.getElementById("inter_num").innerHTML = inter_points_algo.length;
+            alert("The point is inside the polygon");
+        }
+        else{
+            alert("The point is not inside the polygon");
+        }
+
+
+    }
+
+    <!-- 有时会形成超不规则图像 -->
+    function ini_points_algo(){
+        in_out_point = board_algo.create('point',[-1,1],{face:'o', size:0.1, color:'red'});  <!-- where ray start -->
+        <!-- remove the previous defined polygon if exist -->
+        removePloy_algo();
+        <!-- get the input -->
+        var point_num_algo = document.getElementById("point_num_algo").value;
+
+        <!-- create point_num points randomly -->
+        for (i = 0; i<point_num_algo; i++) {
+            var x_algo = Math.floor(getRandom(-10, 10));
+            var y_algo = Math.floor(getRandom(-10, 10));
+            <!-- create a point with size 0.1 -->
+            var p_algo = board_algo.create('point',[x_algo, y_algo],{face:'o', size:0.1, color:'black'});
+
+            points_algo.push(p_algo);
+        }
+
+        poly_algo = board_algo.create('polygon',points_algo, { borders:{strokeColor:'black'} });
+
+    }
+
+    function removePloy_algo(){
+        if (points_algo.length !== 0){
+            <!-- remove polygon on the board-->
+            board_algo.removeObject(poly_algo);
+
+            <!-- remove point on the board-->
+            for(i=0; i<points_algo.length; i++){
+                board_algo.removeObject(points_algo[i]);
+            }
+            <!-- remove point in the list-->
+            points_algo.splice(0, points_algo.length);
+        }
+    }
+
+    function clearBoard_algo(){
+         JXG.JSXGraph.freeBoard(board_algo);
+         board_algo = JXG.JSXGraph.initBoard('box_algo', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true,});
+    }
+
+    function in_out_checking_algo(r_x, r_y){
+
+        <!-- create a horizontal right line to check how many number the line has intersected  -->
+        var intersection_points = []    <!-- intersections points with the polygon -->
+
+        <!-- horizontal line y=r_y (check whether the x within the intersection)-->
+        for(i=0; i<points_algo.length; i++){
+
+            <!-- the last line ex:[A,B,C]. CA -->
+            if(i !== points_algo.length - 1){
+                line = [ [points_algo[i].X(), points_algo[i].Y()] , [points_algo[i+1].X(), points_algo[i+1].Y()] ];
+                var inter_point = segment_intersection_checking_algo(line, r_x, r_y);
+                if(inter_point !== null){
+                    intersection_points.push(inter_point);
+                }
+
+            }
+            else{
+                line = [ [ points_algo[points_algo.length-1].X(), points_algo[points_algo.length-1].Y() ] , [points_algo[0].X(), points_algo[0].Y()] ];     <!-- lines are expressed using two points -->
+                var inter_point = segment_intersection_checking_algo(line, r_x, r_y);
+                if(inter_point !== null){
+                    intersection_points.push(inter_point);
+                }
+            }
+        }
+        return intersection_points;
+    }
+
+    <!-- y=a1*x+b1 and y=a2*x+b2 , range_x: the domain range of the segment; r_x, r_y: random point -->
+    function segment_intersection_checking_algo(segment, r_x, r_y){
+
+
+        var pt1 = segment[0];
+        var pt2 = segment[1];
+        <!-- range_x: the domain range of the segment; -->
+        var range_x = [];
+        var range_y = [];
+
+        <!-- create range_x:[minX, maxX] -->
+        if(pt1[0]>pt2[0]){
+            range_x.push(pt2[0]);
+            range_x.push(pt1[0])
+        }
+        else{
+            range_x.push(pt1[0])
+            range_x.push(pt2[0]);
+        }
+
+        <!-- create range_y:[minY, maxY] -->
+        if(pt1[1]>pt2[1]){
+            range_y.push(pt2[1]);
+            range_y.push(pt1[1]);
+        }
+        else{
+            range_y.push(pt1[1]);
+            range_y.push(pt2[1]);
+        }
+        <!-- calculate a and b of the segment -->
+
+
+        if(pt1[0] === pt2[0]){  <!-- case study: vertical line does not have line express -->
+            <!-- if the intersection is on the right side and intersection with the line then there is an intersection -->
+            if(pt1[0]>r_x && r_y>range_y[0] && r_y<range_y[1]){
+                return [pt1[0],r_y];    <!-- return the intersection point -->
+            }
+            else{
+                return null; <!-- there is no intersection point -->
+            }
+        }
+
+        <!-- calculate a and b -->
+        var a = (pt1[1] - pt2[1])/(pt1[0] - pt2[0]);
+        var b = pt1[1] - a*pt1[0];
+
+        <!-- case study: if the two lines parallel -->
+        if(a === 0){
+            <!-- case study: if the point lies on the line -->
+            <!-- r_x within the range of the line, r_y equal to the y -->
+            if (r_x>=range_x[0] && r_x<=range_x[1] && r_y === pt1[1]) {
+                return [r_x ,r_y];  <!-- return the intersection point. -->
+            }
+            else{
+                return null;    <!-- there is no intersection point -->
+            }
+        }
+
+
+        <!-- else there is an intersection -->
+        <!-- calculate intersection with the horizontal line-->
+        var inter_x = (b-r_y)/(0-a);
+
+        // board.create('point',[inter_x, ran_y],{face:'o', size:1, strokeColor: 'black'});
+
+        <!-- check whether inter_x within the range and in the right side of random point -->
+        <!-- TODO: there are some special cases here like colinear with the vertices -->
+        if(inter_x>range_x[0] && inter_x<range_x[1] && inter_x>r_x){
+
+            return [inter_x, r_y];
+        }
+        else{
+
+            return null;
+        }
+
+    }
+
+    <!-- create random real number -->
+    function getRandom(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+</script>
 
 <!-- Polygon -->
 <!-- result display -->
@@ -575,7 +810,7 @@ can also see data about area, point number and so on.
 
 <script type="text/javascript">
     <!-- create a board coordinate in the panel with axis an bounding box-->
-    var board = JXG.JSXGraph.initBoard('box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true,});
+    var board = JXG.JSXGraph.initBoard('box', {boundingbox: [-10, 10, 10, -10], axis:true,keepaspectratio:true});
 
 
     <!-- create a list to hold  all the points-->
@@ -754,6 +989,9 @@ can also see data about area, point number and so on.
             if(pt1[0]>r_x && r_y>range_y[0] && r_y<range_y[1]){
                 return true;
             }
+            else{
+                return false;
+            }
         }
 
         <!-- calculate a and b -->
@@ -781,7 +1019,7 @@ can also see data about area, point number and so on.
 
         <!-- check whether inter_x within the range and in the right side of random point -->
         <!-- TODO: there are some special cases here like colinear with the vertices -->
-        if(inter_x>range_x[0] && inter_x<range_x[1] && inter_x>ran_x){
+        if(inter_x>range_x[0] && inter_x<range_x[1] && inter_x>r_x){
 
             return true;
         }
@@ -911,3 +1149,4 @@ Liverpool University.
 [jekyll-talk]: https://talk.jekyllrb.com/
 [github-repo]: https://github.com/SouthernPark/FYP
 [jsx-graph]: https://jsxgraph.uni-bayreuth.de/wp/index.html
+[ray-casting]: https://en.wikipedia.org/wiki/Point_in_polygon#Ray_casting_algorithm
