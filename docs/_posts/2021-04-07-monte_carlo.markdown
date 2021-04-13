@@ -543,11 +543,36 @@ algorithm][ray-casting]. In this algorithm, if we want to know whether a
 point is inside the polygon or not, we will create a ray that will reach
 to infinity and count how many intersection points `n` has been crossed
 by the ray. If `n` is an odd number, the point is inside the polygon,
-otherwise, it is outside. In the following inter active board, you will
+otherwise, it is outside.
+
+
+{% highlight ruby %}  
+Algorithm: //TODO: write the algorithm
+
+
+ def
+
+
+def print_hi(name)
+  puts "Hi, #{name}"
+end
+print_hi('Tom')
+
+
+{% endhighlight %}
+
+
+In the following inter active board, you will
 see how things work:
 
 <!--In out testing board-->
 # Interactive Board
+You can create polygon with any points by use the `create polygon`
+button on the right hang side. After that, a red point at (-1,1) and a
+polygon will be created. You can drag the red point to put it in
+everywhere. By clicking on `Ray Cast Test` button, you will be shown
+whether the red point inside the polygon. You can see the yellow
+intersected points on the edge on the polygon.
 <div id="result_display_algo">
     <b>Result display:</b>
     <br>

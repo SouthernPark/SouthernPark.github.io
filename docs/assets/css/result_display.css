@@ -1,26 +1,26 @@
 #result_display {
     position: absolute;
-    left:950px;
+    left:50%;
 }
 
 #result_display_pi {
     position: absolute;
-    left:950px;
+    left:50%;
 }
 
 #result_display_ci {
     position: absolute;
-    left:950px;
+    left:50%;
 }
 
 #result_display_el {
     position: absolute;
-    left:950px;
+    left:50%;
 }
 
 
 
 #result_display_algo {
     position: absolute;
-    left:950px;
+    left:50%;
 }
