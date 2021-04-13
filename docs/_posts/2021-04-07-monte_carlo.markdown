@@ -537,7 +537,7 @@ not find an equation/function for that figure. Therefore, there are no
 way for you to detect whether a point is inside a polygon or not using
 equation. Hence some other algorithms are needed to solve this problem.
 
-# In out testing Algorithm:
+# In Out Testing Algorithm:
 The first algorithm I want to introduce here is: [ray casting
 algorithm][ray-casting]. In this algorithm, if we want to know whether a
 point is inside the polygon or not, we will create a ray that will reach
@@ -546,25 +546,14 @@ by the ray. If `n` is an odd number, the point is inside the polygon,
 otherwise, it is outside.
 
 
-{% highlight ruby %}  
-Algorithm: //TODO: write the algorithm
+In the following inter active board, you will
+see how things work:
+{% highlight ruby %}
 
-
- def
-
-
-def print_hi(name)
-  puts "Hi, #{name}"
-end
-print_hi('Tom')
+TODO: Algorithm Needed to update
 
 
 {% endhighlight %}
-
-
-In the following inter active board, you will
-see how things work:
-
 <!--In out testing board-->
 # Interactive Board
 You can create polygon with any points by use the `create polygon`
@@ -792,7 +781,16 @@ intersected points on the edge on the polygon.
         return Math.random() * (max - min) + min;
     }
 </script>
+# Monte Carlo for Polygon
+You can create polygon with any points by use the `create polygon`
+button on the right hang side. Also, you can drag any points you want to
+everywhere. And then by clicking on `Monte Carlo Start` button, you can
+start the process of MCM. You can stop the process using `Monte Carlo
+Start` button. The result display on the right hand side will show the
+related data for you.
 
+PS: `the actual area` is correct only if convex and regular polygon.
+However, our MCM can deal with irregular polygon.
 <!-- Polygon -->
 <!-- result display -->
 <div id="result_display">
@@ -1148,19 +1146,7 @@ intersected points on the edge on the polygon.
 
 ## Sphere
 
-Jekyll also offers powerful support for code snippets:
-
-{% highlight ruby %}
-def print_hi(name)
-  puts "Hi, #{name}"
-end
-print_hi('Tom')
-#=> prints 'Hi, Tom' to STDOUT.
-{% endhighlight %}
-
- [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
-
-
+Need update.
 
 
 
