@@ -546,12 +546,77 @@ by the ray. If `n` is an odd number, the point is inside the polygon,
 otherwise, it is outside.
 
 
-In the following inter active board, you will
-see how things work:
-{% highlight ruby %}
+In the following inter active board, you will see how things work: {%
+highlight ruby %}
 
-TODO: Algorithm Needed to update
+def intersection_check(pointA, pointB, x, y){
 
+    # this algorithm will check whether segment AB has an intersection with the horizontal ray starting from (x,y) to the right infinity 
+
+    #Parameters:
+    #pointA and pointB are the start and end point of the line.
+    #x, y is the point when want to check whether inside the polygon or out side the polygon
+    
+    create a ray R which start from point (x,y) and goes to the right infinity point (100, y).
+    
+    # if line AB is vertical
+    if(pointA.X() == pointB.X()){
+        # line AB is vertical. Vertical line does not has equation y = ax +b.
+        if(r_x<pointA.X() && y > min{pointA.Y(), pointB.Y()} && y < max{pointA.Y(), pointB.Y()}){
+            # r_x<pointA.X(): the test point is on the left side      
+            # y > min{pointA.Y(), pointB.Y()} && y < max{pointA.Y(), pointB.Y()}: the test point is within the Y range of segment AB.
+            return true;                    
+        }       
+        else{
+            return false;    
+        }    
+    }
+    
+    # calculate a and b (line equation: y = ax + b)
+        a = ( pointA.Y() - pointB.Y() )/( pointA.X() - pointB.X() );    # a = (y1 - y2)/(x1 - x2)
+        b = pointA.Y() - a*pointA.X();      #b = y1 - ax1
+
+    
+    # if line AB is horizontal
+        if(a == 0){
+            # the line will parallel with the ray 
+            
+            if ( x>=min{pointA.Y(), pointB.Y()} && x<=max{pointA.Y(), pointB.Y()} && y == pointA.Y()) {
+                # x>=min{pointA.Y(), pointB.Y()} && x<=max{pointA.Y(): the test point is within the X range of segment AB.
+                # y == pointA.Y(): point (x,y) has the same y value with segment AB            
+                # the test point is just on segment AB.        
+                return true;  
+            }
+            else{
+                return false;    <!-- there is no intersection point -->
+            }
+        }
+
+    
+    # then the horizontal line will have an intersection with line AB
+    # calculate the x coordinate of the intersection with the horizontal line
+    inter_x = (b-y)/(0-a); # intersection of line y = ax + b and line y = y'
+    
+    # the intersection point will be (inter_x, y)
+
+    if( inter_x>=min{pointA.Y(), pointB.Y()} && inter_x<=max{pointA.Y(), pointB.Y()} && inter_x>x){
+        # inter_x>=min{pointA.Y(), pointB.Y()} && inter_x<=max{pointA.Y(), pointB.Y()}: check whether inter_x is within the X range of segment AB
+        # check whether inter_x within the range and in the right side of random point
+        return true;
+    }
+    else{
+
+        return false;
+    }
+
+}
+
+def in_out_checking(x, y, points){
+
+    #this function will check whether point (x,y) is inside the polygon composed by
+    #TODO :::
+
+}
 
 {% endhighlight %}
 <!--In out testing board-->
@@ -609,6 +674,8 @@ intersected points on the edge on the polygon.
 
     function ray_cast(){
 
+        board_algo.removeObject(ray);
+
         infinity_point = board_algo.create('point',[100,in_out_point.Y()],{face:'o', size:0.1, color:'red'});
 
         ray = board_algo.create('line',[in_out_point, infinity_point], {straightFirst:false, straightLast:false, strokeColor:'red',strokeWidth:2});
@@ -616,11 +683,19 @@ intersected points on the edge on the polygon.
         <!-- show the intersection points-->
 
         if(inter_points_algo !== null){
+            //then there are intersection
             for(i=0; i<inter_points_algo.length; i++){
                 board_algo.create('point',[inter_points_algo[i][0], inter_points_algo[i][1]],{face:'o', size:0.5, color:'yellow', withLabel:false});
             }
             document.getElementById("inter_num").innerHTML = inter_points_algo.length;
-            alert("The point is inside the polygon");
+            if(inter_points_algo.length % 2 == 0){
+                // if there are even number intersections
+                alert("The point is not inside the polygon");
+            }
+            else{
+                // there are odd number intersections
+                alert("The point is inside the polygon");
+            }
         }
         else{
             alert("The point is not inside the polygon");
