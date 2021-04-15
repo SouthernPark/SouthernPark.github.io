@@ -614,7 +614,48 @@ def intersection_check(pointA, pointB, x, y){
 def in_out_checking(x, y, points){
 
     #this function will check whether point (x,y) is inside the polygon composed by
-    #TODO :::
+    
+    #Parameters:
+    #(x, y) is the point we want to test
+    #points is a list contains all the points of a polygon. 
+    # ex.[A,B,C] means the three vertexes of a triangle 
+    
+    
+    #the number of intersections composed by the horizontal ray and the polygon 
+    
+    intersection_num = 0;       
+
+    # in the following loop, for every edge of the polygon, we will check if it will
+    # intersect with the ray. If there is, we will add the counter by 1
+    
+    for(i=0; i<points.length; i++){
+
+        # check the last line,for example: for polygon [A,B,C]. the last line is CA 
+        if(i !== points.length - 1){
+            line = [ [points[i].X(), points[i].Y()] , [points[i+1].X(), points[i+1].Y()] ];
+
+            if(intersection_check(line, x, y)){
+                intersection_num = intersection_num + 1;
+            }
+
+        }
+        # check the rest lines    
+        else{
+            line = [ [ points[points.length-1].X(), points[points.length-1].Y() ] , [points[0].X(), points[0].Y()] ];     <!-- lines are expressed using two points -->
+
+            if(intersection_check(line, r_x, r_y)){
+                intersection_num = intersection_num + 1;
+            }
+        }
+    }
+    # if the intersection number is odd, then the point is inside the polygon 
+    if(intersection_num % 2 === 1){
+        return true;
+    }
+    # if the intersection number is even, then the point is outside the polygon
+    else{
+        return false;
+    }
 
 }
 
@@ -856,7 +897,41 @@ intersected points on the edge on the polygon.
         return Math.random() * (max - min) + min;
     }
 </script>
+
+
 # Monte Carlo for Polygon
+{% highlight ruby %}
+
+Algorithm:  
+def polygon_monte(loop_num, polygon_points):
+
+    #firstly, we need to create a bounding box
+    set as minX the minimum x coordinate inside polygon_points.
+    set as minY the minimum Y coordinate inside polygon_points.
+    set as maxX the maximum X coordinate inside polygon_points.
+    set as maxY the maximum Y coordinate inside polygon_points.
+    
+    create bounding box using points [(minX, minY), (maxX, minY), (maxX, maxY), (minX, maxY)]
+        
+
+    set counter = 0; # count the total number of points generated  
+
+    set in_counter = 0; # count the number of points inside the circle
+
+    for(i = 0 to loop_num):  
+        counter = counter + 1; 
+        
+        create random real number x in (minX,maxX)  
+        create random real number y in (minY,maxY)
+
+
+        if in_out_checking(x, y, polygon_points):  
+            in counter = in_counter + 1;
+
+    return (counter/in_counter)*((maxX-minX)*(maxY-minY))
+
+
+{% endhighlight %}
 You can create polygon with any points by use the `create polygon`
 button on the right hang side. Also, you can drag any points you want to
 everywhere. And then by clicking on `Monte Carlo Start` button, you can
