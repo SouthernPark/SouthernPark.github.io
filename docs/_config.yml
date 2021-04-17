@@ -28,7 +28,7 @@ twitter_username: SouthernPark4
 github_username:  SouthernPark
 
 # Build settings
-
+theme: minima
 plugins:
   - jekyll-feed
 
