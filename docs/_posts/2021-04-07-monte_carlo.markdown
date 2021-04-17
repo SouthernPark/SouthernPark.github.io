@@ -39,6 +39,9 @@ library for interactive geometry. Without JSXGraph, I have to say I
 could not finish my FYP so smoothly. Once again, Thanks to [JSXGraph][jsx-graph].
 
 <script src="{{ base.url | prepend: site.url }}/assets/js/jsxgraphcore.js"></script>
+<script src="{{ base.url | prepend: site.url }}/assets/js/three.js"></script>
+<script src="{{ base.url | prepend: site.url }}/assets/js/OrbitControls.js"></script>
+
 <link rel="stylesheet" type="text/css" href="{{ base.url | prepend: site.url }}/assets/css/jsxgraph.css"/>
 <link rel="stylesheet" type="text/css" href="{{ base.url | prepend: site.url }}/assets/css/result_display.css"/>
 
@@ -1295,14 +1298,230 @@ However, our MCM can deal with irregular polygon.
 
 
 ## Sphere
+In this section, we will extend the MCM process to 3D. Three.js library
+is used to have a good visualisation. In the following interactive
+board, you can drag your left mouse button to have a 360 view of the
+sphere (radius=1) and its bounding cube.
 
-Need update.
+By clicking on start animation button, you can start the MCM process.
+The result display will show you the related data.
+
+# Interactive Board
+<!-- button -->
+<div id="sphere_button">
+    <button type="button" onclick="monte_GameLoop()">start animation</button>
+    <br>
+    <button type="button" onclick="stopGameLoop()">stop animation</button>
+    <br>
+    <button type="button" onclick="clearScene()()">clear scene</button>
+    <br>
+    <button type="button" onclick="init_scene()">initialise scene</button>
+
+</div>
+
+<!-- Result Display -->
+<div id="result_display_sphere">
+    <b>Result display:</b>
+    <br>
+
+    <li>The number of points created: <a id="monte_counter_sphere" >0</a></li>
+    
+    <li>The number of points inside the polygon: <a id="in_counter_sphere">0</a></li>
+    
+    <li>The area of the bounding box is: <a id="b_area_sphere">0</a></li>
+    
+    <li>The approximate area of the polygon is: <a id="apro_area_sphere">0</a></li>
+    
+    <li>The actual area of the polygon is: <a id="actual_area_sphere">0</a></li>
+    
+    
+
+</div>
+
+
+<div>
+
+        <canvas id="sphere_three" width="700" height="700" ></canvas>
+</div>
+
+
+<script>
+
+    //canvas
+    var myCanvas = document.getElementById("sphere_three");
+
+
+    //scene. camera, renderer
+    var scene = new THREE.Scene();
+
+    var camera = new THREE.PerspectiveCamera(75, myCanvas.width/myCanvas.height, 0.1, 1000);
+
+    var renderer = new THREE.WebGLRenderer({antialias: true, canvas: myCanvas});
+    renderer.setSize(myCanvas.width, myCanvas.height);
 
 
 
-# Acknowledgement:
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-This is a blog Final Year Project for Qiangqiang Liu who studied in
+
+
+    //create shape --box
+
+    var geometry = new THREE.BoxGeometry( 2, 2, 2 );
+    //create a material
+    var material = new THREE.MeshBasicMaterial( {color: 0xFFFFFF, wireframe:true} );
+    var cube = new THREE.Mesh( geometry, material );
+    scene.add( cube );
+
+
+    //create shape -- sphere
+    var geometry = new THREE.SphereGeometry( 1, 32, 32 );
+    var material = new THREE.MeshBasicMaterial( {color: 0xFFFFFF, wireframe:true} );
+    var sphere = new THREE.Mesh( geometry, material );
+    scene.add( sphere );
+
+
+    //set axes  The X axis is red. The Y axis is green. The Z axis is blue.
+    var axesHelper = new THREE.AxesHelper( 2.5 );
+    scene.add(axesHelper);
+    //set camera
+    camera.position.x =2.5;
+    camera.position.y =2.5;
+    camera.position.z =2.5;
+
+    camera.lookAt(0,0,0);
+
+    function init_scene(){
+        //create shape --box
+
+        var geometry = new THREE.BoxGeometry( 2, 2, 2 );
+        //create a material
+        var material = new THREE.MeshBasicMaterial( {color: 0xFFFFFF, wireframe:true} );
+        var cube = new THREE.Mesh( geometry, material );
+        scene.add( cube );
+
+        //create shape -- sphere
+        var geometry = new THREE.SphereGeometry( 1, 32, 32 );
+        var material = new THREE.MeshBasicMaterial( {color: 0xFFFFFF, wireframe:true} );
+        var sphere = new THREE.Mesh( geometry, material );
+        scene.add( sphere );
+
+        //set axes  The X axis is red. The Y axis is green. The Z axis is blue.
+        var axesHelper = new THREE.AxesHelper( 3 );
+        scene.add(axesHelper);
+    }
+    //0xFF0000: red
+    function create_point(vertices,color_){
+      var geometry = new THREE.BufferGeometry();
+
+      geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+
+
+
+      var material = new THREE.PointsMaterial( { color: color_, size: 0.05} );
+
+      var point = new THREE.Points(geometry, material);
+
+      scene.add(point);
+    }
+    //dot
+
+
+    var counter_sphere = 0;
+    var in_counter_sphere = 0;
+
+    //game logic
+    var update = function()
+    {
+        //cube.rotation.x += 0.01;
+        //cube.rotation.y += 0.01;
+
+        //create ten random value
+        var in_points = [];     //points that are inside the
+        var out_points = [];
+
+        for ( var i = 0; i < 20; i ++ ) {
+
+            var x = getRandom(-1, 1);
+            var y = getRandom(-1, 1);
+            var z = getRandom(-1, 1);
+            counter_sphere += 1;
+            if(x*x + y*y + z*z <= 1){
+                in_counter_sphere += 1;
+                in_points.push( x, y, z );
+            }
+            else{
+                out_points.push( x, y, z );
+            }
+
+        }
+
+        //classify
+        create_point(in_points,0xFF0000);
+        create_point(out_points,0x0000FF);
+
+        //result_display
+        document.getElementById("monte_counter_sphere").innerHTML = counter_sphere;
+        document.getElementById("in_counter_sphere").innerHTML = in_counter_sphere;
+        document.getElementById("b_area_sphere").innerHTML = 8;
+        document.getElementById("apro_area_sphere").innerHTML = (in_counter_sphere/counter_sphere) * 8;
+        document.getElementById("actual_area_sphere").innerHTML = (4/3) * Math.PI;
+
+    };
+
+    //draw scene
+    var render = function()
+    {
+        renderer.render(scene, camera);
+
+    };
+
+
+
+    // run game loop (update, render, repeat)
+    var animationID;
+    var init_GameLoop = function()
+    {
+        animationID = requestAnimationFrame(init_GameLoop);
+        //update();
+        render();
+    };
+
+
+    var monte_GameLoop = function()
+    {
+        animationID = requestAnimationFrame(monte_GameLoop);
+        update();
+        render();
+    };
+
+
+
+    function stopGameLoop(){
+        cancelAnimationFrame( animationID );
+    }
+
+    function clearScene(){
+      counter_sphere = 0;
+      in_counter_sphere = 0;
+      while(scene.children.length > 0){
+        scene.remove(scene.children[0]);
+      }
+    }
+
+
+
+    init_GameLoop();
+
+    function getRandom(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+
+</script>
+
+## Acknowledgement:
+This is a blog for Final Year Project by Qiangqiang Liu who studied in
 Liverpool University.
 
 [jekyll-docs]: https://jekyllrb.com/docs/home

@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a616d316-199e-4ef3-9c8d-de02b4018b63" name="Default Changelist" comment="beautify the web">
-      <change beforePath="$PROJECT_DIR$/../FYP/WEB/interactive web/monte_carlo.html" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/WEB/interactive web/monte_carlo.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/assets/js/OrbitControls.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/assets/js/three.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FYP/WEB/interactive web/sphere.html" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/WEB/interactive web/sphere.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/_posts/2021-04-07-monte_carlo.markdown" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_posts/2021-04-07-monte_carlo.markdown" afterDir="false" />
     </list>
@@ -27,11 +29,13 @@
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../flask_test" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/docs/assets/js" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Administrator\Desktop\git_repo\SouthernPark.github.io\docs\assets\js" />
+      <recent name="C:\Users\Administrator\Desktop\git_repo\FYP\WEB\js" />
       <recent name="C:\Users\Administrator\Desktop\git_repo\SouthernPark.github.io\docs\assets\css" />
     </key>
   </component>
@@ -184,7 +188,21 @@
       <option name="project" value="LOCAL" />
       <updated>1618473113199</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="algorithm finished, sphere need to implement">
+      <created>1618493787003</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1618493787003</updated>
+    </task>
+    <task id="LOCAL-00016" summary="sphere finished">
+      <created>1618592735393</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1618592735393</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -215,6 +233,8 @@
     <MESSAGE value="algorithm need to add" />
     <MESSAGE value="algorithm need to complete" />
     <MESSAGE value="algorithm need to be finished" />
-    <option name="LAST_COMMIT_MESSAGE" value="algorithm need to be finished" />
+    <MESSAGE value="algorithm finished, sphere need to implement" />
+    <MESSAGE value="sphere finished" />
+    <option name="LAST_COMMIT_MESSAGE" value="sphere finished" />
   </component>
 </project>
