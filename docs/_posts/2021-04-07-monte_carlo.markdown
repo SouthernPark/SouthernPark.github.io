@@ -153,7 +153,7 @@ side, you can also see data about area, point number and so on.
         var r = Math.sqrt(p2_ci.X()*p2_ci.X() + p2_ci.Y()*p2_ci.Y());
 
         document.getElementById("b_area_ci").innerHTML = 4*r*r;
-        document.getElementById("actual_area_ci").innerHTML = ci.Area();
+        document.getElementById("actual_area_ci").innerHTML = Math.PI*r*r;
 
         <!-- 2 step: bounding box -->
         var bp1 = board_ci.create('point', [-r,-r], {name:'O', size:1, face:'o', color:'black', fixed:true, withLabel:false});
