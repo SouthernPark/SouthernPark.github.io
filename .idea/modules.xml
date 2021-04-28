@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../DataMining_CW2/.idea/DataMining_CW2.iml" filepath="$PROJECT_DIR$/../DataMining_CW2/.idea/DataMining_CW2.iml" />
       <module fileurl="file://$PROJECT_DIR$/../FYP/.idea/FYP.iml" filepath="$PROJECT_DIR$/../FYP/.idea/FYP.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/SouthernPark.github.io.iml" filepath="$PROJECT_DIR$/.idea/SouthernPark.github.io.iml" />
       <module fileurl="file://$PROJECT_DIR$/../flask_test/.idea/flask_test.iml" filepath="$PROJECT_DIR$/../flask_test/.idea/flask_test.iml" />

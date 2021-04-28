@@ -107,7 +107,7 @@ side, you can also see data about area, point number and so on.
 
     <li>The approximate area of the circle using MCM is: <a id="apro_area_ci">0</a></li>
 
-    <li>The actual area of the polygon is: <a id="actual_area_ci">0</a></li>
+    <li>The actual area of the circle is: <a id="actual_area_ci">0</a></li>
 
 
     <div>
@@ -130,6 +130,9 @@ side, you can also see data about area, point number and so on.
     var p1_ci = board_ci.create('point', [0,0], {name:'O', size:1, face:'o', color:'black', fixed:true});
     var p2_ci = board_ci.create('point', [5,0], {name:'A', size:1, face:'o', color:'black'});
     var ci = board_ci.createElement('circle',[p1_ci, p2_ci], {strokeColor:'black',strokeWidth:1, fillColor:'green', fillOpacity:0.2});
+
+    var counter_ci = 0;
+    var in_counter_ci = 0;
 
     //TODO: need to initialise circle after clearBoard_ci
 
@@ -165,8 +168,7 @@ side, you can also see data about area, point number and so on.
         p2_ci.setAttribute({fixed:true});
 
         <!-- 3 step: generate random numbers-->
-        var counter_ci = 0;
-        var in_counter_ci = 0;
+
         refreshIntervalID_ci = setInterval(
             function draw(){
                 var ran_x_ci = getRandom(-r, r);
@@ -267,6 +269,9 @@ and so on.
     var p2_pi = board_pi.create('point', [5,0], {name:'A', size:1, face:'o', color:'black'});
     var ci = board_pi.createElement('circle',[p1_pi, p2_pi], {strokeColor:'black',strokeWidth:1, fillColor:'green', fillOpacity:0.2});
 
+    var counter_pi = 0;
+    var in_counter_pi = 0;
+
     //TODO: need to initialise circle after clearBoard_pi
 
     function init_cir(){
@@ -301,8 +306,7 @@ and so on.
         p2_pi.setAttribute({fixed:true});
 
         <!-- 3 step: generate random numbers-->
-        var counter_pi = 0;
-        var in_counter_pi = 0;
+
         refreshIntervalID_pi = setInterval(
             function draw(){
                 var ran_x_pi = getRandom(-r, r);
@@ -437,7 +441,10 @@ can also see data about area, point number and so on.
     //create the ellipse
     var el = board_el.create('ellipse',[focus1, focus2, top_point], {strokeColor:'black',strokeWidth:1, fillColor:'green', fillOpacity:0.2});
 
-
+    var counter_el = 0;
+    var in_counter_el = 0;
+    
+    
     function create_el(){
         clearBoard_el();    
         
@@ -497,8 +504,7 @@ can also see data about area, point number and so on.
         
 
         <!-- 3 step: generate random numbers-->
-        var counter_el = 0;
-        var in_counter_el = 0;
+        
         refreshIntervalID_el = setInterval(
             function draw(){
                 var ran_x_el = getRandom(-a_el, a_el);
@@ -1332,7 +1338,7 @@ The result display will show you the related data.
     
     <li>The approximate area of the polygon is: <a id="apro_area_sphere">0</a></li>
     
-    <li>The actual area of the polygon is: <a id="actual_area_sphere">0</a></li>
+    <li>The actual volume of the sphere is: <a id="actual_area_sphere">0</a></li>
     
     
 

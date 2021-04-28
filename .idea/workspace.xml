@@ -2,6 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a616d316-199e-4ef3-9c8d-de02b4018b63" name="Default Changelist" comment="beautify the web">
+      <change beforePath="$PROJECT_DIR$/../FYP/data/circle/area.npy" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/data/circle/area.npy" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FYP/data/circle/in_out.npy" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/data/circle/in_out.npy" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FYP/data/circle/x.npy" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/data/circle/x.npy" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FYP/data/circle/y.npy" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/data/circle/y.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../FYP/data/sphere/in_out.npy" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/data/sphere/in_out.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../FYP/data/sphere/volume.npy" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/data/sphere/volume.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../FYP/data/sphere/x.npy" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/data/sphere/x.npy" afterDir="false" />
@@ -9,6 +13,11 @@
       <change beforePath="$PROJECT_DIR$/../FYP/data/sphere/z.npy" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/data/sphere/z.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../FYP/sphere_generate_points.py" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/sphere_generate_points.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../FYP/sphere_visualise.py" beforeDir="false" afterPath="$PROJECT_DIR$/../FYP/sphere_visualise.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/SouthernPark.github.io.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SouthernPark.github.io.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_posts/2021-04-07-monte_carlo.markdown" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_posts/2021-04-07-monte_carlo.markdown" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -34,17 +43,18 @@
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/docs/assets/js" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../DataMining_CW2" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Administrator\Desktop\git_repo\FYP" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Administrator\Desktop\git_repo\SouthernPark.github.io\docs\assets\js" />
       <recent name="C:\Users\Administrator\Desktop\git_repo\FYP\WEB\js" />
       <recent name="C:\Users\Administrator\Desktop\git_repo\SouthernPark.github.io\docs\assets\css" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Administrator\Desktop\git_repo\DataMining_CW2" />
+      <recent name="C:\Users\Administrator\Desktop\git_repo\FYP" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -59,8 +69,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.sphere_visualise">
-    <configuration name="Sphere" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.cw2">
+    <configuration name="circle_generate_points" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="FYP" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -72,7 +82,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../FYP/Sphere.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../FYP/circle_generate_points.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -102,19 +112,19 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="ellipse_visualise" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="FYP" />
+    <configuration name="cw2" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="DataMining_CW2" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../FYP" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../DataMining_CW2" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../FYP/ellipse_visualise.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../DataMining_CW2/cw2.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -167,11 +177,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.cw2" />
+        <item itemvalue="Python.circle_visualise" />
+        <item itemvalue="Python.circle_generate_points" />
         <item itemvalue="Python.sphere_visualise" />
         <item itemvalue="Python.sphere_generate_points" />
-        <item itemvalue="Python.ellipse_visualise" />
-        <item itemvalue="Python.circle_visualise" />
-        <item itemvalue="Python.Sphere" />
       </list>
     </recent_temporary>
   </component>
@@ -326,7 +336,21 @@
       <option name="project" value="LOCAL" />
       <updated>1619114440386</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="finish">
+      <created>1619114552841</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1619114552841</updated>
+    </task>
+    <task id="LOCAL-00022" summary="start">
+      <created>1619614934421</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1619614934421</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -364,6 +388,8 @@
     <MESSAGE value="circle generate points + visualise" />
     <MESSAGE value="sphere, ellipse, circle ==&gt; generate points + visualise" />
     <MESSAGE value="finished" />
-    <option name="LAST_COMMIT_MESSAGE" value="finished" />
+    <MESSAGE value="finish" />
+    <MESSAGE value="start" />
+    <option name="LAST_COMMIT_MESSAGE" value="start" />
   </component>
 </project>
