@@ -1,0 +1,16 @@
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: SouthernPark Blogs
+nav_exclude: true
+---
+#+END_EXPORT
+
+
+* other
+** [[file:pages/how-to-blog-with-Emacs-Jeklly.org][Blogs with Emacs org mode, Jeklly and Github Pages]]
