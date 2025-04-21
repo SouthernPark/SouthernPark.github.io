@@ -10,10 +10,6 @@ title: How To Blog With Emacs Jeklly
 ---
 #+END_EXPORT
 
-
-* other
-
-
 * DOOM Emacs installation on Windows
 ** install Emacs
 [[https://www.gnu.org/software/emacs/download.html][Emacs download and install]]
@@ -117,47 +113,45 @@ Therefore use WSL2 and Ubuntu to hold Jekyll.
 
 #+name: Jkelly to create blog
 #+begin_src
-root@LAPTOP-FOPVC68I:/mnt/e/Emacs/ql143/blog_project# jekyll new jekyll
+root@LAPTOP-FOPVC68I:/mnt/e/Emacs/ql143/blog_project# jekyll new docs
 root@LAPTOP-FOPVC68I:/mnt/e/Emacs/ql143/blog_project# ls
-jekyll  org
+docs org
 
-root@LAPTOP-FOPVC68I:/mnt/e/Emacs/ql143/blog_project/jekyll# bundle exec jekyll serve
+root@LAPTOP-FOPVC68I:/mnt/e/Emacs/ql143/blog_project/docs# bundle exec jekyll serve
 #+end_src
 
 * Export org to Jkeyll
 [[https://orgmode.org/worg/org-tutorials/org-jekyll.html][Using org to Blog with Jekyll]]
-
 #+begin_src
-blog_project/
-├── jekyll
+SouthernPark.github.io/
+├── README.md
+├── docs
 │   ├── 404.html
 │   ├── Gemfile
 │   ├── Gemfile.lock
 │   ├── _config.yml
-│   ├── _posts                                                                                      <<< _post dir
-│   │   └── 2025-04-20-welcome-to-jekyll.markdown
+│   ├── _posts
+│   │   └── 2021-04-07-monte_carlo.markdown
 │   ├── _site
-│   │   ├── 404.html
-│   │   ├── about
-│   │   │   └── index.html
-│   │   ├── assets
-│   │   │   ├── main.css
-│   │   │   ├── main.css.map
-│   │   │   └── minima-social-icons.svg
-│   │   ├── feed.xml
-│   │   ├── index.html
-│   │   └── jekyll
-│   │       └── update
-│   │           └── 2025
-│   │               └── 04
-│   │                   └── 20
-│   │                       └── welcome-to-jekyll.html
 │   ├── about.markdown
-│   └── index.markdown                                                      <<< index markdown
+│   ├── assets
+│   │   ├── css
+│   │   │   ├── jsxgraph.css
+│   │   │   └── result_display.css
+│   │   └── js
+│   │       ├── OrbitControls.js
+│   │       ├── jsxgraphcore.js
+│   │       └── three.js
+│   ├── index.html
+│   ├── index.markdown.bak
+│   └── pages                                            <<< org export the pages here
+│       └── how-to-blog-with-Emacs-Jeklly.html
 └── org
-    ├── _posts                                                                                       <<< _post dir
-    │   └── 2009-11-26-example-post.org
-    └── index.org                                                           <<< index org
+    ├── _posts                                          
+    ├── index.org                                       <<< index article
+    ├── index.org.bak
+    └── pages                                           <<< self created, to page org articles here
+        └── how-to-blog-with-Emacs-Jeklly.org
 #+end_src
 
 #+name: export org to HTML and put in Jekyll project
@@ -167,24 +161,23 @@ blog_project/
 
   ("org-ianbarton"
           ;; Path to your org files.
-          :base-directory "~/blog_project/org/"
+          :base-directory "~/SouthernPark.github.io/org/"
           :base-extension "org"
 
           ;; Path to your Jekyll project.
-          :publishing-directory "~/blog_project/jekyll/"
+          :publishing-directory "~/SouthernPark.github.io/docs/"
           :recursive t
-          :publishing-function org-publish-org-to-html
+          :publishing-function org-html-publish-to-html
           :headline-levels 4
           :html-extension "html"
           :body-only t ;; Only export section between <body> </body>
-
     )
 
 
     ("org-static-ian"
-          :base-directory "~/blog_project/org/"
+          :base-directory "~/SouthernPark.github.io/org/"
           :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|php"
-          :publishing-directory "~/blog_project"
+          :publishing-directory "~/SouthernPark.github.io/"
           :recursive t
           :publishing-function org-publish-attachment)
 
@@ -204,8 +197,10 @@ The current solution is diable the TOC exporting. Need to find a way to customiz
 #+BEGIN_EXPORT html
 ---
 layout: default
-title: Blogs with Emacs and Jeklly
+title: How To Blog With Emacs Jeklly
 ---
+#+END_EXPORT
+
 #+end_src
 * Jeklly on Github
 [[https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/creating-a-github-pages-site-with-jekyll][Github Pages]]
