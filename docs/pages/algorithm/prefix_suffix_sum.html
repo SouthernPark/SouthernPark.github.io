@@ -1,0 +1,41 @@
+---
+layout: default
+title: Prefix Suffix Sum
+nav_exclude: true
+---
+<div id="outline-container-org8c5c6db" class="outline-2">
+<h2 id="org8c5c6db"><span class="section-number-2">1.</span> description</h2>
+</div>
+
+<div id="outline-container-org3c99348" class="outline-2">
+<h2 id="org3c99348"><span class="section-number-2">2.</span> Two ways to define</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-orgcc76439" class="outline-3">
+<h3 id="orgcc76439"><span class="section-number-3">2.1.</span> Prefix Sum without an Extra Initial Zero</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+prefix<sub>sum</sub>[i] ==&gt; the sume from nums[0] to nums[i]
+</p>
+
+<p>
+sum(l to r) = prefix[r] - prefix[l-1]     if l &gt; 0
+            = prefix[r]                   if l == 0            &lt;&lt;&lt; annoying
+</p>
+</div>
+</div>
+<div id="outline-container-orgaa1f0ed" class="outline-3">
+<h3 id="orgaa1f0ed"><span class="section-number-3">2.2.</span> Prefix Sum without an Extra Initial Zero</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+prefix<sub>sum</sub>[i] ==&gt; i represent the length, gives the sum of the first i elements
+prefix<sub>sum</sub>[0] = 0
+prefix<sub>sum</sub>[i] = nums[0] + &#x2026; + nums[i-1]
+</p>
+
+<p>
+sum(l to r) = prefix[r+1] - prefix[l]
+</p>
+</div>
+</div>
+</div>

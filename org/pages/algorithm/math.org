@@ -1,0 +1,27 @@
+#+title: Math
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Math
+nav_exclude: true
+---
+#+END_EXPORT
+
+* Modulo %
+key concept for % is congruence, two numbers a, b are congruent on n, if and only if they have the same modular remainder after mod by n
+
+if a % n = b, then we say a and b is congruent on n, marked as a ≡ b (mod n)
+
+Key Attributes of Modulo Congruence:
+1. Reflexivity: a ≡ a (mod n)
+2. Symmetry: If a ≡ b (mod n), then b ≡ a (mod n)
+3. Transitivity: If a ≡ b (mod n) and b ≡ c (mod n), then a ≡ c (mod n)
+4. Addition: If a ≡ b (mod n) and c ≡ d (mod n), then a + b ≡ c + d (mod n)
+5. Multiplication: If a ≡ b (mod n) and c ≡ d (mod n), then a * b ≡ c * d (mod n)
+6. Divisibility: If a ≡ b (mod n), then a - b is divisible by n, in other words: a - b | n
+7. Power: If a ≡ b (mod n), then a^k ≡ b^k (mod n)

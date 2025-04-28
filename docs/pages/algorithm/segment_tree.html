@@ -1,0 +1,184 @@
+---
+layout: default
+title: Segment Tree
+nav_exclude: true
+---
+<div id="outline-container-orgd35255d" class="outline-2">
+<h2 id="orgd35255d"><span class="section-number-2">1.</span> Description</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+A Segment Tree is a binary tree that allows efficient:
+</p>
+<ul class="org-ul">
+<li>do range queries like (sum, max, min) in O(log n)</li>
+<li>do point updates in O(log n)</li>
+</ul>
+
+<p>
+useful materials:
+</p>
+
+<p>
+<a href="https://youtu.be/xztU7lmDLv8">Youtube: Segment Tree Data Structure - Min Max Queries - Java source code</a>
+</p>
+
+<p>
+<a href="https://cp-algorithms.com/data_structures/segment_tree.html">cp-algorithm: segment tree</a>
+</p>
+</div>
+</div>
+<div id="outline-container-orgad180b2" class="outline-2">
+<h2 id="orgad180b2"><span class="section-number-2">2.</span> Data Structure</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Assume the range is of size n, the tree can be represented as an array of size 2 * n or 4 * n, depending on the way you go through the tree
+</p>
+</div>
+<div id="outline-container-org3529ccb" class="outline-3">
+<h3 id="org3529ccb"><span class="section-number-3">2.1.</span> bottom up iterative approach (tree as a flat array of size 2 * n)</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+internal nodes are in the first half of the array, while leaf nodes are in the last half.
+We ususally starting the updates/query from the leaf nodes and propagate to the parent nodes, stop until hit the root
+</p>
+
+<p>
+The following is the template to update:
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">arr</span>(n);
+<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">tree</span>(<span style="color: #da8548; font-weight: bold;">2</span>*n)
+
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">update the segment tree leaf node and populate the effect to the parent node</span>
+<span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">update</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">tree</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">index</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">incr</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">size</span>){
+  index += size;
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">update the leaf node</span>
+  tree[index] += incr;
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">update the parent</span>
+  <span style="color: #51afef;">while</span>(index&gt;<span style="color: #da8548; font-weight: bold;">1</span>){
+    index /= <span style="color: #da8548; font-weight: bold;">2</span>;
+    tree[index] = tree[<span style="color: #da8548; font-weight: bold;">2</span>*index] + tree[<span style="color: #da8548; font-weight: bold;">2</span>*index+<span style="color: #da8548; font-weight: bold;">1</span>];     <span style="color: #5B6268;">// </span><span style="color: #5B6268;">&lt;&lt;&lt; here it's query the range sum, you can update to other operations</span>
+  }
+}
+
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">return the sum in the range [left, right)          // &lt;&lt;&lt; right is not included</span>
+<span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">query</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">tree</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">right</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">size</span>) {
+  left += size;
+  right += size;
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">ans</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #51afef;">while</span>(left&lt;right){
+    <span style="color: #51afef;">if</span>(left &amp; <span style="color: #da8548; font-weight: bold;">1</span>) {
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">left is a right node</span>
+      ans += tree[left];                              <span style="color: #5B6268;">// </span><span style="color: #5B6268;">&lt;&lt;&lt; here it's query the range sum, you can update to other operations</span>
+      left ++;
+    }
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">ow left is a left node and will be consided in its parent node</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">do nothing here</span>
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">move to parent</span>
+    left /= <span style="color: #da8548; font-weight: bold;">2</span>;
+
+    <span style="color: #51afef;">if</span>(right &amp; <span style="color: #da8548; font-weight: bold;">1</span>) {
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">right is a right node, ignore it</span>
+      right --;
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">but need to take care of the left neighbour</span>
+      ans += tree[right];                          <span style="color: #5B6268;">// </span><span style="color: #5B6268;">&lt;&lt;&lt; here it's query the range sum, you can update to other operations</span>
+    }
+    right /= <span style="color: #da8548; font-weight: bold;">2</span>;
+  }
+
+  <span style="color: #51afef;">return</span> ans;
+}
+</pre>
+</div>
+
+<p>
+how to build the tree?
+The first way is to use update fucntion for n times to push the initial array into the tree.
+The other way is the following:
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">arr</span>(n);
+<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">tree</span>(<span style="color: #da8548; font-weight: bold;">2</span>*n)
+
+<span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">build</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">tree</span>, <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">arr</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">size</span>) {
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">copy the arr into the last half the tree array</span>
+  copy(arr.begin(), arr.end(), tree.begin()+size);
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">populate the internal nodes from right to left</span>
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=size-<span style="color: #da8548; font-weight: bold;">1</span>; i&gt;=<span style="color: #da8548; font-weight: bold;">1</span>; i++){
+    tree[i] = tree[<span style="color: #da8548; font-weight: bold;">2</span>*i] + tree[<span style="color: #da8548; font-weight: bold;">2</span>*i+<span style="color: #da8548; font-weight: bold;">1</span>];                   <span style="color: #5B6268;">// </span><span style="color: #5B6268;">&lt;&lt;&lt; here it's query the range sum, you can update to other operations</span>
+  }
+  <span style="color: #51afef;">return</span>;
+}
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org838ab76" class="outline-3">
+<h3 id="org838ab76"><span class="section-number-3">2.2.</span> top down recursive approach (tree size 4 * n)</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+template
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">update</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">tree</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">node</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">right</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">index</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">incr</span>) {
+  <span style="color: #51afef;">if</span>(left == right) {
+    tree[index] += incr;
+    <span style="color: #51afef;">return</span>;
+  }
+
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = (left + right) / <span style="color: #da8548; font-weight: bold;">2</span>;
+  <span style="color: #51afef;">if</span>(index &gt; mid) {
+    update(tree, <span style="color: #da8548; font-weight: bold;">2</span>*node+<span style="color: #da8548; font-weight: bold;">1</span>, mid+<span style="color: #da8548; font-weight: bold;">1</span>, right, index, incr);
+  }
+  <span style="color: #51afef;">else</span> {
+    update(tree, <span style="color: #da8548; font-weight: bold;">2</span>*node+<span style="color: #da8548; font-weight: bold;">2</span>, left, mid, index, incr);
+  }
+
+  tree[node] = tree[<span style="color: #da8548; font-weight: bold;">2</span>*node+<span style="color: #da8548; font-weight: bold;">1</span>] + tree[<span style="color: #da8548; font-weight: bold;">2</span>*node+<span style="color: #da8548; font-weight: bold;">2</span>];
+}
+
+<span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">query</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">tree</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">node</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">right</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">q_left</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">q_right</span>){
+
+  <span style="color: #51afef;">if</span>(q_left &gt; q_right) {
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">0</span>;
+  }
+
+  <span style="color: #51afef;">if</span>(q_left == left &amp;&amp; q_right == right) {
+    <span style="color: #51afef;">return</span> tree[node];
+  }
+
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = (left + right) / <span style="color: #da8548; font-weight: bold;">2</span>;
+
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">l_res</span> = query(tree, <span style="color: #da8548; font-weight: bold;">2</span>*node+<span style="color: #da8548; font-weight: bold;">1</span>, left, mid, q_left, min(mid, q_right));
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">r_res</span> = query(tree, <span style="color: #da8548; font-weight: bold;">2</span>*node+<span style="color: #da8548; font-weight: bold;">2</span>, mid+<span style="color: #da8548; font-weight: bold;">1</span>, right, max(q_left, mid+<span style="color: #da8548; font-weight: bold;">1</span>), q_right);
+
+  <span style="color: #51afef;">return</span> l_res + r_res;
+}
+
+<span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">build</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">tree</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">node</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">right</span>, <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">data</span>){
+  <span style="color: #51afef;">if</span>(left == right) {
+    tree[node] = data[left];
+    <span style="color: #51afef;">return</span>;
+  }
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = (left + right) / <span style="color: #da8548; font-weight: bold;">2</span>;
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">build left</span>
+  build(tree, <span style="color: #da8548; font-weight: bold;">2</span>*node+<span style="color: #da8548; font-weight: bold;">1</span>, left, mid, data);
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">build right</span>
+  build(tree, <span style="color: #da8548; font-weight: bold;">2</span>*node+<span style="color: #da8548; font-weight: bold;">2</span>, mid+<span style="color: #da8548; font-weight: bold;">1</span>, right, data);
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">update parent</span>
+  tree[node] = tree[<span style="color: #da8548; font-weight: bold;">2</span>*node+<span style="color: #da8548; font-weight: bold;">1</span>] + tree[<span style="color: #da8548; font-weight: bold;">2</span>*node+<span style="color: #da8548; font-weight: bold;">2</span>];
+
+  <span style="color: #51afef;">return</span>;
+}
+
+
+</pre>
+</div>
+</div>
+</div>
+</div>

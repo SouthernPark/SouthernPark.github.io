@@ -1,0 +1,80 @@
+#+title: Sliding Window
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Sliding Window
+nav_exclude: true
+---
+#+END_EXPORT
+
+* Description
+Sliding Window is usually used to handle sub-array problem.
+
+The core idea is looping through all the possibilities for sub-arrays that ending at index i or starting at index i
+
+For example: you are asked to find all sub-array that is complete. You can find all complete sub-array starting at index i.
+And sum them up.
+
+
+* Templete
+** find all possibilities starting at index i
+#+begin_src cpp
+void main() {
+  vector<int> arr;
+  int left = 0, right = 0; // window [left, right)
+  for(; left<arr.size(); left++) {   // <<< loop array sub-array starting at arr[left]
+    // incr the window until hit the condition
+    while(right<nums.size() && condition_not_satisfied) {
+      include nums[right] in window;
+      right ++;
+    }
+
+    // window is [left, right)
+    if(condition meet) {
+      do something. like record the resulr
+    }
+
+    exclude nums[left] from the window
+
+  }
+}
+#+end_src
+** find all possibilities ending at index i
+#+begin_src cpp
+void main() {
+  // [left, right)
+  int left = 0, right = 0;
+  int window = 0;
+  for(; right<nums.size(); right++){
+    // add right to the window
+    window += nums[left];
+
+    // now window is [left, right]
+    // shrink the window util condition meet
+    while(left<=right && conditon_meet){
+      window -= nums[left];
+      left ++;
+    }
+
+    // window is [left, right]
+    record result based on the window
+  }
+
+}
+#+end_src
+** how to decide which one of the above two to use
+Depending on the problem:
+1. if we find sub array [left, right] meet the condition, also indicate [left, right+1], [left, right+2] ... also meet the condition.
+   We can use the first template. For each nums[left], we have nums.size() - right number of satisfied sub-array.
+
+   Example problem: [[https://leetcode.com/problems/count-complete-subarrays-in-an-array/][2799. Count Complete Subarrays in an Array]]
+
+2. if we find sub array [left, right] meet the condiotion, also indicate [left+1, right], [left+2, right] ... also meet the condition.
+   We can use the second template. For each nums[right], we have right - left + 1 number of satisfied sub-array
+
+   Example problem: [[https://leetcode.com/problems/count-subarrays-with-score-less-than-k/description/][2302. Count Subarrays With Score Less Than K]]

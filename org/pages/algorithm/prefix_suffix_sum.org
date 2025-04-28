@@ -1,0 +1,28 @@
+#+title: Prefix Suffix Sum
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Prefix Suffix Sum
+nav_exclude: true
+---
+#+END_EXPORT
+
+* description
+
+* Two ways to define
+** Prefix Sum without an Extra Initial Zero
+prefix_sum[i] ==> the sume from nums[0] to nums[i]
+
+sum(l to r) = prefix[r] - prefix[l-1]     if l > 0
+            = prefix[r]                   if l == 0            <<< annoying
+** Prefix Sum without an Extra Initial Zero
+prefix_sum[i] ==> i represent the length, gives the sum of the first i elements
+prefix_sum[0] = 0
+prefix_sum[i] = nums[0] + ... + nums[i-1]
+
+sum(l to r) = prefix[r+1] - prefix[l]

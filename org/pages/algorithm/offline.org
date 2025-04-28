@@ -1,0 +1,22 @@
+#+title: Offline
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Math
+nav_exclude: true
+---
+#+END_EXPORT
+
+* Description
+An offline algorithm is an algorithm that processes all input data at once, making decisions based on the complete dataset before producing any output.
+
+Use an offline algorithm when:
+1. You're given the entire input up front and you're allowed to process it all at once.
+2. You can reorder, sort, or batch the input to optimize performance.
+3. You're solving problems like range queries, event merging, or multiple queries on static data.
+4. You want to preprocess the input and answer many queries efficiently.

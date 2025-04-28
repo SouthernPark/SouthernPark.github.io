@@ -1,0 +1,109 @@
+---
+layout: default
+title: Sliding Window
+nav_exclude: true
+---
+<div id="outline-container-org60d1f61" class="outline-2">
+<h2 id="org60d1f61"><span class="section-number-2">1.</span> Description</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Sliding Window is usually used to handle sub-array problem.
+</p>
+
+<p>
+The core idea is looping through all the possibilities for sub-arrays that ending at index i or starting at index i
+</p>
+
+<p>
+For example: you are asked to find all sub-array that is complete. You can find all complete sub-array starting at index i.
+And sum them up.
+</p>
+</div>
+</div>
+<div id="outline-container-org252f246" class="outline-2">
+<h2 id="org252f246"><span class="section-number-2">2.</span> Templete</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-orgb044ff1" class="outline-3">
+<h3 id="orgb044ff1"><span class="section-number-3">2.1.</span> find all possibilities starting at index i</h3>
+<div class="outline-text-3" id="text-2-1">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">main</span>() {
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">arr</span>;
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = <span style="color: #da8548; font-weight: bold;">0</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">window [left, right)</span>
+  <span style="color: #51afef;">for</span>(; left&lt;arr.size(); left++) {   <span style="color: #5B6268;">// </span><span style="color: #5B6268;">&lt;&lt;&lt; loop array sub-array starting at arr[left]</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">incr the window until hit the condition</span>
+    <span style="color: #51afef;">while</span>(right&lt;nums.size() &amp;&amp; condition_not_satisfied) {
+      <span style="color: #ECBE7B;">include</span> <span style="color: #dcaeea;">nums</span>[right] in window;
+      right ++;
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">window is [left, right)</span>
+    <span style="color: #51afef;">if</span>(<span style="color: #ECBE7B;">condition</span> <span style="color: #dcaeea;">meet</span>) {
+      <span style="color: #51afef;">do</span> something. like record the resulr
+    }
+
+    <span style="color: #ECBE7B;">exclude</span> <span style="color: #dcaeea;">nums</span>[left] from the window
+
+  }
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org1e68000" class="outline-3">
+<h3 id="org1e68000"><span class="section-number-3">2.2.</span> find all possibilities ending at index i</h3>
+<div class="outline-text-3" id="text-2-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">main</span>() {
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[left, right)</span>
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">window</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #51afef;">for</span>(; right&lt;nums.size(); right++){
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">add right to the window</span>
+    window += nums[left];
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now window is [left, right]</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">shrink the window util condition meet</span>
+    <span style="color: #51afef;">while</span>(left&lt;=right &amp;&amp; conditon_meet){
+      window -= nums[left];
+      left ++;
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">window is [left, right]</span>
+    record result based on <span style="color: #ECBE7B;">the</span> <span style="color: #dcaeea;">window</span>
+  }
+
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgae9efc4" class="outline-3">
+<h3 id="orgae9efc4"><span class="section-number-3">2.3.</span> how to decide which one of the above two to use</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Depending on the problem:
+</p>
+<ol class="org-ol">
+<li><p>
+if we find sub array [left, right] meet the condition, also indicate [left, right+1], [left, right+2] &#x2026; also meet the condition.
+We can use the first template. For each nums[left], we have nums.size() - right number of satisfied sub-array.
+</p>
+
+<p>
+Example problem: <a href="https://leetcode.com/problems/count-complete-subarrays-in-an-array/">2799. Count Complete Subarrays in an Array</a>
+</p></li>
+
+<li><p>
+if we find sub array [left, right] meet the condiotion, also indicate [left+1, right], [left+2, right] &#x2026; also meet the condition.
+We can use the second template. For each nums[right], we have right - left + 1 number of satisfied sub-array
+</p>
+
+<p>
+Example problem: <a href="https://leetcode.com/problems/count-subarrays-with-score-less-than-k/description/">2302. Count Subarrays With Score Less Than K</a>
+</p></li>
+</ol>
+</div>
+</div>
+</div>
