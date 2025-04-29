@@ -17,33 +17,33 @@ nav_exclude: true
 | Question                                 | Time              |
 |------------------------------------------+-------------------|
 | [[https://leetcode.com/problems/count-of-smaller-numbers-after-self/][315. Count of Smaller Numbers After Self]] | <2025-04-28 周一> |
-| [[https://leetcode.com/problems/block-placement-queries/][3161. Block Placement Queries]]            | <2025-04-23 周三> |
+| [[https://leetcode.com/problems/block-placement-queries/][3161. Block Placement Queries]]            | <2025-04-28 周一> |
 
 ** [[file:pages/algorithm/sliding_window.org][Sliding Window]]
-| Question                                     | Time              |
-|----------------------------------------------+-------------------|
-| [[https://leetcode.com/problems/count-complete-subarrays-in-an-array/description/][2799. Count Complete Subarrays in an Array]]   | <2025-04-27 周日> |
-| [[https://leetcode.com/problems/count-subarrays-with-score-less-than-k/description/][2302. Count Subarrays With Score Less Than K]] | <2025-04-27 周日> |
-|                                              |                   |
+| Question                                                         | Time              |
+|------------------------------------------------------------------+-------------------|
+| [[https://leetcode.com/problems/count-complete-subarrays-in-an-array/description/][2799. Count Complete Subarrays in an Array]]                       | <2025-04-27 周日> |
+| [[https://leetcode.com/problems/count-subarrays-with-score-less-than-k/description/][2302. Count Subarrays With Score Less Than K]]                     | <2025-04-27 周日> |
+| [[https://leetcode.com/problems/count-subarrays-where-max-element-appears-at-least-k-times/description/][2962. Count Subarrays Where Max Element Appears at Least K Times]] | <2025-04-29 周二> |
 
 ** [[file:pages/algorithm/prefix_suffix_sum.org][Prefix/Suffix Sum]]
 | Question                             | Time              |
 |--------------------------------------+-------------------|
-| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-04-24 周四> |
-| [[https://leetcode.com/problems/range-sum-query-immutable/description/][303. Range Sum Query - Immutable]]     | <2025-04-25 周五> |
-|                                      |                   |
+| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-04-28 周一> |
+| [[https://leetcode.com/problems/range-sum-query-immutable/description/][303. Range Sum Query - Immutable]]     | <2025-04-28 周一> |
+
 
 ** [[file:pages/algorithm/math.org][Math]]
 *** Modulo
 | Question                             | Time              |
 |--------------------------------------+-------------------|
-| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-04-24 周四> |
+| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-04-28 周一> |
 |                                      |                   |
 
 ** [[file:pages/algorithm/offline.org][Offline]]
 | Question                                         | Time              |
 |--------------------------------------------------+-------------------|
-| [[https://leetcode.com/problems/find-building-where-alice-and-bob-can-meet/description/][2940. Find Building Where Alice and Bob Can Meet]] | <2025-04-25 周五> |
+| [[https://leetcode.com/problems/find-building-where-alice-and-bob-can-meet/description/][2940. Find Building Where Alice and Bob Can Meet]] | <2025-04-29 周二> |
 |                                                  |                   |
 
 
