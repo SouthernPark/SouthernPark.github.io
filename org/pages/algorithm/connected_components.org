@@ -1,0 +1,146 @@
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Connected Components
+nav_exclude: true
+---
+#+END_EXPORT
+
+* description
+In an undirected graph, a connected component is a group of nodes where each node is reachable from any other node in the same group.
+
+In a directed graph, it's often referred to as a strongly connected component (SCC) if every node is reachable from every other node in that component.
+
+* algorithms to find connected components
+** DFS/BFS – For small to medium graphs.
+In the context of connected components, DFS and BFS are used to explore and mark all nodes that belong to the same component. i.e., to identify clusters or groups
+To visit all nodes in a component starting from a given unvisited node, and to ensure that each node is only assigned to one component.
+
+
+Disadvantages comparing to Union Find:
+DFS/BFS requrie re-search the graph if there are new edges added, in other words: graph changed.
+
+code template:
+Given a graph with n nodes, represented with ajacency list
+#+begin_src cpp
+void main() {
+  int n;
+  vector<vector<int>> adj;
+  vector<bool> visited;
+
+  int count = 0; // count the number of isolated components
+
+  for(int node=0; node<n; node++){
+    if(!visited[node]) {
+      // find one clean isolated components
+      count ++;
+      // flood all the connected nodes with DFS including the node itself
+      dfs(node, adj, visited);
+    }
+  }
+}
+
+// starting from the given node and traverse  all the nodes in the same connected components
+// using dfs
+void dfs(int node, vector<vector<int>>& adj, vector<bool>& visited) {
+  if(visited[node])
+    return;
+
+  //mark as visited
+  visited[node] = true;
+
+  for(int neighbour : adj[node]) {
+    if(!visited[neighbour]) {
+      dfs(neighbour, adj, visited);
+    }
+  }
+
+  return;
+}
+
+#+end_src
+
+
+** Union-Find (Disjoint Set Union / DSU) – Efficient for dynamic connectivity.
+The Union Find is often used in un-directed graph. For directed graph, may need to use Strongly Connected Components (SCC).
+
+The hard part for Union find is how to abstract the problem into connected components.
+
+code template:
+Given n items that could be connected with each other. We use index 0 to n-1 to name those nodes. The following code template can be used to dynamically manage the connectivity of two nodes.
+#+begin_src cpp
+class UnionFind{
+private:
+  vector<int> parent;
+  vector<int> rank;     // rank used to track the height of tree, used to keep the tree shadow during unite
+  vector<int> size;     // record the size of components, usually do not need this one
+  int count;            // tracks the number of components
+
+public:
+  UnionFind(int n) {
+    parent.resize(n);
+    rank.resize(n, 0);
+    size.resize(n, 1);      // when we think each node itself is a component
+    count = n;              // we think every elements are isolated components
+    for(int i=0; i<n; i++){
+      parent[i] = i;        // each node is isolated component initially
+    }
+  }
+
+  // find the root of the node
+  int find(int node) {
+    if(node == parent[node]) return node;
+
+    // collapse the tree when we search the root
+    return parent[node] = find(node);
+  }
+
+  // union is a key word in C++, use unite as the name
+  // make node1 and node2 connected, so that they are in the same component
+  void unite(int node1, int node2) {
+    int p1 = find(node1), p2 = find(node2);
+    if(p1 == p2)
+      return;
+
+    // merge according to rank
+    if(rank[p1] < rank[p2]) {
+      parent[p1] = p2;
+      size[p2] += size[p1];
+    }
+    else if(rank[p1] > rank[p2]){
+      parent[p2] = p1;
+      size[p1] = size[p2];
+    }
+    else {
+      parent[p1] = p2;
+      rank[p2] ++;
+    }
+
+    // we merged two isolated components, so the number of components will decrease by 1
+    count --;
+
+    return;
+  }
+
+  // helps to check if node1 and node2 is in connected
+  bool connected(int node1, int node2) {
+    return find(node1) == find(node2)
+  }
+
+  int get_count() {
+    return count;
+  }
+
+
+};
+#+end_src
+
+** Kosaraju’s / Tarjan’s Algorithm – For strongly connected components in directed graphs.
+
+* usage
+ 1. Number of Islands / Regions / Clusters

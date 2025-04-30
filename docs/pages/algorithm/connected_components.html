@@ -1,0 +1,175 @@
+---
+layout: default
+title: Connected Components
+nav_exclude: true
+---
+<div id="outline-container-org67965a3" class="outline-2">
+<h2 id="org67965a3"><span class="section-number-2">1.</span> description</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+In an undirected graph, a connected component is a group of nodes where each node is reachable from any other node in the same group.
+</p>
+
+<p>
+In a directed graph, it&rsquo;s often referred to as a strongly connected component (SCC) if every node is reachable from every other node in that component.
+</p>
+</div>
+</div>
+<div id="outline-container-org3b4de59" class="outline-2">
+<h2 id="org3b4de59"><span class="section-number-2">2.</span> algorithms to find connected components</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-org7c15295" class="outline-3">
+<h3 id="org7c15295"><span class="section-number-3">2.1.</span> DFS/BFS – For small to medium graphs.</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+In the context of connected components, DFS and BFS are used to explore and mark all nodes that belong to the same component. i.e., to identify clusters or groups
+To visit all nodes in a component starting from a given unvisited node, and to ensure that each node is only assigned to one component.
+</p>
+
+
+<p>
+Disadvantages comparing to Union Find:
+DFS/BFS requrie re-search the graph if there are new edges added, in other words: graph changed.
+</p>
+
+<p>
+code template:
+Given a graph with n nodes, represented with ajacency list
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">main</span>() {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>;
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&gt; <span style="color: #dcaeea;">adj</span>;
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">bool</span>&gt; <span style="color: #dcaeea;">visited</span>;
+
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">count</span> = <span style="color: #da8548; font-weight: bold;">0</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">count the number of isolated components</span>
+
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">node</span>=<span style="color: #da8548; font-weight: bold;">0</span>; node&lt;n; node++){
+    <span style="color: #51afef;">if</span>(<span style="color: #51afef; font-weight: bold;">!</span>visited[node]) {
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">find one clean isolated components</span>
+      count ++;
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">flood all the connected nodes with DFS including the node itself</span>
+      dfs(node, adj, visited);
+    }
+  }
+}
+
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">starting from the given node and traverse  all the nodes in the same connected components</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">using dfs</span>
+<span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">dfs</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">node</span>, <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&gt;&amp; <span style="color: #dcaeea;">adj</span>, <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">bool</span>&gt;&amp; <span style="color: #dcaeea;">visited</span>) {
+  <span style="color: #51afef;">if</span>(visited[node])
+    <span style="color: #51afef;">return</span>;
+
+  <span style="color: #5B6268;">//</span><span style="color: #5B6268;">mark as visited</span>
+  visited[node] = <span style="color: #a9a1e1;">true</span>;
+
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">neighbour</span> : adj[node]) {
+    <span style="color: #51afef;">if</span>(<span style="color: #51afef; font-weight: bold;">!</span>visited[neighbour]) {
+      dfs(neighbour, adj, visited);
+    }
+  }
+
+  <span style="color: #51afef;">return</span>;
+}
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org92c7997" class="outline-3">
+<h3 id="org92c7997"><span class="section-number-3">2.2.</span> Union-Find (Disjoint Set Union / DSU) – Efficient for dynamic connectivity.</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+The Union Find is often used in un-directed graph. For directed graph, may need to use Strongly Connected Components (SCC).
+</p>
+
+<p>
+The hard part for Union find is how to abstract the problem into connected components.
+</p>
+
+<p>
+code template:
+Given n items that could be connected with each other. We use index 0 to n-1 to name those nodes. The following code template can be used to dynamically manage the connectivity of two nodes.
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">UnionFind</span>{
+<span style="color: #51afef;">private</span>:
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">parent</span>;
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">rank</span>;     <span style="color: #5B6268;">// </span><span style="color: #5B6268;">rank used to track the height of tree, used to keep the tree shadow during unite</span>
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">size</span>;     <span style="color: #5B6268;">// </span><span style="color: #5B6268;">record the size of components, usually do not need this one</span>
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">count</span>;            <span style="color: #5B6268;">// </span><span style="color: #5B6268;">tracks the number of components</span>
+
+<span style="color: #51afef;">public</span>:
+  <span style="color: #c678dd;">UnionFind</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>) {
+    parent.resize(n);
+    rank.resize(n, <span style="color: #da8548; font-weight: bold;">0</span>);
+    size.resize(n, <span style="color: #da8548; font-weight: bold;">1</span>);      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">when we think each node itself is a component</span>
+    count = n;              <span style="color: #5B6268;">// </span><span style="color: #5B6268;">we think every elements are isolated components</span>
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;n; i++){
+      parent[i] = i;        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">each node is isolated component initially</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">find the root of the node</span>
+  <span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">find</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">node</span>) {
+    <span style="color: #51afef;">if</span>(node == parent[node]) <span style="color: #51afef;">return</span> node;
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">collapse the tree when we search the root</span>
+    <span style="color: #51afef;">return</span> parent[node] = find(node);
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">union is a key word in C++, use unite as the name</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">make node1 and node2 connected, so that they are in the same component</span>
+  <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">unite</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">node1</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">node2</span>) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">p1</span> = find(node1), <span style="color: #dcaeea;">p2</span> = find(node2);
+    <span style="color: #51afef;">if</span>(p1 == p2)
+      <span style="color: #51afef;">return</span>;
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">merge according to rank</span>
+    <span style="color: #51afef;">if</span>(rank[p1] &lt; rank[p2]) {
+      parent[p1] = p2;
+      size[p2] += size[p1];
+    }
+    <span style="color: #51afef;">else</span> <span style="color: #51afef;">if</span>(rank[p1] &gt; rank[p2]){
+      parent[p2] = p1;
+      size[p1] = size[p2];
+    }
+    <span style="color: #51afef;">else</span> {
+      parent[p1] = p2;
+      rank[p2] ++;
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">we merged two isolated components, so the number of components will decrease by 1</span>
+    count --;
+
+    <span style="color: #51afef;">return</span>;
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">helps to check if node1 and node2 is in connected</span>
+  <span style="color: #ECBE7B;">bool</span> <span style="color: #c678dd;">connected</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">node1</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">node2</span>) {
+    <span style="color: #51afef;">return</span> find(node1) == find(node2)
+  }
+
+  <span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">get_count</span>() {
+    <span style="color: #51afef;">return</span> count;
+  }
+
+
+};
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org75b1512" class="outline-3">
+<h3 id="org75b1512"><span class="section-number-3">2.3.</span> Kosaraju’s / Tarjan’s Algorithm – For strongly connected components in directed graphs.</h3>
+</div>
+</div>
+<div id="outline-container-orgd2cce3f" class="outline-2">
+<h2 id="orgd2cce3f"><span class="section-number-2">3.</span> usage</h2>
+<div class="outline-text-2" id="text-3">
+<ol class="org-ol">
+<li>Number of Islands / Regions / Clusters</li>
+</ol>
+</div>
+</div>

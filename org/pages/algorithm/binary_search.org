@@ -1,0 +1,15 @@
+#+title: Binary Search
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Binary Search
+nav_exclude: true
+---
+#+END_EXPORT
+
+* description
