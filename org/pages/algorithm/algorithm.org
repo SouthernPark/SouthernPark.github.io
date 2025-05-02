@@ -1,0 +1,63 @@
+#+title: Algorithm
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Algorithm
+nav_exclude: true
+---
+#+END_EXPORT
+
+
+* [[file:segment_tree.org][Segment Tree]], [[file:fenwick_tree.org][Fenwick Tree]]
+| Question                                 | Time              |
+|------------------------------------------+-------------------|
+| [[https://leetcode.com/problems/count-of-smaller-numbers-after-self/][315. Count of Smaller Numbers After Self]] | <2025-04-28 周一> |
+| [[https://leetcode.com/problems/block-placement-queries/][3161. Block Placement Queries]]            | <2025-04-28 周一> |
+
+* [[file:sliding_window.org][Sliding Window]]
+| Question                                                         | Time              |
+|------------------------------------------------------------------+-------------------|
+| [[https://leetcode.com/problems/count-complete-subarrays-in-an-array/description/][2799. Count Complete Subarrays in an Array]]                       | <2025-04-27 周日> |
+| [[https://leetcode.com/problems/count-subarrays-with-score-less-than-k/description/][2302. Count Subarrays With Score Less Than K]]                     | <2025-04-27 周日> |
+| [[https://leetcode.com/problems/count-subarrays-where-max-element-appears-at-least-k-times/description/][2962. Count Subarrays Where Max Element Appears at Least K Times]] | <2025-04-29 周二> |
+
+* [[file:prefix_suffix_sum.org][Prefix/Suffix Sum]]
+| Question                             | Time              |
+|--------------------------------------+-------------------|
+| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-04-28 周一> |
+| [[https://leetcode.com/problems/range-sum-query-immutable/description/][303. Range Sum Query - Immutable]]     | <2025-04-28 周一> |
+
+* [[file:math.org][Math]]
+** Modulo
+| Question                             | Time              |
+|--------------------------------------+-------------------|
+| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-04-28 周一> |
+|                                      |                   |
+
+* [[file:offline.org][Offline]]
+| Question                                         | Time              |
+|--------------------------------------------------+-------------------|
+| [[https://leetcode.com/problems/find-building-where-alice-and-bob-can-meet/description/][2940. Find Building Where Alice and Bob Can Meet]] | <2025-04-29 周二> |
+
+* [[file:connected_components.org][Connected Components]]
+| Question                                  | Time              |
+|-------------------------------------------+-------------------|
+| [[https://leetcode.com/problems/path-existence-queries-in-a-graph-i/description/][3532. Path Existence Queries in a Graph I]] | <2025-04-30 周三> |
+| [[https://leetcode.com/problems/number-of-islands/description/][200. Number of Islands]]                    | <2025-04-30 周三> |
+* [[file:binary_search.org][Binary Search]]
+| Question                                     | Time              |
+|----------------------------------------------+-------------------|
+| [[https://leetcode.com/problems/path-existence-queries-in-a-graph-i/description/][3532. Path Existence Queries in a Graph I]]    | <2025-04-30 周三> |
+| [[https://leetcode.com/problems/maximum-number-of-tasks-you-can-assign/description/][2071. Maximum Number of Tasks You Can Assign]] | <2025-05-01 周四> |
+|                                              |                   |
+
+* TODO Monotonic stack
+* Simulation
+| Question           | Time              |
+|--------------------+-------------------|
+| [[https://leetcode.com/problems/push-dominoes/description/][838. Push Dominoes]] | <2025-05-02 周五> |

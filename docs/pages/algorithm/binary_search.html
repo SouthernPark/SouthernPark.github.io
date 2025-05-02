@@ -5,4 +5,403 @@ nav_exclude: true
 ---
 <div id="outline-container-org8961627" class="outline-2">
 <h2 id="org8961627"><span class="section-number-2">1.</span> description</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Binary search the target in a sorted array or a solution for a monotonic problem.
+</p>
+
+<p>
+usage:
+</p>
+<ol class="org-ol">
+<li>Find element in a sorted array</li>
+<li>Find first or last occurance of a value</li>
+<li>parametric search: binary search to find the smallest or largest value (parameter) that satisfies a given condition</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-orge7389ae" class="outline-2">
+<h2 id="orge7389ae"><span class="section-number-2">2.</span> code</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-org9e605b2" class="outline-3">
+<h3 id="org9e605b2"><span class="section-number-3">2.1.</span> lower bound (first element &gt;= target)</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Given an sorted array nums, find the lower bound of target means find the index of the first element that is &gt;= target.
+Given how we consider the boundary, there are several ways to write the solutions
+</p>
+
+<p>
+<a href="https://www.bilibili.com/video/BV1AP41137w7/?vd_source=65691673f75c70bd7052dc22994205cc">Three ways to write lower bound</a>
+</p>
+
+<p>
+No matter how we represent the binary search window like in [left, right], [left, right) or (left, right).
+The core idea is shrink the window until the window is empty. (We checked all the elements if the window is empty).
+This is important to control the while loop condition.
+</p>
+
+<p>
+Another thing is to notice the invariants hold during the binary search. Like after checking the middle point, we want to exclude all in the left or right if contion hold.
+Or after check the mid point, all the elements in the left is invalid or valid &#x2026;
+This is important we you return an answer
+</p>
+</div>
+<div id="outline-container-org085e2c3" class="outline-4">
+<h4 id="org085e2c3"><span class="section-number-4">2.1.1.</span> [left, right], both side are closed</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[left, right] contains one possible answer, or no answer</span>
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size()-<span style="color: #da8548; font-weight: bold;">1</span>;
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">when left -- right, [left, right] there is one element left, still need to check</span>
+  <span style="color: #51afef;">while</span>(left &lt;= right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &lt; target) {
+      left = mid + <span style="color: #da8548; font-weight: bold;">1</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">invariant: those from [0, left-1] are marked as red ==&gt; not valid answer</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      right = mid - <span style="color: #da8548; font-weight: bold;">1</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">invariant: those from [right+1, end] are marked as blue ==&gt; valid answer</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">after the loop, left must be in the right of right</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">we can return left of right + 1</span>
+  <span style="color: #51afef;">return</span> left;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org278ec95" class="outline-4">
+<h4 id="org278ec95"><span class="section-number-4">2.1.2.</span> [left, right), left side is closed while right side is open</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size();
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">if left == right, [left, right) there is no elements in the window, we processed all the elements and do not need to check</span>
+  <span style="color: #51afef;">while</span>(left &lt; right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &lt; target) {
+      left = mid + <span style="color: #da8548; font-weight: bold;">1</span>;    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0, left-1] is invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      right = mid;       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right, end] are those valid</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">after the loop, left will be the same as right, which has the answer</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">return left or right</span>
+  <span style="color: #51afef;">return</span> right;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgf132e01" class="outline-4">
+<h4 id="orgf132e01"><span class="section-number-4">2.1.3.</span> (left, right), noth side are open</h4>
+<div class="outline-text-4" id="text-2-1-3">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = -<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #dcaeea;">right</span> = nums.size();
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">when left+1 == right (left, right), there is no elements in the window, do not need to check</span>
+  <span style="color: #51afef;">while</span>(left+<span style="color: #da8548; font-weight: bold;">1</span> &lt; right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &lt; target) {
+      left = mid; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0, left] are invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      right = mid; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right, end..] are valid</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">after the loop left+1 == right, we processed all the elements</span>
+  <span style="color: #51afef;">return</span> right;
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org4914394" class="outline-3">
+<h3 id="org4914394"><span class="section-number-3">2.2.</span> upper bound (first element &gt; target)</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+upper bound is the first element in the array that is &gt; target.
+upper<sub>bound</sub>(x) can be found by using lower<sub>bound</sub>(x+1).
+</p>
+
+<p>
+Or using binary search directly
+</p>
+</div>
+<div id="outline-container-orgf137439" class="outline-4">
+<h4 id="orgf137439"><span class="section-number-4">2.2.1.</span> [left, right]</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size()-<span style="color: #da8548; font-weight: bold;">1</span>;
+  <span style="color: #51afef;">while</span>(left&lt;=right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &lt;= target) { <span style="color: #5B6268;">// </span><span style="color: #5B6268;">&lt;= will be ignored</span>
+      left = mid + <span style="color: #da8548; font-weight: bold;">1</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0, left-1] are marked as red</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      right = mid - <span style="color: #da8548; font-weight: bold;">1</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right+1, ..] are marked as blue</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">left is in the right of right pointer</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">left and right+1 are valid answer, return either one is ok</span>
+  <span style="color: #51afef;">return</span> left;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgeb7b6f1" class="outline-4">
+<h4 id="orgeb7b6f1"><span class="section-number-4">2.2.2.</span> [left, right)</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size();
+  <span style="color: #51afef;">while</span>(left &lt; right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &lt;= target) {
+      left = mid + <span style="color: #da8548; font-weight: bold;">1</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0, left-1] are invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      right = mid; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right ... end] are valid</span>
+    }
+  }
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now left == right, we can return either of these</span>
+  <span style="color: #51afef;">return</span> left;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org5b464cb" class="outline-4">
+<h4 id="org5b464cb"><span class="section-number-4">2.2.3.</span> (left, right)</h4>
+<div class="outline-text-4" id="text-2-2-3">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = -<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #dcaeea;">right</span> = nums.size();
+  <span style="color: #51afef;">while</span>(left+<span style="color: #da8548; font-weight: bold;">1</span> &lt; right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &lt;= target) {
+      left = mid; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0, left] are invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      right = mid; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right .. ] are valid</span>
+    }
+  }
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now left+1 == right, return left+1 and right are ok</span>
+  <span style="color: #51afef;">return</span> right;
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org1b70082" class="outline-3">
+<h3 id="org1b70082"><span class="section-number-3">2.3.</span> last element &lt;= target</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+upper<sub>bound</sub>(target) -  1
+</p>
+
+<p>
+or you can write with the following code
+</p>
+</div>
+<div id="outline-container-org517b449" class="outline-4">
+<h4 id="org517b449"><span class="section-number-4">2.3.1.</span> [left, right]</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size()-<span style="color: #da8548; font-weight: bold;">1</span>;
+  <span style="color: #51afef;">while</span>(left &lt;= right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &gt; target) {
+      right = mid - <span style="color: #da8548; font-weight: bold;">1</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right+1 ... end] are invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      left = mid + <span style="color: #da8548; font-weight: bold;">1</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0...left-1] are valid</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now left is in the right of right</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">return left-1 or right is valid, return any is ok</span>
+  <span style="color: #51afef;">return</span> right;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgc5645a4" class="outline-4">
+<h4 id="orgc5645a4"><span class="section-number-4">2.3.2.</span> [left, right)</h4>
+<div class="outline-text-4" id="text-2-3-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size();
+  <span style="color: #51afef;">while</span>(left &lt; right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &gt; target) {
+      right = mid; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right,...] are invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      left = mid + <span style="color: #da8548; font-weight: bold;">1</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0 ... left-1] are valid</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now left is in the right of left == right</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">left-1 and right-1 are valid, return either is ok</span>
+  <span style="color: #51afef;">return</span> left - <span style="color: #da8548; font-weight: bold;">1</span>;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgd358193" class="outline-4">
+<h4 id="orgd358193"><span class="section-number-4">2.3.3.</span> (left, right)</h4>
+<div class="outline-text-4" id="text-2-3-3">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = -<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #dcaeea;">right</span> = nums.size();
+  <span style="color: #51afef;">while</span>(left+<span style="color: #da8548; font-weight: bold;">1</span> &lt; right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &gt; target) {
+      right = mid; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right end] are invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      left = mid; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0..left] are valid</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now left+1 == right</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">left and right - 1 are valid, return anyone is ok</span>
+  <span style="color: #51afef;">return</span> left;
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org6473019" class="outline-3">
+<h3 id="org6473019"><span class="section-number-3">2.4.</span> last element &lt; target</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+lower<sub>bound</sub>(x) - 1
+</p>
+</div>
+<div id="outline-container-org181ef2f" class="outline-4">
+<h4 id="org181ef2f"><span class="section-number-4">2.4.1.</span> [left, right]</h4>
+<div class="outline-text-4" id="text-2-4-1">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size()-<span style="color: #da8548; font-weight: bold;">1</span>;
+  <span style="color: #51afef;">while</span>(left&lt;=right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &gt;= target) {
+      right = mid - <span style="color: #da8548; font-weight: bold;">1</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right+1 .. ] are invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      left = mid + <span style="color: #da8548; font-weight: bold;">1</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0 ... left-1] are valid</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now left is in the right of left</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">left -1 and right are valid, we can return either</span>
+  <span style="color: #51afef;">return</span> right;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgfc996be" class="outline-4">
+<h4 id="orgfc996be"><span class="section-number-4">2.4.2.</span> [left, right)</h4>
+<div class="outline-text-4" id="text-2-4-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size();
+  <span style="color: #51afef;">while</span>(left &lt; right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &gt;= target) {
+      right = mid;     <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right ... ] are invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      left = mid + <span style="color: #da8548; font-weight: bold;">1</span>;  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0 .. left-1] are valid</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now left == right</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">left - 1 or right - 1 are valid</span>
+  <span style="color: #51afef;">return</span> left - <span style="color: #da8548; font-weight: bold;">1</span>;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org86133a1" class="outline-4">
+<h4 id="org86133a1"><span class="section-number-4">2.4.3.</span> (left, right)</h4>
+<div class="outline-text-4" id="text-2-4-3">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = -<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #dcaeea;">right</span> = nums.size();
+  <span style="color: #51afef;">while</span>(left+<span style="color: #da8548; font-weight: bold;">1</span> &lt; right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(nums[mid] &gt;= target) {
+      right = mid;  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right ... ] are invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      left = mid;  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0...left] are valid</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now left+1 = right</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">left and right - 1 are valid, return any is ok</span>
+  <span style="color: #51afef;">return</span> left;
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-orgf7872a5" class="outline-3">
+<h3 id="orgf7872a5"><span class="section-number-3">2.5.</span> paramatric search</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+Parametric Search is a technique where you use binary search to find the smallest or largest value (parameter) that satisfies a given condition — even when the value itself isn&rsquo;t in a list or array.
+For example, you want find the largest value k that can be used to finish something.
+You can one helper function is<sub>ok</sub>(k), which returns true if k can be used to finish that thing
+</p>
+
+<p>
+(left, right)
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>() {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = -<span style="color: #da8548; font-weight: bold;">1</span> (<span style="color: #51afef;">or</span> other impossible value), <span style="color: #dcaeea;">right</span> = INT_MAX (<span style="color: #51afef;">or</span> other impossible value);
+  <span style="color: #51afef;">while</span>(left+<span style="color: #da8548; font-weight: bold;">1</span> &lt; right) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (left - right) / <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #51afef;">if</span>(<span style="color: #51afef; font-weight: bold;">!</span>is_ok(mid)) {
+      right = mid;  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right ... ] are invalid</span>
+    }
+    <span style="color: #51afef;">else</span> {
+      left = mid <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0.. left] are valid</span>
+    }
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now left+1 == right</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">left and right - 1 is valid, return either is ok</span>
+  <span style="color: #51afef;">return</span> left;
+}
+</pre>
+</div>
+</div>
+</div>
 </div>

@@ -13,3 +13,304 @@ nav_exclude: true
 #+END_EXPORT
 
 * description
+Binary search the target in a sorted array or a solution for a monotonic problem.
+
+usage:
+1. Find element in a sorted array
+2. Find first or last occurance of a value
+3. parametric search: binary search to find the smallest or largest value (parameter) that satisfies a given condition
+
+* code
+** lower bound (first element >= target)
+
+Given an sorted array nums, find the lower bound of target means find the index of the first element that is >= target.
+Given how we consider the boundary, there are several ways to write the solutions
+
+[[https://www.bilibili.com/video/BV1AP41137w7/?vd_source=65691673f75c70bd7052dc22994205cc][Three ways to write lower bound]]
+
+No matter how we represent the binary search window like in [left, right], [left, right) or (left, right).
+The core idea is shrink the window until the window is empty. (We checked all the elements if the window is empty).
+This is important to control the while loop condition.
+
+Another thing is to notice the invariants hold during the binary search. Like after checking the middle point, we want to exclude all in the left or right if contion hold.
+Or after check the mid point, all the elements in the left is invalid or valid ...
+This is important we you return an answer
+
+*** [left, right], both side are closed
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  // [left, right] contains one possible answer, or no answer
+  int left = 0, right = nums.size()-1;
+  // when left -- right, [left, right] there is one element left, still need to check
+  while(left <= right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] < target) {
+      left = mid + 1; // invariant: those from [0, left-1] are marked as red ==> not valid answer
+    }
+    else {
+      right = mid - 1; // invariant: those from [right+1, end] are marked as blue ==> valid answer
+    }
+  }
+
+  // after the loop, left must be in the right of right
+  // we can return left of right + 1
+  return left;
+}
+#+end_src
+
+*** [left, right), left side is closed while right side is open
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = 0, right = nums.size();
+
+  // if left == right, [left, right) there is no elements in the window, we processed all the elements and do not need to check
+  while(left < right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] < target) {
+      left = mid + 1;    // [0, left-1] is invalid
+    }
+    else {
+      right = mid;       // [right, end] are those valid
+    }
+  }
+
+  // after the loop, left will be the same as right, which has the answer
+  // return left or right
+  return right;
+}
+#+end_src
+
+*** (left, right), noth side are open
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = -1, right = nums.size();
+
+  // when left+1 == right (left, right), there is no elements in the window, do not need to check
+  while(left+1 < right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] < target) {
+      left = mid; // [0, left] are invalid
+    }
+    else {
+      right = mid; // [right, end..] are valid
+    }
+  }
+
+  // after the loop left+1 == right, we processed all the elements
+  return right;
+}
+#+end_src
+
+** upper bound (first element > target)
+upper bound is the first element in the array that is > target.
+upper_bound(x) can be found by using lower_bound(x+1).
+
+Or using binary search directly
+
+*** [left, right]
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = 0, right = nums.size()-1;
+  while(left<=right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] <= target) { // <= will be ignored
+      left = mid + 1; // [0, left-1] are marked as red
+    }
+    else {
+      right = mid - 1; // [right+1, ..] are marked as blue
+    }
+  }
+
+  // left is in the right of right pointer
+  // left and right+1 are valid answer, return either one is ok
+  return left;
+}
+#+end_src
+
+*** [left, right)
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = 0, right = nums.size();
+  while(left < right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] <= target) {
+      left = mid + 1; // [0, left-1] are invalid
+    }
+    else {
+      right = mid; // [right ... end] are valid
+    }
+  }
+  // now left == right, we can return either of these
+  return left;
+}
+#+end_src
+
+*** (left, right)
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = -1, right = nums.size();
+  while(left+1 < right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] <= target) {
+      left = mid; // [0, left] are invalid
+    }
+    else {
+      right = mid; // [right .. ] are valid
+    }
+  }
+  // now left+1 == right, return left+1 and right are ok
+  return right;
+}
+#+end_src
+
+** last element <= target
+upper_bound(target) -  1
+
+or you can write with the following code
+*** [left, right]
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = 0, right = nums.size()-1;
+  while(left <= right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] > target) {
+      right = mid - 1; // [right+1 ... end] are invalid
+    }
+    else {
+      left = mid + 1; // [0...left-1] are valid
+    }
+  }
+
+  // now left is in the right of right
+  // return left-1 or right is valid, return any is ok
+  return right;
+}
+#+end_src
+
+*** [left, right)
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = 0, right = nums.size();
+  while(left < right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] > target) {
+      right = mid; // [right,...] are invalid
+    }
+    else {
+      left = mid + 1; // [0 ... left-1] are valid
+    }
+  }
+
+  // now left is in the right of left == right
+  // left-1 and right-1 are valid, return either is ok
+  return left - 1;
+}
+#+end_src
+
+*** (left, right)
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = -1, right = nums.size();
+  while(left+1 < right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] > target) {
+      right = mid; // [right end] are invalid
+    }
+    else {
+      left = mid; // [0..left] are valid
+    }
+  }
+
+  // now left+1 == right
+  // left and right - 1 are valid, return anyone is ok
+  return left;
+}
+#+end_src
+
+** last element < target
+lower_bound(x) - 1
+
+*** [left, right]
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = 0, right = nums.size()-1;
+  while(left<=right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] >= target) {
+      right = mid - 1; // [right+1 .. ] are invalid
+    }
+    else {
+      left = mid + 1; // [0 ... left-1] are valid
+    }
+  }
+
+  // now left is in the right of left
+  // left -1 and right are valid, we can return either
+  return right;
+}
+#+end_src
+
+*** [left, right)
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = 0, right = nums.size();
+  while(left < right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] >= target) {
+      right = mid;     // [right ... ] are invalid
+    }
+    else {
+      left = mid + 1;  // [0 .. left-1] are valid
+    }
+  }
+
+  // now left == right
+  // left - 1 or right - 1 are valid
+  return left - 1;
+}
+#+end_src
+
+*** (left, right)
+#+begin_src cpp
+int search(vector<int>& nums, int target) {
+  int left = -1, right = nums.size();
+  while(left+1 < right) {
+    int mid = left + (right - left) / 2;
+    if(nums[mid] >= target) {
+      right = mid;  // [right ... ] are invalid
+    }
+    else {
+      left = mid;  // [0...left] are valid
+    }
+  }
+
+  // now left+1 = right
+  // left and right - 1 are valid, return any is ok
+  return left;
+}
+#+end_src
+
+** paramatric search
+Parametric Search is a technique where you use binary search to find the smallest or largest value (parameter) that satisfies a given condition — even when the value itself isn't in a list or array.
+For example, you want find the largest value k that can be used to finish something.
+You can one helper function is_ok(k), which returns true if k can be used to finish that thing
+
+(left, right)
+#+begin_src cpp
+int search() {
+  int left = -1 (or other impossible value), right = INT_MAX (or other impossible value);
+  while(left+1 < right) {
+    int mid = left + (left - right) / 2;
+    if(!is_ok(mid)) {
+      right = mid;  // [right ... ] are invalid
+    }
+    else {
+      left = mid // [0.. left] are valid
+    }
+  }
+
+  // now left+1 == right
+  // left and right - 1 is valid, return either is ok
+  return left;
+}
+#+end_src

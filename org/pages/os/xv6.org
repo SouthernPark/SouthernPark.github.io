@@ -1,0 +1,18 @@
+#+title: xv6
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: xv6
+nav_exclude: true
+---
+#+END_EXPORT
+
+xv6 is a simple Unix like OS for teaching, and following the RSIC-V insetruction set.
+The hardware like RISC-V CPU and console UART is simulated with Qemu.
+
+Course Website: [[https://pdos.csail.mit.edu/6.S081/2024/][MIT 6.S081 Operating System]]
