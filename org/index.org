@@ -21,5 +21,11 @@ nav_exclude: true
 
 
 
+* [[file:~/org_private_repo/visa.org][US Visa Info (CPT/OPT/H1B)]]
+
+* TODO [[file:~/org_private_repo/applications.org][Application]]
+
+
+
 * other
 ** [[file:pages/how-to-blog-with-Emacs-Jeklly.org][Blogs with Emacs org mode, Jeklly and Github Pages]]

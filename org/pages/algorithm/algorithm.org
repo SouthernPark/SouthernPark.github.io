@@ -61,3 +61,10 @@ nav_exclude: true
 | Question           | Time              |
 |--------------------+-------------------|
 | [[https://leetcode.com/problems/push-dominoes/description/][838. Push Dominoes]] | <2025-05-02 周五> |
+
+
+* Tricks
+| Question                                     | Time              | Discussion |
+|----------------------------------------------+-------------------+------------|
+| [[https://leetcode.com/problems/minimum-domino-rotations-for-equal-row/description/][1007. Minimum Domino Rotations For Equal Row]] | <2025-05-03 周六> | [[file:discussion/leetcode1007.org][link]]       |
+|                                              |                   |            |

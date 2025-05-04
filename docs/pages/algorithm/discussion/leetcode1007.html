@@ -1,0 +1,64 @@
+---
+layout: default
+title: Leetcode1007
+nav_exclude: true
+---
+
+<p>
+<a href="https://leetcode.com/problems/minimum-domino-rotations-for-equal-row/description/">leetcode 1007</a> only have two rows top and bottom. What about there are many m rows and each row have n dominos.
+</p>
+
+<p>
+The idea is the same: the same element must come from the first elements in all rows. We can have a set to maintain the possible targets.
+We also need to have a function to find the min operations to make for a row to become a target. this applies to each row.
+From all thses rows, we can find the min operations. For fast operation, for each column, we can find the unique numbers, in the target is not the any of numbers in the colume,
+we return INT<sub>MAX</sub> directly.
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">Solution</span> {
+<span style="color: #51afef;">public</span>:
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">returns the min operations for to make any row of dominos equal to target after rotate</span>
+  <span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">min_rotate</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>, <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&gt;&amp; <span style="color: #dcaeea;">dominos</span>, <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">unordered_set</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&gt;&amp; <span style="color: #dcaeea;">cols_unique</span>) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">m</span> = dominos.size(), <span style="color: #dcaeea;">n</span> = dominos[<span style="color: #da8548; font-weight: bold;">0</span>].size();
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">opers[i] returns the min oper to make row i be the target</span>
+    <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">opers</span>(m, <span style="color: #da8548; font-weight: bold;">0</span>);
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">j</span>=<span style="color: #da8548; font-weight: bold;">0</span>; j&lt;n; j++) {
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">if cols[j] does not contain target</span>
+      <span style="color: #51afef;">if</span>(cols_unique[j].find(target) == cols_unique[j].end()) {
+        <span style="color: #51afef;">return</span> INT_MAX;
+      }
+
+      <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;m; i++) {
+        <span style="color: #51afef;">if</span>(dominos[i][j] != target) {
+          <span style="color: #5B6268;">// </span><span style="color: #5B6268;">we need to swap target to rowp[i], this will increse the operation for row i</span>
+          opers[i] ++;
+        }
+      }
+    }
+
+    <span style="color: #51afef;">return</span>*min_element(opers.begin(), opers.end());
+  }
+
+  <span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">minDominoRotations</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&gt;&amp; <span style="color: #dcaeea;">dominos</span>) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">m</span> = dominos.size(), <span style="color: #dcaeea;">n</span> = diminos[<span style="color: #da8548; font-weight: bold;">0</span>].size();
+    <span style="color: #ECBE7B;">unordered_set</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">targets</span>;
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;m; i++) {
+      targets.insert(<span style="color: #ECBE7B;">dominos</span>[i][<span style="color: #da8548; font-weight: bold;">0</span>]);
+    }
+
+    <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">unordered_set</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&gt; <span style="color: #dcaeea;">cols_unique</span>(n);
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">j</span>=<span style="color: #da8548; font-weight: bold;">0</span>; j&lt;n; j++) {
+      <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;m; i++) {
+        cols_unqiue[j].insert(<span style="color: #ECBE7B;">dominos</span>[i][j]);
+      }
+    }
+
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">ans</span> = INT_MAX;
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span> : targets) {
+      ans = min(ans, min_rotate(target, <span style="color: #ECBE7B;">dominos</span>, ));
+    }
+
+  }
+};
+</pre>
+</div>

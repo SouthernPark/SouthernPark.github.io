@@ -1,0 +1,67 @@
+#+title: Leetcode1007
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Leetcode1007
+nav_exclude: true
+---
+#+END_EXPORT
+
+[[https://leetcode.com/problems/minimum-domino-rotations-for-equal-row/description/][leetcode 1007]] only have two rows top and bottom. What about there are many m rows and each row have n dominos.
+
+The idea is the same: the same element must come from the first elements in all rows. We can have a set to maintain the possible targets.
+We also need to have a function to find the min operations to make for a row to become a target. this applies to each row.
+From all thses rows, we can find the min operations. For fast operation, for each column, we can find the unique numbers, in the target is not the any of numbers in the colume,
+we return INT_MAX directly.
+#+begin_src cpp
+class Solution {
+public:
+  // returns the min operations for to make any row of dominos equal to target after rotate
+  int min_rotate(int target, vector<vector<int>>& dominos, vector<unordered_set<int>>& cols_unique) {
+    int m = dominos.size(), n = dominos[0].size();
+    // opers[i] returns the min oper to make row i be the target
+    vector<int> opers(m, 0);
+    for(int j=0; j<n; j++) {
+      // if cols[j] does not contain target
+      if(cols_unique[j].find(target) == cols_unique[j].end()) {
+        return INT_MAX;
+      }
+
+      for(int i=0; i<m; i++) {
+        if(dominos[i][j] != target) {
+          // we need to swap target to rowp[i], this will increse the operation for row i
+          opers[i] ++;
+        }
+      }
+    }
+
+    return*min_element(opers.begin(), opers.end());
+  }
+
+  int minDominoRotations(vector<vector<int>>& dominos) {
+    int m = dominos.size(), n = diminos[0].size();
+    unordered_set<int> targets;
+    for(int i=0; i<m; i++) {
+      targets.insert(dominos[i][0]);
+    }
+
+    vector<unordered_set<int>> cols_unique(n);
+    for(int j=0; j<n; j++) {
+      for(int i=0; i<m; i++) {
+        cols_unqiue[j].insert(dominos[i][j]);
+      }
+    }
+
+    int ans = INT_MAX;
+    for(int target : targets) {
+      ans = min(ans, min_rotate(target, dominos, ));
+    }
+
+  }
+};
+#+end_src
