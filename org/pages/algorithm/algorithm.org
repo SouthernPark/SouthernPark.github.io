@@ -26,6 +26,12 @@ nav_exclude: true
 | [[https://leetcode.com/problems/count-subarrays-with-score-less-than-k/description/][2302. Count Subarrays With Score Less Than K]]                     | <2025-04-27 周日> |
 | [[https://leetcode.com/problems/count-subarrays-where-max-element-appears-at-least-k-times/description/][2962. Count Subarrays Where Max Element Appears at Least K Times]] | <2025-04-29 周二> |
 
+* Two Pointers
+| Question                | Time              |
+|-------------------------+-------------------|
+| [[https://leetcode.com/problems/trapping-rain-water/description/][42. Trapping Rain Water]] | <2025-05-04 周日> |
+|                         |                   |
+
 * [[file:prefix_suffix_sum.org][Prefix/Suffix Sum]]
 | Question                             | Time              |
 |--------------------------------------+-------------------|
@@ -56,15 +62,27 @@ nav_exclude: true
 | [[https://leetcode.com/problems/maximum-number-of-tasks-you-can-assign/description/][2071. Maximum Number of Tasks You Can Assign]] | <2025-05-01 周四> |
 |                                              |                   |
 
-* TODO Monotonic stack
+* Monotonic stack
+| Question                     | Time              |
+|------------------------------+-------------------|
+| [[https://leetcode.com/problems/next-greater-element-i/description/][496. Next Greater Element I]]  | <2025-05-04 周日> |
+| [[https://leetcode.com/problems/trapping-rain-water/description/][42. Trapping Rain Water]]      | <2025-05-04 周日> |
+| [[https://leetcode.com/problems/next-greater-element-ii/description/][503. Next Greater Element II]] | <2025-05-04 周日> |
+|                              |                   |
+
+* TODO Backtracking
 * Simulation
 | Question           | Time              |
 |--------------------+-------------------|
 | [[https://leetcode.com/problems/push-dominoes/description/][838. Push Dominoes]] | <2025-05-02 周五> |
-
 
 * Tricks
 | Question                                     | Time              | Discussion |
 |----------------------------------------------+-------------------+------------|
 | [[https://leetcode.com/problems/minimum-domino-rotations-for-equal-row/description/][1007. Minimum Domino Rotations For Equal Row]] | <2025-05-03 周六> | [[file:discussion/leetcode1007.org][link]]       |
 |                                              |                   |            |
+
+* Permutation
+| Question | Time |
+|----------+------|
+|          |      |

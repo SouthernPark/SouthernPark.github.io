@@ -1,0 +1,291 @@
+---
+layout: default
+title: Monotonic Stack
+nav_exclude: true
+---
+<div id="outline-container-org7a8c5c3" class="outline-2">
+<h2 id="org7a8c5c3"><span class="section-number-2">1.</span> description</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Monotonic stack is often used to find the next/previous greater/smaller elements in a sequence.
+A monotonic stack is a stack that maintains its elements in monotonic order. (increasing order / decreasing order).
+The key idea of montonic stack is to drop elements from the top of stack when it becomes not useful.
+</p>
+
+<p>
+The frame work is always like the following, but the key is to consider when the elements in the stack will become not useful.
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">stack</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">st</span>;
+<span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>; ....) {  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">loop either from the left or right</span>
+  <span style="color: #51afef;">while</span>(st_is_not_empty &amp;&amp; top_element_is_not_useful) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">pop element ...</span>
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">some invariants hold here</span>
+  st.push(i);
+}
+</pre>
+</div>
+
+<p>
+The following cases give some examples about this.
+</p>
+</div>
+</div>
+<div id="outline-container-orge355605" class="outline-2">
+<h2 id="orge355605"><span class="section-number-2">2.</span> code examples</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-orgebe854e" class="outline-3">
+<h3 id="orgebe854e"><span class="section-number-3">2.1.</span> next greater elements</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Given an array of int nums, for each nums[i] in the array find the index of first greater element that is to the right of i
+</p>
+</div>
+<div id="outline-container-org51691ca" class="outline-4">
+<h4 id="org51691ca"><span class="section-number-4">2.1.1.</span> loop from left to right</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+The stack will be used to hold the nums whose next greater not found. Once we found one answer for elements in the stack, the elements become not useful, pop it from the mono stack.
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_next_greater</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+  <span style="color: #ECBE7B;">stack</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">st</span>;
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">ans</span>(n, -<span style="color: #da8548; font-weight: bold;">1</span>);
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;n; i++) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">check if the current elements could be a answer for elements in the stack</span>
+    <span style="color: #51afef;">while</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty() &amp;&amp; nums[i] &gt; nums[st.top()]) {
+      ans[st.top] = i;
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">we need to find answer for current num, so put it into the stack</span>
+    st.push(i);
+  }
+}
+</pre>
+</div>
+<p>
+The while loop inside the for loop keeps another invariant: after the loop, current element must be &lt;= the top element of the stack.
+So the stack will become monotonically decreasing.
+</p>
+</div>
+</div>
+<div id="outline-container-org7072601" class="outline-4">
+<h4 id="org7072601"><span class="section-number-4">2.1.2.</span> loop from the right to left</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<p>
+The stack is used to hold elements that is greater and most in the left. So if we find an element that is greater than the top of stack and is also more left than the top elements.
+The the top elements in the stack becomes not useful.
+</p>
+
+<p>
+Idea: loop from right to the left, for each element, its possible answer is inside the stack. If the top of the stack is greater than the current elements, we know the top element is the one
+most left elemetn that is greater than current elements.
+Otherwise, the elements becomes not usefull when answering the previous elements as the current elements is greater and more left.
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_next_greater</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+  <span style="color: #ECBE7B;">stack</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">st</span>;
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">ans</span>(n, -<span style="color: #da8548; font-weight: bold;">1</span>);
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=n-<span style="color: #da8548; font-weight: bold;">1</span>; i&gt;=<span style="color: #da8548; font-weight: bold;">0</span>; i--) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">pop elements when it's not useful in the stack</span>
+    <span style="color: #51afef;">while</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty() &amp;&amp; nums[i] &gt;= nums[st.top()]) {
+      st.pop();
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now st is either empty or top elements is greater than current element</span>
+    <span style="color: #51afef;">if</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty()) {
+      ans[i] = st.top();
+    }
+
+    st.push_back(i);  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">even if cur element is smaller than top element, its more left side than top elements and could be the answer for prev elements</span>
+  }
+  <span style="color: #51afef;">return</span> ans;
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org9db07ed" class="outline-3">
+<h3 id="org9db07ed"><span class="section-number-3">2.2.</span> next smaller elements</h3>
+<div class="outline-text-3" id="text-2-2">
+</div>
+<div id="outline-container-org07eac5e" class="outline-4">
+<h4 id="org07eac5e"><span class="section-number-4">2.2.1.</span> loop from left to right</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_next_smaller</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+  <span style="color: #ECBE7B;">stack</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">st</span>;
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">ans</span>(n, -<span style="color: #da8548; font-weight: bold;">1</span>);
+
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;n; i++) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">nums[i] could be possible answer for elements in stack</span>
+    <span style="color: #51afef;">while</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty() &amp;&amp; nums[i] &lt; st.top) {
+      ans[st.top()] = i;
+      st.pop();
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">need to find answer for current element</span>
+    st.push(i);
+  }
+
+}
+</pre>
+</div>
+
+<p>
+This will lead to monotonically increasing stack
+</p>
+</div>
+</div>
+<div id="outline-container-org23ab185" class="outline-4">
+<h4 id="org23ab185"><span class="section-number-4">2.2.2.</span> loop from right to left</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_next_smaller</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+  <span style="color: #ECBE7B;">stack</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">st</span>;
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">ans</span>(n, -<span style="color: #da8548; font-weight: bold;">1</span>);
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=n-<span style="color: #da8548; font-weight: bold;">1</span>; i=<span style="color: #da8548; font-weight: bold;">0</span>; i--) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">current num is more small and left than stack top, so stack top becomes useless</span>
+    <span style="color: #51afef;">while</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty &amp;&amp; nums[i] &lt;= st.top()) {
+      st.pop();
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">st is either empty or nums[i] &gt; st top and find the answer for i</span>
+    <span style="color: #51afef;">if</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty()) ans[i] = st.top();
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">even if nums[i] &gt; st.top, it's more left and could be a possible answer</span>
+    st.push(i);
+  }
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-orgea55e3f" class="outline-3">
+<h3 id="orgea55e3f"><span class="section-number-3">2.3.</span> prev greater elements</h3>
+<div class="outline-text-3" id="text-2-3">
+</div>
+<div id="outline-container-orgc194585" class="outline-4">
+<h4 id="orgc194585"><span class="section-number-4">2.3.1.</span> loop from left to right</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_prev_greater</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+  <span style="color: #ECBE7B;">stack</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">st</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">used to hold possible answers from nums[i]</span>
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">ans</span>(n, -<span style="color: #da8548; font-weight: bold;">1</span>);
+
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;n; i++) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">current element is greater and more right side, so top elements becomes useless</span>
+    <span style="color: #51afef;">while</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty() &amp;&amp; nums[i] &gt;= nums[st.top()]) {
+      st.pop();
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now either st is empty or nums[i] &lt; top. we find the possible answer for index i</span>
+    <span style="color: #51afef;">if</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty()) ans[i] = st.top();
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">even if nums[i] &lt; top, it is more to the right side and could be a possible answer for next element</span>
+    st.push(i);
+  }
+
+  <span style="color: #51afef;">return</span> ans;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgfb6c87d" class="outline-4">
+<h4 id="orgfb6c87d"><span class="section-number-4">2.3.2.</span> loop from right to left</h4>
+<div class="outline-text-4" id="text-2-3-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_prev_greater</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">ans</span>(n, -<span style="color: #da8548; font-weight: bold;">1</span>);
+  <span style="color: #ECBE7B;">stack</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">st</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">st is used to hold the elements we are looking for a answer</span>
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=n-<span style="color: #da8548; font-weight: bold;">1</span>; i&gt;=<span style="color: #da8548; font-weight: bold;">0</span>; i++) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">if nums[i] &gt; st.top(), then the top element could be answered, becomes useless. pop it</span>
+    <span style="color: #51afef;">while</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty() &amp;&amp; nums[i] &gt; st.top()) {
+      ans[st.top()] = i;
+      st.pop();
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">we still need to find ans for current element</span>
+    st.push(i);
+  }
+
+  <span style="color: #51afef;">return</span> ans;
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org7234e6b" class="outline-3">
+<h3 id="org7234e6b"><span class="section-number-3">2.4.</span> prev smaller elements</h3>
+<div class="outline-text-3" id="text-2-4">
+</div>
+<div id="outline-container-org121d6f4" class="outline-4">
+<h4 id="org121d6f4"><span class="section-number-4">2.4.1.</span> loop from left to right</h4>
+<div class="outline-text-4" id="text-2-4-1">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_prev_smaller</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">ans</span>(n, -<span style="color: #da8548; font-weight: bold;">1</span>);
+  <span style="color: #ECBE7B;">stack</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">st</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">st is used to hold possible answers for nums[i]</span>
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;n; i++) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">if st.top() &gt;= nums[i] it will not be the answer, also if nums[i] is smaller or more right side than stack top</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">then the top is useless, by useless I mean it must not be a answer for next elements</span>
+    <span style="color: #51afef;">while</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty() &amp;&amp; st.top() &gt;= nums[i]) {
+      st.pop();
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">either stack is empty or st.top() &lt; nums[i], find one possible ans for i</span>
+    ans[i] = st.top();
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">even if nums[i] &gt; st.top(), it's more right side than st top so it could be a answer</span>
+    st.push(i);
+  }
+
+  <span style="color: #51afef;">return</span> ans;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgb62d98f" class="outline-4">
+<h4 id="orgb62d98f"><span class="section-number-4">2.4.2.</span> loop from right to left</h4>
+<div class="outline-text-4" id="text-2-4-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_prev_smaller</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+  <span style="color: #ECBE7B;">stack</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">st</span>;  <span style="color: #5B6268;">//</span><span style="color: #5B6268;">stack is used to hold the num need to find an answer</span>
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">ans</span>(n, -<span style="color: #da8548; font-weight: bold;">1</span>);
+
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=n-<span style="color: #da8548; font-weight: bold;">1</span>; i&gt;=<span style="color: #da8548; font-weight: bold;">0</span>; i--) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">could cur number be a possible answer?</span>
+    <span style="color: #51afef;">while</span>(<span style="color: #51afef; font-weight: bold;">!</span>st.empty() &amp;&amp; nums[i] &lt; nums[st.top()]) {
+      ans[st.top()] = i;
+      st.pop();
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">need to find the answer for the current number</span>
+    st.push(i);
+  }
+
+  <span style="color: #51afef;">return</span> ans;
+
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>

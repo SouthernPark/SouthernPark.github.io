@@ -18,11 +18,33 @@ usage:
 <li>Find first or last occurance of a value</li>
 <li>parametric search: binary search to find the smallest or largest value (parameter) that satisfies a given condition</li>
 </ol>
+
+
+<p>
+C++ lower<sub>bound</sub> and upper<sub>bound</sub> assume the array to be sorted in non-decreasing order.
+</p>
+
+<p>
+Usually when doing binary search, you need to following the order of array. For example, if the array is in increasing order, we usually find the one that is greater than sth.
+It&rsquo;s not possible to use binary search to find the one that is smaller than sth.
+</p>
+
+<p>
+So it does not make sense when you perform lower<sub>bound</sub>(arr.begin(), arr.end(), target) on an increasing array,
+which means find the first element that is &gt;= target in an decreasing order array, which violate the searching order.
+</p>
+
+<p>
+The <code>lower_bound(arr.begin(), arr.end(), target, greater&lt;int&gt;())</code> in desendign order array, is used to find the first element &lt;= target. upper<sub>bound</sub> is used to find the first element &lt; target.
+</p>
 </div>
 </div>
 <div id="outline-container-orge7389ae" class="outline-2">
 <h2 id="orge7389ae"><span class="section-number-2">2.</span> code</h2>
 <div class="outline-text-2" id="text-2">
+<p>
+The following code is based on non-decreasing order.
+</p>
 </div>
 <div id="outline-container-org9e605b2" class="outline-3">
 <h3 id="org9e605b2"><span class="section-number-3">2.1.</span> lower bound (first element &gt;= target)</h3>
@@ -138,8 +160,8 @@ upper<sub>bound</sub>(x) can be found by using lower<sub>bound</sub>(x+1).
 Or using binary search directly
 </p>
 </div>
-<div id="outline-container-orgf137439" class="outline-4">
-<h4 id="orgf137439"><span class="section-number-4">2.2.1.</span> [left, right]</h4>
+<div id="outline-container-org181ef2f" class="outline-4">
+<h4 id="org181ef2f"><span class="section-number-4">2.2.1.</span> [left, right]</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -162,8 +184,8 @@ Or using binary search directly
 </div>
 </div>
 </div>
-<div id="outline-container-orgeb7b6f1" class="outline-4">
-<h4 id="orgeb7b6f1"><span class="section-number-4">2.2.2.</span> [left, right)</h4>
+<div id="outline-container-orgfc996be" class="outline-4">
+<h4 id="orgfc996be"><span class="section-number-4">2.2.2.</span> [left, right)</h4>
 <div class="outline-text-4" id="text-2-2-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -184,8 +206,8 @@ Or using binary search directly
 </div>
 </div>
 </div>
-<div id="outline-container-org5b464cb" class="outline-4">
-<h4 id="org5b464cb"><span class="section-number-4">2.2.3.</span> (left, right)</h4>
+<div id="outline-container-org86133a1" class="outline-4">
+<h4 id="org86133a1"><span class="section-number-4">2.2.3.</span> (left, right)</h4>
 <div class="outline-text-4" id="text-2-2-3">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -218,8 +240,8 @@ upper<sub>bound</sub>(target) -  1
 or you can write with the following code
 </p>
 </div>
-<div id="outline-container-org517b449" class="outline-4">
-<h4 id="org517b449"><span class="section-number-4">2.3.1.</span> [left, right]</h4>
+<div id="outline-container-org4d7487c" class="outline-4">
+<h4 id="org4d7487c"><span class="section-number-4">2.3.1.</span> [left, right]</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -242,8 +264,8 @@ or you can write with the following code
 </div>
 </div>
 </div>
-<div id="outline-container-orgc5645a4" class="outline-4">
-<h4 id="orgc5645a4"><span class="section-number-4">2.3.2.</span> [left, right)</h4>
+<div id="outline-container-org0b5589d" class="outline-4">
+<h4 id="org0b5589d"><span class="section-number-4">2.3.2.</span> [left, right)</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -266,8 +288,8 @@ or you can write with the following code
 </div>
 </div>
 </div>
-<div id="outline-container-orgd358193" class="outline-4">
-<h4 id="orgd358193"><span class="section-number-4">2.3.3.</span> (left, right)</h4>
+<div id="outline-container-org53af147" class="outline-4">
+<h4 id="org53af147"><span class="section-number-4">2.3.3.</span> (left, right)</h4>
 <div class="outline-text-4" id="text-2-3-3">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -298,8 +320,8 @@ or you can write with the following code
 lower<sub>bound</sub>(x) - 1
 </p>
 </div>
-<div id="outline-container-org181ef2f" class="outline-4">
-<h4 id="org181ef2f"><span class="section-number-4">2.4.1.</span> [left, right]</h4>
+<div id="outline-container-org325d7b3" class="outline-4">
+<h4 id="org325d7b3"><span class="section-number-4">2.4.1.</span> [left, right]</h4>
 <div class="outline-text-4" id="text-2-4-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -322,8 +344,8 @@ lower<sub>bound</sub>(x) - 1
 </div>
 </div>
 </div>
-<div id="outline-container-orgfc996be" class="outline-4">
-<h4 id="orgfc996be"><span class="section-number-4">2.4.2.</span> [left, right)</h4>
+<div id="outline-container-org4d2a665" class="outline-4">
+<h4 id="org4d2a665"><span class="section-number-4">2.4.2.</span> [left, right)</h4>
 <div class="outline-text-4" id="text-2-4-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -344,11 +366,10 @@ lower<sub>bound</sub>(x) - 1
 }
 </pre>
 </div>
-</div>
-</div>
-<div id="outline-container-org86133a1" class="outline-4">
-<h4 id="org86133a1"><span class="section-number-4">2.4.3.</span> (left, right)</h4>
-<div class="outline-text-4" id="text-2-4-3">
+
+<p>
+(left, right)
+</p>
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = -<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #dcaeea;">right</span> = nums.size();

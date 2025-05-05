@@ -1,0 +1,227 @@
+#+title: Monotonic Stack
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Monotonic Stack
+nav_exclude: true
+---
+#+END_EXPORT
+
+* description
+Monotonic stack is often used to find the next/previous greater/smaller elements in a sequence.
+A monotonic stack is a stack that maintains its elements in monotonic order. (increasing order / decreasing order).
+The key idea of montonic stack is to drop elements from the top of stack when it becomes not useful.
+
+The frame work is always like the following, but the key is to consider when the elements in the stack will become not useful.
+#+begin_src cpp
+stack<int> st;
+for(int i; ....) {  // loop either from the left or right
+  while(st_is_not_empty && top_element_is_not_useful) {
+    // pop element ...
+  }
+
+  // some invariants hold here
+  st.push(i);
+}
+#+end_src
+
+The following cases give some examples about this.
+
+
+
+* code examples
+
+** next greater elements
+Given an array of int nums, for each nums[i] in the array find the index of first greater element that is to the right of i
+
+*** loop from left to right
+The stack will be used to hold the nums whose next greater not found. Once we found one answer for elements in the stack, the elements become not useful, pop it from the mono stack.
+#+begin_src cpp
+vector<int> find_next_greater(vector<int>& nums) {
+  int n = nums.size();
+  stack<int> st;
+  vector<int> ans(n, -1);
+  for(int i=0; i<n; i++) {
+    // check if the current elements could be a answer for elements in the stack
+    while(!st.empty() && nums[i] > nums[st.top()]) {
+      ans[st.top] = i;
+    }
+
+    // we need to find answer for current num, so put it into the stack
+    st.push(i);
+  }
+}
+#+end_src
+The while loop inside the for loop keeps another invariant: after the loop, current element must be <= the top element of the stack.
+So the stack will become monotonically decreasing.
+
+*** loop from the right to left
+The stack is used to hold elements that is greater and most in the left. So if we find an element that is greater than the top of stack and is also more left than the top elements.
+The the top elements in the stack becomes not useful.
+
+Idea: loop from right to the left, for each element, its possible answer is inside the stack. If the top of the stack is greater than the current elements, we know the top element is the one
+most left elemetn that is greater than current elements.
+Otherwise, the elements becomes not usefull when answering the previous elements as the current elements is greater and more left.
+#+begin_src cpp
+vector<int> find_next_greater(vector<int>& nums) {
+  int n = nums.size();
+  stack<int> st;
+  vector<int> ans(n, -1);
+  for(int i=n-1; i>=0; i--) {
+    // pop elements when it's not useful in the stack
+    while(!st.empty() && nums[i] >= nums[st.top()]) {
+      st.pop();
+    }
+
+    // now st is either empty or top elements is greater than current element
+    if(!st.empty()) {
+      ans[i] = st.top();
+    }
+
+    st.push_back(i);  // even if cur element is smaller than top element, its more left side than top elements and could be the answer for prev elements
+  }
+  return ans;
+}
+#+end_src
+
+** next smaller elements
+*** loop from left to right
+#+begin_src cpp
+vector<int> find_next_smaller(vector<int>& nums) {
+  int n = nums.size();
+  stack<int> st;
+  vector<int> ans(n, -1);
+
+  for(int i=0; i<n; i++) {
+    // nums[i] could be possible answer for elements in stack
+    while(!st.empty() && nums[i] < st.top) {
+      ans[st.top()] = i;
+      st.pop();
+    }
+
+    // need to find answer for current element
+    st.push(i);
+  }
+
+}
+#+end_src
+
+This will lead to monotonically increasing stack
+
+*** loop from right to left
+#+begin_src cpp
+vector<int> find_next_smaller(vector<int>& nums) {
+  int n = nums.size();
+  stack<int> st;
+  vector<int> ans(n, -1);
+  for(int i=n-1; i=0; i--) {
+    // current num is more small and left than stack top, so stack top becomes useless
+    while(!st.empty && nums[i] <= st.top()) {
+      st.pop();
+    }
+
+    // st is either empty or nums[i] > st top and find the answer for i
+    if(!st.empty()) ans[i] = st.top();
+
+    // even if nums[i] > st.top, it's more left and could be a possible answer
+    st.push(i);
+  }
+}
+#+end_src
+
+** prev greater elements
+*** loop from left to right
+#+begin_src cpp
+vector<int> find_prev_greater(vector<int>& nums) {
+  int n = nums.size();
+  stack<int> st; // used to hold possible answers from nums[i]
+  vector<int> ans(n, -1);
+
+  for(int i=0; i<n; i++) {
+    // current element is greater and more right side, so top elements becomes useless
+    while(!st.empty() && nums[i] >= nums[st.top()]) {
+      st.pop();
+    }
+
+    // now either st is empty or nums[i] < top. we find the possible answer for index i
+    if(!st.empty()) ans[i] = st.top();
+
+    // even if nums[i] < top, it is more to the right side and could be a possible answer for next element
+    st.push(i);
+  }
+
+  return ans;
+}
+#+end_src
+*** loop from right to left
+#+begin_src cpp
+vector<int> find_prev_greater(vector<int>& nums) {
+  int n = nums.size();
+  vector<int> ans(n, -1);
+  stack<int> st; // st is used to hold the elements we are looking for a answer
+  for(int i=n-1; i>=0; i++) {
+    // if nums[i] > st.top(), then the top element could be answered, becomes useless. pop it
+    while(!st.empty() && nums[i] > st.top()) {
+      ans[st.top()] = i;
+      st.pop();
+    }
+
+    // we still need to find ans for current element
+    st.push(i);
+  }
+
+  return ans;
+}
+#+end_src
+
+** prev smaller elements
+*** loop from left to right
+#+begin_src cpp
+vector<int> find_prev_smaller(vector<int>& nums) {
+  int n = nums.size();
+  vector<int> ans(n, -1);
+  stack<int> st; // st is used to hold possible answers for nums[i]
+  for(int i=0; i<n; i++) {
+    // if st.top() >= nums[i] it will not be the answer, also if nums[i] is smaller or more right side than stack top
+    // then the top is useless, by useless I mean it must not be a answer for next elements
+    while(!st.empty() && st.top() >= nums[i]) {
+      st.pop();
+    }
+
+    // either stack is empty or st.top() < nums[i], find one possible ans for i
+    ans[i] = st.top();
+
+    // even if nums[i] > st.top(), it's more right side than st top so it could be a answer
+    st.push(i);
+  }
+
+  return ans;
+}
+#+end_src
+*** loop from right to left
+#+begin_src cpp
+vector<int> find_prev_smaller(vector<int>& nums) {
+  int n = nums.size();
+  stack<int> st;  //stack is used to hold the num need to find an answer
+  vector<int> ans(n, -1);
+
+  for(int i=n-1; i>=0; i--) {
+    // could cur number be a possible answer?
+    while(!st.empty() && nums[i] < nums[st.top()]) {
+      ans[st.top()] = i;
+      st.pop();
+    }
+
+    // need to find the answer for the current number
+    st.push(i);
+  }
+
+  return ans;
+
+}
+#+end_src

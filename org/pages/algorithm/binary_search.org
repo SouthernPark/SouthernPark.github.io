@@ -20,7 +20,21 @@ usage:
 2. Find first or last occurance of a value
 3. parametric search: binary search to find the smallest or largest value (parameter) that satisfies a given condition
 
+
+C++ lower_bound and upper_bound assume the array to be sorted in non-decreasing order.
+
+Usually when doing binary search, you need to following the order of array. For example, if the array is in increasing order, we usually find the one that is greater than sth.
+It's not possible to use binary search to find the one that is smaller than sth.
+
+So it does not make sense when you perform lower_bound(arr.begin(), arr.end(), target) on an increasing array,
+which means find the first element that is >= target in an decreasing order array, which violate the searching order.
+
+The ~lower_bound(arr.begin(), arr.end(), target, greater<int>())~ in desendign order array, is used to find the first element <= target. upper_bound is used to find the first element < target.
+
+
 * code
+
+The following code is based on non-decreasing order.
 ** lower bound (first element >= target)
 
 Given an sorted array nums, find the lower bound of target means find the index of the first element that is >= target.
@@ -270,7 +284,7 @@ int search(vector<int>& nums, int target) {
 }
 #+end_src
 
-*** (left, right)
+ (left, right)
 #+begin_src cpp
 int search(vector<int>& nums, int target) {
   int left = -1, right = nums.size();
