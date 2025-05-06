@@ -10,15 +10,6 @@ nav_exclude: true
 Binary search the target in a sorted array or a solution for a monotonic problem.
 </p>
 
-<p>
-usage:
-</p>
-<ol class="org-ol">
-<li>Find element in a sorted array</li>
-<li>Find first or last occurance of a value</li>
-<li>parametric search: binary search to find the smallest or largest value (parameter) that satisfies a given condition</li>
-</ol>
-
 
 <p>
 C++ lower<sub>bound</sub> and upper<sub>bound</sub> assume the array to be sorted in non-decreasing order.
@@ -39,40 +30,28 @@ The <code>lower_bound(arr.begin(), arr.end(), target, greater&lt;int&gt;())</cod
 </p>
 </div>
 </div>
-<div id="outline-container-orge7389ae" class="outline-2">
-<h2 id="orge7389ae"><span class="section-number-2">2.</span> code</h2>
+<div id="outline-container-orgad6b131" class="outline-2">
+<h2 id="orgad6b131"><span class="section-number-2">2.</span> usage</h2>
 <div class="outline-text-2" id="text-2">
-<p>
-The following code is based on non-decreasing order.
-</p>
 </div>
-<div id="outline-container-org9e605b2" class="outline-3">
-<h3 id="org9e605b2"><span class="section-number-3">2.1.</span> lower bound (first element &gt;= target)</h3>
+<div id="outline-container-org5166bb7" class="outline-3">
+<h3 id="org5166bb7"><span class="section-number-3">2.1.</span> asending ordered array</h3>
 <div class="outline-text-3" id="text-2-1">
+</div>
+<div id="outline-container-org5b2fd6c" class="outline-4">
+<h4 id="org5b2fd6c"><span class="section-number-4">2.1.1.</span> first greater or equal (lower bound)</h4>
+<div class="outline-text-4" id="text-2-1-1">
 <p>
-Given an sorted array nums, find the lower bound of target means find the index of the first element that is &gt;= target.
-Given how we consider the boundary, there are several ways to write the solutions
-</p>
-
-<p>
+lower<sub>bound</sub>(nums.begin(), nums.end(), target);
 <a href="https://www.bilibili.com/video/BV1AP41137w7/?vd_source=65691673f75c70bd7052dc22994205cc">Three ways to write lower bound</a>
-</p>
-
-<p>
 No matter how we represent the binary search window like in [left, right], [left, right) or (left, right).
 The core idea is shrink the window until the window is empty. (We checked all the elements if the window is empty).
 This is important to control the while loop condition.
 </p>
-
-<p>
-Another thing is to notice the invariants hold during the binary search. Like after checking the middle point, we want to exclude all in the left or right if contion hold.
-Or after check the mid point, all the elements in the left is invalid or valid &#x2026;
-This is important we you return an answer
-</p>
 </div>
-<div id="outline-container-org085e2c3" class="outline-4">
-<h4 id="org085e2c3"><span class="section-number-4">2.1.1.</span> [left, right], both side are closed</h4>
-<div class="outline-text-4" id="text-2-1-1">
+<div id="outline-container-org085e2c3" class="outline-5">
+<h5 id="org085e2c3"><span class="section-number-5">2.1.1.1.</span> [left, right], both side are closed</h5>
+<div class="outline-text-5" id="text-2-1-1-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[left, right] contains one possible answer, or no answer</span>
@@ -96,9 +75,9 @@ This is important we you return an answer
 </div>
 </div>
 </div>
-<div id="outline-container-org278ec95" class="outline-4">
-<h4 id="org278ec95"><span class="section-number-4">2.1.2.</span> [left, right), left side is closed while right side is open</h4>
-<div class="outline-text-4" id="text-2-1-2">
+<div id="outline-container-org2daf798" class="outline-5">
+<h5 id="org2daf798"><span class="section-number-5">2.1.1.2.</span> left, right), left side is closed while right side is open</h5>
+<div class="outline-text-5" id="text-2-1-1-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size();
@@ -122,9 +101,9 @@ This is important we you return an answer
 </div>
 </div>
 </div>
-<div id="outline-container-orgf132e01" class="outline-4">
-<h4 id="orgf132e01"><span class="section-number-4">2.1.3.</span> (left, right), noth side are open</h4>
-<div class="outline-text-4" id="text-2-1-3">
+<div id="outline-container-orgf132e01" class="outline-5">
+<h5 id="orgf132e01"><span class="section-number-5">2.1.1.3.</span> (left, right), noth side are open</h5>
+<div class="outline-text-5" id="text-2-1-1-3">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = -<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #dcaeea;">right</span> = nums.size();
@@ -148,21 +127,16 @@ This is important we you return an answer
 </div>
 </div>
 </div>
-<div id="outline-container-org4914394" class="outline-3">
-<h3 id="org4914394"><span class="section-number-3">2.2.</span> upper bound (first element &gt; target)</h3>
-<div class="outline-text-3" id="text-2-2">
+<div id="outline-container-orge7d584e" class="outline-4">
+<h4 id="orge7d584e"><span class="section-number-4">2.1.2.</span> first greater (upper bound)</h4>
+<div class="outline-text-4" id="text-2-1-2">
 <p>
-upper bound is the first element in the array that is &gt; target.
-upper<sub>bound</sub>(x) can be found by using lower<sub>bound</sub>(x+1).
-</p>
-
-<p>
-Or using binary search directly
+upper<sub>bound</sub>(nums.begin(), nums.end(), target)
 </p>
 </div>
-<div id="outline-container-org181ef2f" class="outline-4">
-<h4 id="org181ef2f"><span class="section-number-4">2.2.1.</span> [left, right]</h4>
-<div class="outline-text-4" id="text-2-2-1">
+<div id="outline-container-org325d7b3" class="outline-5">
+<h5 id="org325d7b3"><span class="section-number-5">2.1.2.1.</span> [left, right]</h5>
+<div class="outline-text-5" id="text-2-1-2-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size()-<span style="color: #da8548; font-weight: bold;">1</span>;
@@ -184,9 +158,9 @@ Or using binary search directly
 </div>
 </div>
 </div>
-<div id="outline-container-orgfc996be" class="outline-4">
-<h4 id="orgfc996be"><span class="section-number-4">2.2.2.</span> [left, right)</h4>
-<div class="outline-text-4" id="text-2-2-2">
+<div id="outline-container-org4d2a665" class="outline-5">
+<h5 id="org4d2a665"><span class="section-number-5">2.1.2.2.</span> [left, right)</h5>
+<div class="outline-text-5" id="text-2-1-2-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size();
@@ -206,9 +180,9 @@ Or using binary search directly
 </div>
 </div>
 </div>
-<div id="outline-container-org86133a1" class="outline-4">
-<h4 id="org86133a1"><span class="section-number-4">2.2.3.</span> (left, right)</h4>
-<div class="outline-text-4" id="text-2-2-3">
+<div id="outline-container-org53af147" class="outline-5">
+<h5 id="org53af147"><span class="section-number-5">2.1.2.3.</span> (left, right)</h5>
+<div class="outline-text-5" id="text-2-1-2-3">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = -<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #dcaeea;">right</span> = nums.size();
@@ -229,20 +203,16 @@ Or using binary search directly
 </div>
 </div>
 </div>
-<div id="outline-container-org1b70082" class="outline-3">
-<h3 id="org1b70082"><span class="section-number-3">2.3.</span> last element &lt;= target</h3>
-<div class="outline-text-3" id="text-2-3">
+<div id="outline-container-org866de6a" class="outline-4">
+<h4 id="org866de6a"><span class="section-number-4">2.1.3.</span> last smaller or equal</h4>
+<div class="outline-text-4" id="text-2-1-3">
 <p>
-upper<sub>bound</sub>(target) -  1
-</p>
-
-<p>
-or you can write with the following code
+upper<sub>bound</sub>(nums.begin(), nums.end(), target) - 1
 </p>
 </div>
-<div id="outline-container-org4d7487c" class="outline-4">
-<h4 id="org4d7487c"><span class="section-number-4">2.3.1.</span> [left, right]</h4>
-<div class="outline-text-4" id="text-2-3-1">
+<div id="outline-container-orgeab1e21" class="outline-5">
+<h5 id="orgeab1e21"><span class="section-number-5">2.1.3.1.</span> [left, right]</h5>
+<div class="outline-text-5" id="text-2-1-3-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size()-<span style="color: #da8548; font-weight: bold;">1</span>;
@@ -264,9 +234,9 @@ or you can write with the following code
 </div>
 </div>
 </div>
-<div id="outline-container-org0b5589d" class="outline-4">
-<h4 id="org0b5589d"><span class="section-number-4">2.3.2.</span> [left, right)</h4>
-<div class="outline-text-4" id="text-2-3-2">
+<div id="outline-container-org9686d33" class="outline-5">
+<h5 id="org9686d33"><span class="section-number-5">2.1.3.2.</span> [left, right)</h5>
+<div class="outline-text-5" id="text-2-1-3-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size();
@@ -288,9 +258,9 @@ or you can write with the following code
 </div>
 </div>
 </div>
-<div id="outline-container-org53af147" class="outline-4">
-<h4 id="org53af147"><span class="section-number-4">2.3.3.</span> (left, right)</h4>
-<div class="outline-text-4" id="text-2-3-3">
+<div id="outline-container-orga524656" class="outline-5">
+<h5 id="orga524656"><span class="section-number-5">2.1.3.3.</span> (left, right)</h5>
+<div class="outline-text-5" id="text-2-1-3-3">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = -<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #dcaeea;">right</span> = nums.size();
@@ -313,16 +283,16 @@ or you can write with the following code
 </div>
 </div>
 </div>
-<div id="outline-container-org6473019" class="outline-3">
-<h3 id="org6473019"><span class="section-number-3">2.4.</span> last element &lt; target</h3>
-<div class="outline-text-3" id="text-2-4">
+<div id="outline-container-orga9ef8b9" class="outline-4">
+<h4 id="orga9ef8b9"><span class="section-number-4">2.1.4.</span> last smaller</h4>
+<div class="outline-text-4" id="text-2-1-4">
 <p>
-lower<sub>bound</sub>(x) - 1
+lower<sub>bound</sub>(nums.begin(), nums.end(), target) - 1
 </p>
 </div>
-<div id="outline-container-org325d7b3" class="outline-4">
-<h4 id="org325d7b3"><span class="section-number-4">2.4.1.</span> [left, right]</h4>
-<div class="outline-text-4" id="text-2-4-1">
+<div id="outline-container-org31dfa1b" class="outline-5">
+<h5 id="org31dfa1b"><span class="section-number-5">2.1.4.1.</span> [left, right]</h5>
+<div class="outline-text-5" id="text-2-1-4-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size()-<span style="color: #da8548; font-weight: bold;">1</span>;
@@ -344,9 +314,9 @@ lower<sub>bound</sub>(x) - 1
 </div>
 </div>
 </div>
-<div id="outline-container-org4d2a665" class="outline-4">
-<h4 id="org4d2a665"><span class="section-number-4">2.4.2.</span> [left, right)</h4>
-<div class="outline-text-4" id="text-2-4-2">
+<div id="outline-container-orgae016fe" class="outline-5">
+<h5 id="orgae016fe"><span class="section-number-5">2.1.4.2.</span> [left, right)</h5>
+<div class="outline-text-5" id="text-2-1-4-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
   <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">left</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">right</span> = nums.size();
@@ -392,9 +362,62 @@ lower<sub>bound</sub>(x) - 1
 </div>
 </div>
 </div>
+<div id="outline-container-orgb860a47" class="outline-4">
+<h4 id="orgb860a47"><span class="section-number-4">2.1.5.</span> first smaller (does not make sense to use binary search)</h4>
+</div>
+<div id="outline-container-org8cfb765" class="outline-4">
+<h4 id="org8cfb765"><span class="section-number-4">2.1.6.</span> first smaller or equal (does not make sense to use binary search)</h4>
+</div>
+</div>
+<div id="outline-container-org147c957" class="outline-3">
+<h3 id="org147c957"><span class="section-number-3">2.2.</span> desending ordered array</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+for desending order, we need to overwrite the compare operator to greater
+</p>
+</div>
+<div id="outline-container-org154a132" class="outline-4">
+<h4 id="org154a132"><span class="section-number-4">2.2.1.</span> first smaller or equal (lower bound)</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+lower<sub>bound</sub>(nums.begin(), nums.end(), target, greater&lt;int&gt;())
+</p>
+</div>
+</div>
+<div id="outline-container-orgfeab1ac" class="outline-4">
+<h4 id="orgfeab1ac"><span class="section-number-4">2.2.2.</span> first smaller (upper bound)</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+upper<sub>bound</sub>(nums.begin(), nums.end(), target, greater&lt;int&gt;())
+</p>
+</div>
+</div>
+<div id="outline-container-org361f725" class="outline-4">
+<h4 id="org361f725"><span class="section-number-4">2.2.3.</span> last greater or eqaul</h4>
+<div class="outline-text-4" id="text-2-2-3">
+<p>
+upper<sub>bound</sub>(nums.begin(), nums.end(), greater&lt;int&gt;()) - 1
+</p>
+</div>
+</div>
+<div id="outline-container-orgb41b2ee" class="outline-4">
+<h4 id="orgb41b2ee"><span class="section-number-4">2.2.4.</span> last greater</h4>
+<div class="outline-text-4" id="text-2-2-4">
+<p>
+lower<sub>bound</sub>(nums.begin(), nums.end(), greater&lt;int&gt;)
+</p>
+</div>
+</div>
+<div id="outline-container-org151e886" class="outline-4">
+<h4 id="org151e886"><span class="section-number-4">2.2.5.</span> first greater (does not make sense to use binary search)</h4>
+</div>
+<div id="outline-container-orgc31dd39" class="outline-4">
+<h4 id="orgc31dd39"><span class="section-number-4">2.2.6.</span> first greater or equal (does not make sense to use binary search)</h4>
+</div>
+</div>
 <div id="outline-container-orgf7872a5" class="outline-3">
-<h3 id="orgf7872a5"><span class="section-number-3">2.5.</span> paramatric search</h3>
-<div class="outline-text-3" id="text-2-5">
+<h3 id="orgf7872a5"><span class="section-number-3">2.3.</span> paramatric search</h3>
+<div class="outline-text-3" id="text-2-3">
 <p>
 Parametric Search is a technique where you use binary search to find the smallest or largest value (parameter) that satisfies a given condition — even when the value itself isn&rsquo;t in a list or array.
 For example, you want find the largest value k that can be used to finish something.

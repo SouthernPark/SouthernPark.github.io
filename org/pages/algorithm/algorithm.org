@@ -43,13 +43,15 @@ nav_exclude: true
 | Question                             | Time              |
 |--------------------------------------+-------------------|
 | [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-04-28 周一> |
-|                                      |                   |
-
+** Digits
+| Question                      | Time              |
+|-------------------------------+-------------------|
+| [[https://leetcode.com/problems/next-greater-element-iii/description/][556. Next Greater Element III]] | <2025-05-05 周一> |
+| [[https://leetcode.com/problems/reverse-integer/description/][7. Reverse Integer]]            | <2025-05-05 周一> |
 * [[file:offline.org][Offline]]
 | Question                                         | Time              |
 |--------------------------------------------------+-------------------|
 | [[https://leetcode.com/problems/find-building-where-alice-and-bob-can-meet/description/][2940. Find Building Where Alice and Bob Can Meet]] | <2025-04-29 周二> |
-
 * [[file:connected_components.org][Connected Components]]
 | Question                                  | Time              |
 |-------------------------------------------+-------------------|
@@ -60,8 +62,6 @@ nav_exclude: true
 |----------------------------------------------+-------------------|
 | [[https://leetcode.com/problems/path-existence-queries-in-a-graph-i/description/][3532. Path Existence Queries in a Graph I]]    | <2025-04-30 周三> |
 | [[https://leetcode.com/problems/maximum-number-of-tasks-you-can-assign/description/][2071. Maximum Number of Tasks You Can Assign]] | <2025-05-01 周四> |
-|                                              |                   |
-
 * Monotonic stack
 | Question                     | Time              |
 |------------------------------+-------------------|
@@ -82,7 +82,10 @@ nav_exclude: true
 | [[https://leetcode.com/problems/minimum-domino-rotations-for-equal-row/description/][1007. Minimum Domino Rotations For Equal Row]] | <2025-05-03 周六> | [[file:discussion/leetcode1007.org][link]]       |
 |                                              |                   |            |
 
-* Permutation
-| Question | Time |
-|----------+------|
-|          |      |
+* TODO Permutation
+| Question                           | Time              |
+|------------------------------------+-------------------|
+| [[https://leetcode.com/problems/next-permutation/description/][31. Next Permutation]]               | <2025-05-05 周一> |
+| [[https://leetcode.com/problems/next-greater-element-iii/description/][556. Next Greater Element III]]      | <2025-05-05 周一> |
+| [[https://leetcode.com/problems/build-array-from-permutation/description/][1920. Build Array from Permutation]] | <2025-05-06 周二> |
+|                                    |                   |
