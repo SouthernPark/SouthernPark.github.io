@@ -1,0 +1,70 @@
+#+title: Permutation
+
+* definition
+A permutation of n elements is a reordering (or rearrangement) of the elements nums = {0, 1, 2, ..., n-1}.
+
+* Bijection property of Permutation
+Every value from 0 to n-1 appears exactly once.
+So permutation defines a bijective function from indices to values: i ↦ nums[i]
+
+* Permutation is a Set of Cycles
+Because nums is a bijection, the function i → nums[i] must eventually repeat if you follow it repeatedly (pigeonhole principle).
+Example:
+#+begin_src
+nums = [2, 0, 1, 4, 3]
+           ↑  ↑  ↑  ↑  ↑
+           0  1  2  3  4
+
+Cycle A: 0 → 2 → 1 → 0
+Cycle B: 3 → 4 → 3
+#+end_src
+
+so if we continuously doing i = nums[i], find one index, will go back to that index.
+#+begin_src cpp
+int cur = i; // where i points to the start of the cycle
+while(nums[cur] != i){
+  int next = nums[cur]; // point to next node
+  cur = cur;
+}
+
+// now we hit nums[cur] = i, cur will be the last element
+#+end_src
+
+how can we mark if the node has been visited in a visited? -x = ~x + 1 ==> ~x = -(x+1). after you visit a node, you can ~x, then it will be negative.
+You can now keep two information (visited, original number) using one element. When you want to use the original value, just ~x it again.
+#+begin_src cpp
+
+#+end_src
+
+You can use the above technique to solve [[https://leetcode.com/problems/build-array-from-permutation/description/][1920. Build Array from Permutation]]
+#+begin_src cpp
+vector<int> buildArray(vector<int>& nums) {
+  int n = nums.size();
+  // permutations are a set of cycles i -> nums[i]
+  for(int i=0; i<n; i++) {
+    // check if node has been visited or not
+    int value = nums[i];
+    if(value < 0) {
+      continue;
+    }
+
+    int cur = i;
+    while(nums[cur] != i) {
+      int next = nums[cur];
+      // nums[cur] = nums[next]
+      nums[cur] = ~nums[next];
+      cur = next;
+    }
+
+    // now we point to the last node, it should be equal to the first element, because it's a circle
+    nums[cur] = ~target;
+  }
+
+  // get it back by ~x
+  for(int i=0; i<n; i++) {
+    nums[i] = ~nums[i];
+  }
+
+  return nums;
+}
+#+end_src

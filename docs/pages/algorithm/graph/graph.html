@@ -1,0 +1,119 @@
+---
+layout: default
+title: Graph
+nav_exclude: true
+---
+<div id="outline-container-org7f863b9" class="outline-2">
+<h2 id="org7f863b9"><span class="section-number-2">1.</span> Description</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+A graph is a mathematical structure used to model pairwise relations between objects. It is defined as an ordered pair: G = (V, E) where V is a set of vertices and E is a set of Edges.
+</p>
+
+<p>
+There are different types of graph, based on how you classify them.
+</p>
+</div>
+<div id="outline-container-org35d2182" class="outline-3">
+<h3 id="org35d2182"><span class="section-number-3">1.1.</span> Based on Edge Direction</h3>
+<div class="outline-text-3" id="text-1-1">
+<ul class="org-ul">
+<li>Undirected Graph</li>
+<li>Directed Graph</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgcab3cd6" class="outline-3">
+<h3 id="orgcab3cd6"><span class="section-number-3">1.2.</span> Based on Edge weights</h3>
+<div class="outline-text-3" id="text-1-2">
+<ul class="org-ul">
+<li>Unweighted Graph</li>
+<li>Weighted Graph</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org69afa09" class="outline-3">
+<h3 id="org69afa09"><span class="section-number-3">1.3.</span> Based on Conectivity</h3>
+<div class="outline-text-3" id="text-1-3">
+<ul class="org-ul">
+<li><a href="pages/algorithm/connected_components.html">Connected Graph</a> : Every vertex is reachable from any other (for undirected graphs).</li>
+<li>Strongly Connected Graph: In a directed graph, every vertex is reachable from any other vertex via directed paths.</li>
+<li>Weakly Connected Graph: In a directed graph, connectivity is possible if directions are ignored.</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org3d82753" class="outline-3">
+<h3 id="org3d82753"><span class="section-number-3">1.4.</span> Based on Cycles:</h3>
+<div class="outline-text-3" id="text-1-4">
+<ul class="org-ul">
+<li>Acyclic Graph: No cycles (rg. like tree)</li>
+<li>Cyclic Graph</li>
+<li>Directed Acyclic Graph (DAG) : A directed graph with no cycles. (used in scheduling: <a href="topological_sort.html">Topological Sort</a>)</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgc9dc63f" class="outline-3">
+<h3 id="orgc9dc63f"><span class="section-number-3">1.5.</span> Special Graphs:</h3>
+<div class="outline-text-3" id="text-1-5">
+<ul class="org-ul">
+<li><a href="tree.html">Tree</a> : A connected acyclic undirected graph</li>
+<li>Forest: A disjointed set of trees</li>
+<li>Complete Graph: Every vertex is connected to every other vertex.</li>
+<li>Bipartite Graph: Vertices can be divided into two disjoint sets with edges only between sets.</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-orgd1bde59" class="outline-2">
+<h2 id="orgd1bde59"><span class="section-number-2">2.</span> how to present a graph?</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Assume the node in the graph with an integer and also have weight, we can represent the graph as
+</p>
+</div>
+<div id="outline-container-org00db9ae" class="outline-3">
+<h3 id="org00db9ae"><span class="section-number-3">2.1.</span> Ajacent list</h3>
+<div class="outline-text-3" id="text-2-1">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">unordered_map</span>&lt;<span style="color: #ECBE7B;">int</span>, <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">pair</span>&lt;<span style="color: #ECBE7B;">int</span>, <span style="color: #ECBE7B;">int</span>&gt;&gt;&gt; <span style="color: #dcaeea;">graph</span>;
+graph[node1] gives the list of node {node2, weight}, in whcih weight represent the distance <span style="color: #ECBE7B;">between</span> <span style="color: #dcaeea;">node1</span> -&gt; node2
+
+can also be represented as:
+<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">pair</span>&lt;<span style="color: #ECBE7B;">int</span>, <span style="color: #ECBE7B;">int</span>&gt;&gt;&gt; graph;
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org5bd6e95" class="outline-3">
+<h3 id="org5bd6e95"><span class="section-number-3">2.2.</span> Ajacent matrix</h3>
+<div class="outline-text-3" id="text-2-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&gt; <span style="color: #dcaeea;">graph</span>;
+
+graph[node1][node2] gives the distance between node1 -&gt; node2
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org02b58ed" class="outline-3">
+<h3 id="org02b58ed"><span class="section-number-3">2.3.</span> Special case: 2D-array graph</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Sometimes, we are given a 2D array and need to traverse the graph from one node to another.
+How can we represent the graph.
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">graph is m * n array</span>
+<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&gt; <span style="color: #c678dd;">graph</span>(m, vector&lt;<span style="color: #ECBE7B;">int</span>&gt;(<span style="color: #dcaeea;">n</span>));
+
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">each node at coordinate (i, j) can be represented with id i * n + j</span>
+
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">to traverse ajacently, you can use the following array to specify the up, down, left, right directions</span>
+<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">pair</span>&lt;<span style="color: #ECBE7B;">int</span>, <span style="color: #ECBE7B;">int</span>&gt;&gt; <span style="color: #dcaeea;">dirs</span> = {{-<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #da8548; font-weight: bold;">0</span>}, {<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #da8548; font-weight: bold;">0</span>}, {<span style="color: #da8548; font-weight: bold;">0</span>, -<span style="color: #da8548; font-weight: bold;">1</span>}, {<span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #da8548; font-weight: bold;">1</span>}};
+
+</pre>
+</div>
+</div>
+</div>
+</div>

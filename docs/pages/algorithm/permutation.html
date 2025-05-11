@@ -1,0 +1,104 @@
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orgb6a5ca7">1. definition</a></li>
+<li><a href="#org06f269e">2. Bijection property of Permutation</a></li>
+<li><a href="#orge85a184">3. Permutation is a Set of Cycles</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgb6a5ca7" class="outline-2">
+<h2 id="orgb6a5ca7"><span class="section-number-2">1.</span> definition</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+A permutation of n elements is a reordering (or rearrangement) of the elements nums = {0, 1, 2, &#x2026;, n-1}.
+</p>
+</div>
+</div>
+<div id="outline-container-org06f269e" class="outline-2">
+<h2 id="org06f269e"><span class="section-number-2">2.</span> Bijection property of Permutation</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Every value from 0 to n-1 appears exactly once.
+So permutation defines a bijective function from indices to values: i ↦ nums[i]
+</p>
+</div>
+</div>
+<div id="outline-container-orge85a184" class="outline-2">
+<h2 id="orge85a184"><span class="section-number-2">3.</span> Permutation is a Set of Cycles</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Because nums is a bijection, the function i → nums[i] must eventually repeat if you follow it repeatedly (pigeonhole principle).
+Example:
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">nums = [2, 0, 1, 4, 3]
+           ↑  ↑  ↑  ↑  ↑
+           0  1  2  3  4
+
+Cycle A: 0 → 2 → 1 → 0
+Cycle B: 3 → 4 → 3
+</pre>
+</div>
+
+<p>
+so if we continuously doing i = nums[i], find one index, will go back to that index.
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">cur</span> = i; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">where i points to the start of the cycle</span>
+<span style="color: #51afef;">while</span>(nums[cur] != i){
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">next</span> = nums[cur]; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">point to next node</span>
+  cur = cur;
+}
+
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">now we hit nums[cur] = i, cur will be the last element</span>
+</pre>
+</div>
+
+<p>
+how can we mark if the node has been visited in a visited? -x = ~x + 1 ==&gt; ~x = -(x+1). after you visit a node, you can ~x, then it will be negative.
+You can now keep two information (visited, original number) using one element. When you want to use the original value, just ~x it again.
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp">
+</pre>
+</div>
+
+<p>
+You can use the above technique to solve <a href="https://leetcode.com/problems/build-array-from-permutation/description/">1920. Build Array from Permutation</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">buildArray</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">permutations are a set of cycles i -&gt; nums[i]</span>
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;n; i++) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">check if node has been visited or not</span>
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">value</span> = nums[i];
+    <span style="color: #51afef;">if</span>(value &lt; <span style="color: #da8548; font-weight: bold;">0</span>) {
+      <span style="color: #51afef;">continue</span>;
+    }
+
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">cur</span> = i;
+    <span style="color: #51afef;">while</span>(nums[cur] != i) {
+      <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">next</span> = nums[cur];
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">nums[cur] = nums[next]</span>
+      nums[cur] = ~nums[next];
+      cur = next;
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now we point to the last node, it should be equal to the first element, because it's a circle</span>
+    nums[cur] = ~target;
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">get it back by ~x</span>
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;n; i++) {
+    nums[i] = ~nums[i];
+  }
+
+  <span style="color: #51afef;">return</span> nums;
+}
+</pre>
+</div>
+</div>
+</div>

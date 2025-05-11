@@ -1,0 +1,90 @@
+---
+layout: default
+title: Shortest Path
+nav_exclude: true
+---
+<div id="outline-container-orgd44a80b" class="outline-2">
+<h2 id="orgd44a80b"><span class="section-number-2">1.</span> Dijkstra Algorithm</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Given a graph G = (V, E), a starting vertex s, edge weight(u, v) &gt;= 0 (non-negative).
+Dijkstra computes the shorest path from the starting vertex s to all other vertices in the node.
+In other wroks, Dijkstra is a single source shortest algorithm on non-negative weighted graph.
+</p>
+
+<p>
+Another thing to node is Dijkstra can handle cycles as long as the edge weight &gt;= 0.
+</p>
+</div>
+<div id="outline-container-orgb001257" class="outline-3">
+<h3 id="orgb001257"><span class="section-number-3">1.1.</span> Intuition and template code</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+The nodes are split into two sets:
+</p>
+<ul class="org-ul">
+<li>set A contians nodes which we have know shortest path starting from source node</li>
+<li>set B contains nodes which we do not know shortest path yet</li>
+</ul>
+
+<p>
+Initially, set A is empty and set B contaisn all the nodes
+We include nodes with shortest path currently from set B into node A.
+Everty time we include a node, its sourrounding nodes shortest path distance may be updated. We need to relax these nodes distance.
+</p>
+
+<p>
+We can use min heap for set B. Initially it will only contain the source node. But as long as we relaxing more neighbour nodes, all nodes will eventually put into the min heap.
+When you relaxing node, you also need to update neighbour
+Nodes will also be remvoed from min heap to set A when it&rsquo;s the current shortest path from the souce node.
+</p>
+
+<p>
+The following codes assume there are n nodes which id from 0 &#x2026; n-1. The graph is represented as ajacent list
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">dijkstra</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">source</span>, <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">pair</span>&lt;<span style="color: #ECBE7B;">int</span>, <span style="color: #ECBE7B;">int</span>&gt;&gt;&gt;&amp; <span style="color: #dcaeea;">graph</span>) {
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">dist</span>(n, INT_MAX);  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">dist[i] hold the shortest distance from source node to node i</span>
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">prev</span>(n, -<span style="color: #da8548; font-weight: bold;">1</span>);      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">prev[i] gives the prev node to get to node i</span>
+  dist[source] = <span style="color: #da8548; font-weight: bold;">0</span>;
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">min hean is used to hold {cur_shortest_path, node}</span>
+  <span style="color: #ECBE7B;">priority_queue</span>&lt;<span style="color: #ECBE7B;">pair</span>&lt;<span style="color: #ECBE7B;">int</span>, <span style="color: #ECBE7B;">int</span>&gt;, <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">pair</span>&lt;<span style="color: #ECBE7B;">int</span>, <span style="color: #ECBE7B;">int</span>&gt;&gt;, <span style="color: #ECBE7B;">greater</span>&lt;&gt;&gt; <span style="color: #dcaeea;">pq</span>;
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">source to itself is 0, push the starting code, so that the whole graph will be induced here</span>
+  pq.emplace(<span style="color: #da8548; font-weight: bold;">0</span>, source);
+
+  <span style="color: #51afef;">while</span>(<span style="color: #51afef; font-weight: bold;">!</span>pq.empty()) {
+    <span style="color: #51afef;">auto</span> [shortest, cur] = pq.top();
+    pq.pop();
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">outdated data pop out</span>
+    <span style="color: #51afef;">if</span>(shortest &gt; dist[cur]){
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">this path is outdated. this case normally happen when there are multi ways to reach a node and they both in the queue</span>
+      <span style="color: #51afef;">continue</span>;
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">invariant: shortest == dist[node], the dist we current processing must be the one shortest from source to current node</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">In the relaxing step: we only update dist[node] when there is a shorter solution.</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">the pq may contain outdated data, but the dist array will not</span>
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">try relaxing current node neighbour</span>
+    <span style="color: #51afef;">for</span>(<span style="color: #51afef;">auto</span> [next, w] : graph[cur]) {
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">invariant: dist[node] only update to a smaller value</span>
+      <span style="color: #51afef;">if</span>(shortest + w &lt; dist[next]) {
+        dist[next] = shortest + w;
+        prev[next] = cur;
+        pq.emplace(dist[next], next);
+      }
+    }
+  }
+
+  <span style="color: #51afef;">return</span> dist;
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org63ddb81" class="outline-2">
+<h2 id="org63ddb81"><span class="section-number-2">2.</span> DFS to find shortest path of unweighted graph</h2>
+</div>

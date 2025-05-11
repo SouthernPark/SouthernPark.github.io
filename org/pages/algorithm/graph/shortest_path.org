@@ -1,0 +1,76 @@
+#+title: Shortest Path
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Shortest Path
+nav_exclude: true
+---
+#+END_EXPORT
+
+* Dijkstra Algorithm
+Given a graph G = (V, E), a starting vertex s, edge weight(u, v) >= 0 (non-negative).
+Dijkstra computes the shorest path from the starting vertex s to all other vertices in the node.
+In other wroks, Dijkstra is a single source shortest algorithm on non-negative weighted graph.
+
+Another thing to node is Dijkstra can handle cycles as long as the edge weight >= 0.
+
+** Intuition and template code
+The nodes are split into two sets:
++ set A contians nodes which we have know shortest path starting from source node
++ set B contains nodes which we do not know shortest path yet
+
+Initially, set A is empty and set B contaisn all the nodes
+We include nodes with shortest path currently from set B into node A.
+Everty time we include a node, its sourrounding nodes shortest path distance may be updated. We need to relax these nodes distance.
+
+We can use min heap for set B. Initially it will only contain the source node. But as long as we relaxing more neighbour nodes, all nodes will eventually put into the min heap.
+When you relaxing node, you also need to update neighbour
+Nodes will also be remvoed from min heap to set A when it's the current shortest path from the souce node.
+
+The following codes assume there are n nodes which id from 0 ... n-1. The graph is represented as ajacent list
+#+begin_src cpp
+vector<int> dijkstra(int n, int source, vector<vector<pair<int, int>>>& graph) {
+  vector<int> dist(n, INT_MAX);  // dist[i] hold the shortest distance from source node to node i
+  vector<int> prev(n, -1);      // prev[i] gives the prev node to get to node i
+  dist[source] = 0;
+
+  // min hean is used to hold {cur_shortest_path, node}
+  priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
+  // source to itself is 0, push the starting code, so that the whole graph will be induced here
+  pq.emplace(0, source);
+
+  while(!pq.empty()) {
+    auto [shortest, cur] = pq.top();
+    pq.pop();
+
+    // outdated data pop out
+    if(shortest > dist[cur]){
+      // this path is outdated. this case normally happen when there are multi ways to reach a node and they both in the queue
+      continue;
+    }
+
+    // invariant: shortest == dist[node], the dist we current processing must be the one shortest from source to current node
+    // In the relaxing step: we only update dist[node] when there is a shorter solution.
+    // the pq may contain outdated data, but the dist array will not
+
+    // try relaxing current node neighbour
+    for(auto [next, w] : graph[cur]) {
+      // invariant: dist[node] only update to a smaller value
+      if(shortest + w < dist[next]) {
+        dist[next] = shortest + w;
+        prev[next] = cur;
+        pq.emplace(dist[next], next);
+      }
+    }
+  }
+
+  return dist;
+}
+#+end_src
+
+* DFS to find shortest path of unweighted graph

@@ -1,0 +1,78 @@
+#+title: Graph
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Graph
+nav_exclude: true
+---
+#+END_EXPORT
+
+* Description
+A graph is a mathematical structure used to model pairwise relations between objects. It is defined as an ordered pair: G = (V, E) where V is a set of vertices and E is a set of Edges.
+
+There are different types of graph, based on how you classify them.
+
+** Based on Edge Direction
++ Undirected Graph
++ Directed Graph
+
+** Based on Edge weights
++ Unweighted Graph
++ Weighted Graph
+
+** Based on Conectivity
++ [[file:~/SouthernPark.github.io/org/pages/algorithm/connected_components.org][Connected Graph]] : Every vertex is reachable from any other (for undirected graphs).
++ Strongly Connected Graph: In a directed graph, every vertex is reachable from any other vertex via directed paths.
++ Weakly Connected Graph: In a directed graph, connectivity is possible if directions are ignored.
+
+** Based on Cycles:
++ Acyclic Graph: No cycles (rg. like tree)
++ Cyclic Graph
++ Directed Acyclic Graph (DAG) : A directed graph with no cycles. (used in scheduling: [[file:topological_sort.org][Topological Sort]])
+
+** Special Graphs:
++ [[file:tree.org][Tree]] : A connected acyclic undirected graph
++ Forest: A disjointed set of trees
++ Complete Graph: Every vertex is connected to every other vertex.
++ Bipartite Graph: Vertices can be divided into two disjoint sets with edges only between sets.
+
+
+* how to present a graph?
+
+Assume the node in the graph with an integer and also have weight, we can represent the graph as
+** Ajacent list
+
+#+begin_src cpp
+unordered_map<int, vector<pair<int, int>>> graph;
+graph[node1] gives the list of node {node2, weight}, in whcih weight represent the distance between node1 -> node2
+
+can also be represented as:
+vector<vector<pair<int, int>>> graph;
+
+#+end_src
+
+** Ajacent matrix
+#+begin_src cpp
+vector<vector<int>> graph;
+
+graph[node1][node2] gives the distance between node1 -> node2
+#+end_src
+
+** Special case: 2D-array graph
+Sometimes, we are given a 2D array and need to traverse the graph from one node to another.
+How can we represent the graph.
+#+begin_src cpp
+// graph is m * n array
+vector<vector<int>> graph(m, vector<int>(n));
+
+// each node at coordinate (i, j) can be represented with id i * n + j
+
+// to traverse ajacently, you can use the following array to specify the up, down, left, right directions
+vector<pair<int, int>> dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+#+end_src
