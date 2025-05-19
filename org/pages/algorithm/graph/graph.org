@@ -76,3 +76,13 @@ vector<vector<int>> graph(m, vector<int>(n));
 vector<pair<int, int>> dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
 #+end_src
+
+* Neighbour
+
+In non directed theory, the neighbors (or adjacent vertices) of a node n are all the vertices that are directly connected to n by an edge.
+
+If the graph is directed, there are 2 types of neighbuor, outgoing neighbours
+
+** find neighbour via ajacent list
+
+** find neighbour via ajacent matrix

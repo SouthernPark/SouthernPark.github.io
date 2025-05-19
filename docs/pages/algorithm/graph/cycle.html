@@ -1,0 +1,117 @@
+---
+layout: default
+title: Cycle
+nav_exclude: true
+---
+<div id="outline-container-orgad08618" class="outline-2">
+<h2 id="orgad08618"><span class="section-number-2">1.</span> detect cycle in an array permutation</h2>
+<div class="outline-text-2" id="text-1">
+<ol class="org-ol">
+<li>When we do swap on an array consecutively like in sort, how can we find the minum swaps from arr1 -&gt; arr2 after the sorting?</li>
+<li>Given a permutation array from 0 to n-1, how can it formed from (0,1,2,..,n-1)</li>
+</ol>
+
+<p>
+for each index i, if we following i -&gt; nums[i] -&gt; nums[nums[i]] -&gt; &#x2026; -&gt; i we will end up with i
+</p>
+
+<p>
+There can be multi cycles in one permutaion or after many swaps. How can we find how many cycles are there and how may swaps are made?
+</p>
+
+<p>
+for each index i, we follow nums[i] and nums[nums[i]] &#x2026;, to loop through the cycle until we go back to the starting point (head)
+We also need to mark all the index we visited, because for the next i + 1 &#x2026;, it may already been visited
+</p>
+</div>
+<div id="outline-container-orgc259a35" class="outline-3">
+<h3 id="orgc259a35"><span class="section-number-3">1.1.</span> code</h3>
+</div>
+<div id="outline-container-org1aacef0" class="outline-3">
+<h3 id="org1aacef0"><span class="section-number-3">1.2.</span> With set to record the visited nodes</h3>
+<div class="outline-text-3" id="text-1-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">main</span>() {
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">nums</span>(n); <span style="color: #5B6268;">// </span><span style="color: #5B6268;">assume we have a permutation of size n from (0, n-1)</span>
+
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">cycle_count</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+  <span style="color: #ECBE7B;">unordered_set</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">visited</span>;
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;n; i++) {
+    <span style="color: #51afef;">if</span>(visited.find(nums[i]) != visited.end()) {
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">we have visited nums[i]</span>
+      <span style="color: #51afef;">continue</span>;
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">even if we have nums[i] == i, which is cycle to itself, we also count it as a cycle</span>
+    cycle_count ++;
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">head is index i and we use cur to move from i -&gt; nums[i] -&gt; nums[nums[i]] ... -&gt; i</span>
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">head</span> = i;
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">cur</span> = i;
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">cycle_length</span> = <span style="color: #da8548; font-weight: bold;">0</span>; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">caculate cycle_length, for cycle point to itself, we think it as length 0</span>
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">loop from the head to tail</span>
+    <span style="color: #51afef;">while</span>(nums[cur] != i) {
+      <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">nxt</span> = nums[cur];
+      cycle_length ++;
+      visited.insert(nums[cur]);
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">nums[cur] == i, which means cur is the tail point, pointing to head</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">makr tail as visited also</span>
+    visiter.insert(nums[cur]);
+  }
+
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org01baabb" class="outline-3">
+<h3 id="org01baabb"><span class="section-number-3">1.3.</span> With Not Bit wise operation to record visited nodes</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+For a non negative integer (including 0), it&rsquo;s bit wise NOT ~num must be a negative.
+Remember in Two&rsquo;s compliment: -x = ~x + 1, ==&gt; ~x = -x - 1
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">main</span>() {
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">nums</span>(n);
+
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">cycle_count</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = nums.size();
+
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;n; i++) {
+    <span style="color: #51afef;">if</span>(nums[i] &lt; <span style="color: #da8548; font-weight: bold;">0</span>) {
+      <span style="color: #51afef;">continue</span>;
+    }
+
+    cycle_count ++;
+
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">head</span> = i;
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">cur</span> = i;
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">cycle_length</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">loop from head to tail</span>
+    <span style="color: #51afef;">while</span>(nums[cur] != i) {
+      <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">nxt</span> = nums[cur];
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">mark current as visited</span>
+      nums[cur] = ~nums[cur];
+      cycle_length ++;
+      cur = nxt;
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now nums[cur] == i, which means cur is the tail node pointing to head</span>
+    nums[cur] = ~nums[cur]; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">mark tail as visited</span>
+
+  }
+
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org57bf704" class="outline-2">
+<h2 id="org57bf704"><span class="section-number-2">2.</span> detect cycle in complex Graph with DFS</h2>
+</div>

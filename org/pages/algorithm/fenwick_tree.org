@@ -19,12 +19,17 @@ A Fenwick Tree is a binary indexed tree that allows efficient:
 + do range queries from [0, m] like (sum, max, min) in O(log n)
 + do point updates in O(log n)
 
-Space used is n, the same size as the input range array
+The meaning of tree[node] represents the answer for the range covered by the left most binary bit.
+
+Space used is n+1,
 Fenwick Tree is using the left most binary bit of node index to represent the range.
 For example:
-1 in bin is 0001, will keep the range from 1 to 1
-3 in bin is 0011, will keep the range from 3 to 3
-4 in bin is 0100, will keep the range from 4 to 1
+node = 1 = 0001 in bin, the length of range covered by this node is 1
+node = 4 = 0100 in bin, the lenght of range covered by this node is 4
+node = 6 = 0110 in bin, the length of range covered by this node is 2
+
+
+The query the range [0, 6], we have to query node=6 and node=4
 
 
 [[https://youtu.be/uSFzHCZ4E-8][Youtube: Fenwick Tree (Binary Index Tree) Quick Tutorial and Source Code Explanation]]
@@ -35,8 +40,10 @@ i & -i will give the left most binary bit
 i - (i & -i) will remove the left most binary bit
 #+end_src
 
+
+
 * code
-template
+** template using fenwick tree to find the sum in range [0, node]
 #+begin_src cpp
 vector<int> arr(n);
 vector<int> tree(n+1) // tree node start at index 1 not 0
@@ -79,4 +86,58 @@ void build(vector<int>& tree, vector<int>& arr){
 
   return;
 }
+#+end_src
+
+
+
+** [limitation] template using fenwick tree to find the max element in range [0, node]
+
+Fenwick tree has some limitation when find the min or max element in range [0, node]. It does not allow updates.
+
+Ex: update(1, 10) then update(1, 2) will make the tree wrong.
+In a max-Fenwick Tree (like the one above), each bit[i] stores the maximum of some range. When you do:
+tree[i] = std::max(tree[i], val);
+…it only increases values. If you try to decrease (i.e., update a value at index i to a smaller one), the tree does not fix the max values in ancestors — so stale max values remain in the tree.
+
+
+#+begin_src cpp
+vector<int> arr(n);
+vector<int> tree(n+1);
+// update node value to val and populate the change
+void update(vector<int>& tree, int node, int val) {
+  // tree is one based
+  node ++;
+
+  // tree[node] gives the max element in current range, if current range, if the update val is smaller or equal
+  // this applies to its parent
+  while(node < tree.size()) {
+
+    // we can stop early if tree[node] >= val
+
+    if(tree[node] >= val) {
+      return ;
+    }
+
+    // now tree[node] < val
+    tree[node] = val;
+
+    // go to the next parent node
+    node += (node & -node);
+  }
+  return ;
+}
+
+// return the max element in the range [0, node]
+int query(vector<int>& tree, int node) {
+  node ++;
+  int ans = INT_MIN;
+  while(node > 0) {
+    ans = max(ans, tree[node]);
+    // go to ajcent node
+    node -= (node & -node);
+  }
+
+  return ans;
+}
+
 #+end_src

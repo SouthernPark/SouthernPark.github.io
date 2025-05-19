@@ -1,0 +1,29 @@
+#+title: DFS
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: DFS
+nav_exclude: true
+---
+#+END_EXPORT
+* Description
+DFS is a recursive or stack-based algorithm used to traverse or search through a graph/tree.
+The following is ususally the steps for DFS to traverse all the nodes in the graph.
+#+begin_src
+1. Start at a node (usually the source).
+2. Mark the node as visited.
+3. Recursively (or via stack) visit each unvisited neighbor.
+4. Backtrack when all neighbors are explored.
+#+end_src
+
+* TODO Code template
+
+
+#+begin_src
+
+#+end_src

@@ -1,0 +1,102 @@
+#+title: Cycle
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Cycle
+nav_exclude: true
+---
+#+END_EXPORT
+
+
+* detect cycle in an array permutation
+
+1. When we do swap on an array consecutively like in sort, how can we find the minum swaps from arr1 -> arr2 after the sorting?
+2. Given a permutation array from 0 to n-1, how can it formed from (0,1,2,..,n-1)
+
+for each index i, if we following i -> nums[i] -> nums[nums[i]] -> ... -> i we will end up with i
+
+There can be multi cycles in one permutaion or after many swaps. How can we find how many cycles are there and how may swaps are made?
+
+for each index i, we follow nums[i] and nums[nums[i]] ..., to loop through the cycle until we go back to the starting point (head)
+We also need to mark all the index we visited, because for the next i + 1 ..., it may already been visited
+
+** code
+**  With set to record the visited nodes
+#+begin_src cpp
+void main() {
+  vector<int> nums(n); // assume we have a permutation of size n from (0, n-1)
+
+  int cycle_count = 0;
+  int n = nums.size();
+  unordered_set<int> visited;
+  for(int i=0; i<n; i++) {
+    if(visited.find(nums[i]) != visited.end()) {
+      // we have visited nums[i]
+      continue;
+    }
+
+    // even if we have nums[i] == i, which is cycle to itself, we also count it as a cycle
+    cycle_count ++;
+
+    // head is index i and we use cur to move from i -> nums[i] -> nums[nums[i]] ... -> i
+    int head = i;
+    int cur = i;
+    int cycle_length = 0; // caculate cycle_length, for cycle point to itself, we think it as length 0
+
+    // loop from the head to tail
+    while(nums[cur] != i) {
+      int nxt = nums[cur];
+      cycle_length ++;
+      visited.insert(nums[cur]);
+    }
+
+    // nums[cur] == i, which means cur is the tail point, pointing to head
+    // makr tail as visited also
+    visiter.insert(nums[cur]);
+  }
+
+}
+#+end_src
+** With Not Bit wise operation to record visited nodes
+For a non negative integer (including 0), it's bit wise NOT ~num must be a negative.
+Remember in Two's compliment: -x = ~x + 1, ==> ~x = -x - 1
+#+begin_src cpp
+void main() {
+  vector<int> nums(n);
+
+  int cycle_count = 0;
+  int n = nums.size();
+
+  for(int i=0; i<n; i++) {
+    if(nums[i] < 0) {
+      continue;
+    }
+
+    cycle_count ++;
+
+    int head = i;
+    int cur = i;
+    int cycle_length = 0;
+    // loop from head to tail
+    while(nums[cur] != i) {
+      int nxt = nums[cur];
+      // mark current as visited
+      nums[cur] = ~nums[cur];
+      cycle_length ++;
+      cur = nxt;
+    }
+
+    // now nums[cur] == i, which means cur is the tail node pointing to head
+    nums[cur] = ~nums[cur]; // mark tail as visited
+
+  }
+
+}
+#+end_src
+
+* detect cycle in complex Graph with DFS

@@ -99,7 +99,7 @@ vector<int> find_next_smaller(vector<int>& nums) {
 
   for(int i=0; i<n; i++) {
     // nums[i] could be possible answer for elements in stack
-    while(!st.empty() && nums[i] < st.top) {
+    while(!st.empty() && nums[i] < nums[st.top()]) {
       ans[st.top()] = i;
       st.pop();
     }
