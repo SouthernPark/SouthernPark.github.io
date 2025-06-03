@@ -11,7 +11,6 @@ nav_exclude: true
 ---
 #+END_EXPORT
 
-
 * [[file:pages/algorithm/algorithm.org][Algorithm]]
 
 * [[file:~/org_private_repo/behavior_question.org][Behavior Question]]
@@ -20,6 +19,8 @@ nav_exclude: true
 ** [[file:pages/os/xv6.org][MIT 6.S081 xv6 OS with RISCV CPU]]
 
 
+* Programming Language
+** [[file:programming_language/C++.org][C++]]
 
 * [[file:~/org_private_repo/visa.org][US Visa Info (CPT/OPT/H1B)]]
 

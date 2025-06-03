@@ -12,12 +12,13 @@ nav_exclude: true
 ---
 #+END_EXPORT
 
-
 * [[file:segment_tree.org][Segment Tree]], [[file:fenwick_tree.org][Fenwick Tree]]
 | Question                                 | Time              |
 |------------------------------------------+-------------------|
 | [[https://leetcode.com/problems/count-of-smaller-numbers-after-self/][315. Count of Smaller Numbers After Self]] | <2025-05-18 周日> |
 | [[https://leetcode.com/problems/block-placement-queries/][3161. Block Placement Queries]]            | <2025-05-18 周日> |
+| [[https://leetcode.com/problems/range-sum-query-mutable/description/][307. Range Sum Query - Mutable]]           | <2025-05-21 周三> |
+
 
 * [[file:sliding_window.org][Sliding Window]]
 | Question                                                         | Time              |
@@ -27,51 +28,52 @@ nav_exclude: true
 | [[https://leetcode.com/problems/count-subarrays-where-max-element-appears-at-least-k-times/description/][2962. Count Subarrays Where Max Element Appears at Least K Times]] | <2025-05-18 周日> |
 
 * Two Pointers
-| Question                | Time              |
-|-------------------------+-------------------|
-| [[https://leetcode.com/problems/trapping-rain-water/description/][42. Trapping Rain Water]] | <2025-05-04 周日> |
-|                         |                   |
+| Question                    | Time              |
+|-----------------------------+-------------------|
+| [[https://leetcode.com/problems/trapping-rain-water/description/][42. Trapping Rain Water]]     | <2025-05-20 周二> |
+| [[https://leetcode.com/problems/trapping-rain-water-ii/description/][407. Trapping Rain Water II]] | <2025-05-20 周二> |
+|                             |                   |
 
 * [[file:prefix_suffix_sum.org][Prefix/Suffix Sum]]
 | Question                             | Time              |
 |--------------------------------------+-------------------|
-| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-04-28 周一> |
-| [[https://leetcode.com/problems/range-sum-query-immutable/description/][303. Range Sum Query - Immutable]]     | <2025-04-28 周一> |
+| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-05-20 周二> |
+| [[https://leetcode.com/problems/range-sum-query-immutable/description/][303. Range Sum Query - Immutable]]     | <2025-05-21 周三> |
 
 * [[file:math.org][Math]]
 ** Modulo
 | Question                             | Time              |
 |--------------------------------------+-------------------|
-| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-04-28 周一> |
+| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-05-20 周二> |
 ** Digits
 | Question                      | Time              |
 |-------------------------------+-------------------|
-| [[https://leetcode.com/problems/next-greater-element-iii/description/][556. Next Greater Element III]] | <2025-05-05 周一> |
-| [[https://leetcode.com/problems/reverse-integer/description/][7. Reverse Integer]]            | <2025-05-05 周一> |
+| [[https://leetcode.com/problems/next-greater-element-iii/description/][556. Next Greater Element III]] | <2025-05-21 周三> |
+| [[https://leetcode.com/problems/reverse-integer/description/][7. Reverse Integer]]            | <2025-05-21 周三> |
 
 ** Permutation
 | Question                           | Time              |
 |------------------------------------+-------------------|
-| [[https://leetcode.com/problems/next-permutation/description/][31. Next Permutation]]               | <2025-05-05 周一> |
-| [[https://leetcode.com/problems/next-greater-element-iii/description/][556. Next Greater Element III]]      | <2025-05-05 周一> |
-| [[https://leetcode.com/problems/build-array-from-permutation/description/][1920. Build Array from Permutation]] | <2025-05-06 周二> |
+| [[https://leetcode.com/problems/next-permutation/description/][31. Next Permutation]]               | <2025-05-21 周三> |
+| [[https://leetcode.com/problems/next-greater-element-iii/description/][556. Next Greater Element III]]      | <2025-05-21 周三> |
+| [[https://leetcode.com/problems/build-array-from-permutation/description/][1920. Build Array from Permutation]] | <2025-05-24 周六> |
 |                                    |                   |
 
 
 * [[file:offline.org][Offline]]
 | Question                                         | Time              |
 |--------------------------------------------------+-------------------|
-| [[https://leetcode.com/problems/find-building-where-alice-and-bob-can-meet/description/][2940. Find Building Where Alice and Bob Can Meet]] | <2025-04-29 周二> |
+| [[https://leetcode.com/problems/find-building-where-alice-and-bob-can-meet/description/][2940. Find Building Where Alice and Bob Can Meet]] | <2025-05-25 周日> |
 
 * [[file:binary_search.org][Binary Search]]
 | Question                                     | Time              |
 |----------------------------------------------+-------------------|
-| [[https://leetcode.com/problems/path-existence-queries-in-a-graph-i/description/][3532. Path Existence Queries in a Graph I]]    | <2025-04-30 周三> |
-| [[https://leetcode.com/problems/maximum-number-of-tasks-you-can-assign/description/][2071. Maximum Number of Tasks You Can Assign]] | <2025-05-01 周四> |
+| [[https://leetcode.com/problems/maximum-number-of-tasks-you-can-assign/description/][2071. Maximum Number of Tasks You Can Assign]] | <2025-05-25 周日> |
+
 * [[file:monotonic_stack.org][Monotonic Stack]]
 | Question                      | Time              |
 |-------------------------------+-------------------|
-| [[https://leetcode.com/problems/next-greater-element-i/description/][496. Next Greater Element I]]   | <2025-05-04 周日> |
+| [[https://leetcode.com/problems/next-greater-element-i/description/][496. Next Greater Element I]]   | <2025-05-27 周二> |
 | [[https://leetcode.com/problems/trapping-rain-water/description/][42. Trapping Rain Water]]       | <2025-05-04 周日> |
 | [[https://leetcode.com/problems/next-greater-element-ii/description/][503. Next Greater Element II]]  | <2025-05-04 周日> |
 | [[https://leetcode.com/problems/sum-of-subarray-minimums/description/][907. Sum of Subarray Minimums]] | <2025-05-17 周六> |
@@ -100,8 +102,9 @@ nav_exclude: true
 ** [[file:connected_components.org][Connected Components]]
 | Question                                  | Time              |
 |-------------------------------------------+-------------------|
-| [[https://leetcode.com/problems/path-existence-queries-in-a-graph-i/description/][3532. Path Existence Queries in a Graph I]] | <2025-04-30 周三> |
+| [[https://leetcode.com/problems/path-existence-queries-in-a-graph-i/description/][3532. Path Existence Queries in a Graph I]] | <2025-05-25 周日> |
 | [[https://leetcode.com/problems/number-of-islands/description/][200. Number of Islands]]                    | <2025-04-30 周三> |
+
 
 ** TODO [[file:graph/topological_sort.org][Topological Sort]]
 ** TODO [[file:graph/tree.org][Tree]]

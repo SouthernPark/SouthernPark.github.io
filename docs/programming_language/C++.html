@@ -1,0 +1,131 @@
+---
+layout: default
+title: C++
+nav_exclude: true
+---
+<div id="outline-container-org777a47b" class="outline-2">
+<h2 id="org777a47b"><span class="section-number-2">1.</span> Template type &amp; template function</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-orgf9728e4" class="outline-3">
+<h3 id="orgf9728e4"><span class="section-number-3">1.1.</span> template type</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Template type (also called class template) is a type defined with a template. The following is an example.
+Template type can be used to construct object.
+The thing inside &lt;&gt; is called template arguments.
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #51afef;">template</span>&lt;<span style="color: #51afef;">typename</span> <span style="color: #ECBE7B;">T</span>&gt;
+<span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">MyContainer</span> { ... };
+
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">template type for greater&lt;T&gt;</span>
+<span style="color: #51afef;">template</span> &lt;<span style="color: #51afef;">typename</span> <span style="color: #ECBE7B;">T</span>&gt;
+<span style="color: #51afef;">struct</span> <span style="color: #ECBE7B;">greater</span> {
+    <span style="color: #51afef;">constexpr</span> <span style="color: #ECBE7B;">bool</span> <span style="color: #51afef;">operator</span><span style="color: #c678dd;">()</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">T</span>&amp; <span style="color: #dcaeea;">a</span>, <span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">T</span>&amp; <span style="color: #dcaeea;">b</span>) <span style="color: #51afef;">const</span> {
+        <span style="color: #51afef;">return</span> a &gt; b;
+    }
+};
+
+</pre>
+</div>
+
+<p>
+In most cases (C++ 11), it&rsquo;s not allowed to put object into template arguments
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Template type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">greater&lt;T&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">vector&lt;T&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">set&lt;T&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">all kinds of STL containers</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+For template type, we offent supply the type T diretly, so that compiler knows what kind of types of container we want.
+There are some cases, where compiler can reference some remaining types, using some other types already provided. For example
+</p>
+
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #ECBE7B;">priority_queue</span>&lt;<span style="color: #ECBE7B;">int</span>, <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;, <span style="color: #ECBE7B;">greater</span>&lt;&gt;&gt;         <span style="color: #5B6268;">// </span><span style="color: #5B6268;">for most templat types its template parameters are types rather than functors</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org58e0afa" class="outline-3">
+<h3 id="org58e0afa"><span class="section-number-3">1.2.</span> tempalte function</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Template function is the pretty the same, fucniton defined with template, the following is an example:
+</p>
+
+<p>
+Template funciton also uses the template argument &lt;&gt; concepts.
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #51afef;">template</span> &lt;<span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">RandomIt</span>, <span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">Compare</span>&gt;
+<span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">sort</span>(<span style="color: #ECBE7B;">RandomIt</span> <span style="color: #dcaeea;">first</span>, <span style="color: #ECBE7B;">RandomIt</span> <span style="color: #dcaeea;">last</span>, <span style="color: #ECBE7B;">Compare</span> <span style="color: #dcaeea;">comp</span>);
+</pre>
+</div>
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Template fucntion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">sort()</td>
+</tr>
+
+<tr>
+<td class="org-left">lower<sub>bound</sub>()</td>
+</tr>
+
+<tr>
+<td class="org-left">upper<sub>bound</sub>()</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+For template fucntion, it&rsquo;s ofent the case, the compiler reference the template argument (Type T) from the arguments we provided.
+Note that even if it&rsquo;s a template fucntion, the arguments we provde needs to an obeject rather than type.
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #c678dd;">lower_bound</span>(nums.begin(), nums.end(), greater&lt;&gt;());       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">here we uses greater&lt;&gt;() to creater a functor object, compiler helps to deduce the type for &lt;&gt;</span>
+</pre>
+</div>
+</div>
+</div>
+</div>

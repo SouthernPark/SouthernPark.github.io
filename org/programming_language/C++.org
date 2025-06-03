@@ -1,0 +1,72 @@
+#+title: C++
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: C++
+nav_exclude: true
+---
+#+END_EXPORT
+
+* Template type & template function
+** template type
+Template type (also called class template) is a type defined with a template. The following is an example.
+Template type can be used to construct object.
+The thing inside <> is called template arguments.
+#+begin_src cpp
+template<typename T>
+class MyContainer { ... };
+
+// template type for greater<T>
+template <typename T>
+struct greater {
+    constexpr bool operator()(const T& a, const T& b) const {
+        return a > b;
+    }
+};
+
+#+end_src
+
+In most cases (C++ 11), it's not allowed to put object into template arguments
+
+| Template type               |
+|-----------------------------|
+| greater<T>                  |
+| vector<T>                   |
+| set<T>                      |
+| all kinds of STL containers |
+
+For template type, we offent supply the type T diretly, so that compiler knows what kind of types of container we want.
+There are some cases, where compiler can reference some remaining types, using some other types already provided. For example
+
+#+begin_src cpp
+priority_queue<int, vector<int>, greater<>>         // for most templat types its template parameters are types rather than functors
+#+end_src
+
+
+
+** tempalte function
+Template function is the pretty the same, fucniton defined with template, the following is an example:
+
+Template funciton also uses the template argument <> concepts.
+#+begin_src cpp
+template <class RandomIt, class Compare>
+void sort(RandomIt first, RandomIt last, Compare comp);
+#+end_src
+
+
+| Template fucntion |
+|-------------------|
+| sort()            |
+| lower_bound()     |
+| upper_bound()     |
+
+For template fucntion, it's ofent the case, the compiler reference the template argument (Type T) from the arguments we provided.
+Note that even if it's a template fucntion, the arguments we provde needs to an obeject rather than type.
+#+begin_src c
+lower_bound(nums.begin(), nums.end(), greater<>());       // here we uses greater<>() to creater a functor object, compiler helps to deduce the type for <>
+#+end_src

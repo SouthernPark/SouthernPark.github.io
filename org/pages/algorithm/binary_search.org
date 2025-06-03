@@ -56,7 +56,7 @@ int search(vector<int>& nums, int target) {
   return left;
 }
 #+end_src
-**** left, right), left side is closed while right side is open
+**** [left, right), left side is closed while right side is open
 #+begin_src cpp
 int search(vector<int>& nums, int target) {
   int left = 0, right = nums.size();
@@ -65,10 +65,10 @@ int search(vector<int>& nums, int target) {
   while(left < right) {
     int mid = left + (right - left) / 2;
     if(nums[mid] < target) {
-      left = mid + 1;    // [0, left-1] is invalid
+      left = mid + 1;    // [0, left-1] is those <
     }
     else {
-      right = mid;       // [right, end] are those valid
+      right = mid;       // [right, end] are those >=
     }
   }
 
@@ -278,7 +278,7 @@ int search(vector<int>& nums, int target) {
 *** first smaller (does not make sense to use binary search)
 *** first smaller or equal (does not make sense to use binary search)
 ** desending ordered array
-for desending order, we need to overwrite the compare operator to greater
+for desending order, we need to overwrite the comparator operator
 *** first smaller or equal (lower bound)
 lower_bound(nums.begin(), nums.end(), target, greater<int>())
 *** first smaller (upper bound)

@@ -1,0 +1,30 @@
+#+title: Lab1
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Lab1
+nav_exclude: true
+---
+#+END_EXPORT
+
+[[https://pdos.csail.mit.edu/6.828/2024/labs/util.html][Lab1 Xv6 and Unix utilities]]
+
+* sleep
+[[https://github.com/SouthernPark/xv6/commit/64ea8a92c4bfef014e51339f32c549612d47af57][code commit]]
+
+* pingpong
+[[https://github.com/SouthernPark/xv6/commit/2ede196a43d5779fc817a99038a62604717494dd][code commit]]
+
+* priems
+[[https://github.com/SouthernPark/xv6/commit/375450eb322f0ca758f070ef9d92c900d2990d17][code commit]]
+
+* find
+[[https://github.com/SouthernPark/xv6/commit/fb4795e1b0b716cdd14d21ba8926c38b28c4c3dd][code commit]]
+
+* xargs
+[[https://github.com/SouthernPark/xv6/commit/076ab06cec0e9b21d492e9bbdef9e623d6578155][code commit]]

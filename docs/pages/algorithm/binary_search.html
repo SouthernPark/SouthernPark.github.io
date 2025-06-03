@@ -75,8 +75,8 @@ This is important to control the while loop condition.
 </div>
 </div>
 </div>
-<div id="outline-container-org2daf798" class="outline-5">
-<h5 id="org2daf798"><span class="section-number-5">2.1.1.2.</span> left, right), left side is closed while right side is open</h5>
+<div id="outline-container-org7fa4e36" class="outline-5">
+<h5 id="org7fa4e36"><span class="section-number-5">2.1.1.2.</span> [left, right), left side is closed while right side is open</h5>
 <div class="outline-text-5" id="text-2-1-1-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -86,10 +86,10 @@ This is important to control the while loop condition.
   <span style="color: #51afef;">while</span>(left &lt; right) {
     <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">mid</span> = left + (right - left) / <span style="color: #da8548; font-weight: bold;">2</span>;
     <span style="color: #51afef;">if</span>(nums[mid] &lt; target) {
-      left = mid + <span style="color: #da8548; font-weight: bold;">1</span>;    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0, left-1] is invalid</span>
+      left = mid + <span style="color: #da8548; font-weight: bold;">1</span>;    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[0, left-1] is those &lt;</span>
     }
     <span style="color: #51afef;">else</span> {
-      right = mid;       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right, end] are those valid</span>
+      right = mid;       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">[right, end] are those &gt;=</span>
     }
   }
 
@@ -134,8 +134,8 @@ This is important to control the while loop condition.
 upper<sub>bound</sub>(nums.begin(), nums.end(), target)
 </p>
 </div>
-<div id="outline-container-org325d7b3" class="outline-5">
-<h5 id="org325d7b3"><span class="section-number-5">2.1.2.1.</span> [left, right]</h5>
+<div id="outline-container-org31dfa1b" class="outline-5">
+<h5 id="org31dfa1b"><span class="section-number-5">2.1.2.1.</span> [left, right]</h5>
 <div class="outline-text-5" id="text-2-1-2-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -158,8 +158,8 @@ upper<sub>bound</sub>(nums.begin(), nums.end(), target)
 </div>
 </div>
 </div>
-<div id="outline-container-org4d2a665" class="outline-5">
-<h5 id="org4d2a665"><span class="section-number-5">2.1.2.2.</span> [left, right)</h5>
+<div id="outline-container-orgae016fe" class="outline-5">
+<h5 id="orgae016fe"><span class="section-number-5">2.1.2.2.</span> [left, right)</h5>
 <div class="outline-text-5" id="text-2-1-2-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -180,8 +180,8 @@ upper<sub>bound</sub>(nums.begin(), nums.end(), target)
 </div>
 </div>
 </div>
-<div id="outline-container-org53af147" class="outline-5">
-<h5 id="org53af147"><span class="section-number-5">2.1.2.3.</span> (left, right)</h5>
+<div id="outline-container-orga524656" class="outline-5">
+<h5 id="orga524656"><span class="section-number-5">2.1.2.3.</span> (left, right)</h5>
 <div class="outline-text-5" id="text-2-1-2-3">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -210,8 +210,8 @@ upper<sub>bound</sub>(nums.begin(), nums.end(), target)
 upper<sub>bound</sub>(nums.begin(), nums.end(), target) - 1
 </p>
 </div>
-<div id="outline-container-orgeab1e21" class="outline-5">
-<h5 id="orgeab1e21"><span class="section-number-5">2.1.3.1.</span> [left, right]</h5>
+<div id="outline-container-org56199cb" class="outline-5">
+<h5 id="org56199cb"><span class="section-number-5">2.1.3.1.</span> [left, right]</h5>
 <div class="outline-text-5" id="text-2-1-3-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -234,8 +234,8 @@ upper<sub>bound</sub>(nums.begin(), nums.end(), target) - 1
 </div>
 </div>
 </div>
-<div id="outline-container-org9686d33" class="outline-5">
-<h5 id="org9686d33"><span class="section-number-5">2.1.3.2.</span> [left, right)</h5>
+<div id="outline-container-orge0db1c2" class="outline-5">
+<h5 id="orge0db1c2"><span class="section-number-5">2.1.3.2.</span> [left, right)</h5>
 <div class="outline-text-5" id="text-2-1-3-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -258,8 +258,8 @@ upper<sub>bound</sub>(nums.begin(), nums.end(), target) - 1
 </div>
 </div>
 </div>
-<div id="outline-container-orga524656" class="outline-5">
-<h5 id="orga524656"><span class="section-number-5">2.1.3.3.</span> (left, right)</h5>
+<div id="outline-container-orgf077deb" class="outline-5">
+<h5 id="orgf077deb"><span class="section-number-5">2.1.3.3.</span> (left, right)</h5>
 <div class="outline-text-5" id="text-2-1-3-3">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -290,8 +290,8 @@ upper<sub>bound</sub>(nums.begin(), nums.end(), target) - 1
 lower<sub>bound</sub>(nums.begin(), nums.end(), target) - 1
 </p>
 </div>
-<div id="outline-container-org31dfa1b" class="outline-5">
-<h5 id="org31dfa1b"><span class="section-number-5">2.1.4.1.</span> [left, right]</h5>
+<div id="outline-container-org451dafb" class="outline-5">
+<h5 id="org451dafb"><span class="section-number-5">2.1.4.1.</span> [left, right]</h5>
 <div class="outline-text-5" id="text-2-1-4-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -314,8 +314,8 @@ lower<sub>bound</sub>(nums.begin(), nums.end(), target) - 1
 </div>
 </div>
 </div>
-<div id="outline-container-orgae016fe" class="outline-5">
-<h5 id="orgae016fe"><span class="section-number-5">2.1.4.2.</span> [left, right)</h5>
+<div id="outline-container-orgd4bb594" class="outline-5">
+<h5 id="orgd4bb594"><span class="section-number-5">2.1.4.2.</span> [left, right)</h5>
 <div class="outline-text-5" id="text-2-1-4-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">target</span>) {
@@ -373,7 +373,7 @@ lower<sub>bound</sub>(nums.begin(), nums.end(), target) - 1
 <h3 id="org147c957"><span class="section-number-3">2.2.</span> desending ordered array</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
-for desending order, we need to overwrite the compare operator to greater
+for desending order, we need to overwrite the comparator operator
 </p>
 </div>
 <div id="outline-container-org154a132" class="outline-4">
