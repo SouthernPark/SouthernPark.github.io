@@ -3,8 +3,8 @@ layout: default
 title: Cycle
 nav_exclude: true
 ---
-<div id="outline-container-orgad08618" class="outline-2">
-<h2 id="orgad08618"><span class="section-number-2">1.</span> detect cycle in an array permutation</h2>
+<div id="outline-container-org5dbc66d" class="outline-2">
+<h2 id="org5dbc66d"><span class="section-number-2">1.</span> detect cycle in an array permutation</h2>
 <div class="outline-text-2" id="text-1">
 <ol class="org-ol">
 <li>When we do swap on an array consecutively like in sort, how can we find the minum swaps from arr1 -&gt; arr2 after the sorting?</li>
@@ -24,11 +24,11 @@ for each index i, we follow nums[i] and nums[nums[i]] &#x2026;, to loop through 
 We also need to mark all the index we visited, because for the next i + 1 &#x2026;, it may already been visited
 </p>
 </div>
-<div id="outline-container-orgc259a35" class="outline-3">
-<h3 id="orgc259a35"><span class="section-number-3">1.1.</span> code</h3>
+<div id="outline-container-org2551628" class="outline-3">
+<h3 id="org2551628"><span class="section-number-3">1.1.</span> code</h3>
 </div>
-<div id="outline-container-org1aacef0" class="outline-3">
-<h3 id="org1aacef0"><span class="section-number-3">1.2.</span> With set to record the visited nodes</h3>
+<div id="outline-container-org8339a84" class="outline-3">
+<h3 id="org8339a84"><span class="section-number-3">1.2.</span> With set to record the visited nodes</h3>
 <div class="outline-text-3" id="text-1-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">main</span>() {
@@ -68,8 +68,8 @@ We also need to mark all the index we visited, because for the next i + 1 &#x202
 </div>
 </div>
 </div>
-<div id="outline-container-org01baabb" class="outline-3">
-<h3 id="org01baabb"><span class="section-number-3">1.3.</span> With Not Bit wise operation to record visited nodes</h3>
+<div id="outline-container-org43586fd" class="outline-3">
+<h3 id="org43586fd"><span class="section-number-3">1.3.</span> With Not Bit wise operation to record visited nodes</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 For a non negative integer (including 0), it&rsquo;s bit wise NOT ~num must be a negative.
@@ -112,6 +112,6 @@ Remember in Two&rsquo;s compliment: -x = ~x + 1, ==&gt; ~x = -x - 1
 </div>
 </div>
 </div>
-<div id="outline-container-org57bf704" class="outline-2">
-<h2 id="org57bf704"><span class="section-number-2">2.</span> detect cycle in complex Graph with DFS</h2>
+<div id="outline-container-orgca50429" class="outline-2">
+<h2 id="orgca50429"><span class="section-number-2">2.</span> detect cycle in complex Graph with DFS</h2>
 </div>

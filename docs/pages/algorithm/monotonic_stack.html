@@ -3,8 +3,8 @@ layout: default
 title: Monotonic Stack
 nav_exclude: true
 ---
-<div id="outline-container-org7a8c5c3" class="outline-2">
-<h2 id="org7a8c5c3"><span class="section-number-2">1.</span> description</h2>
+<div id="outline-container-org49106bd" class="outline-2">
+<h2 id="org49106bd"><span class="section-number-2">1.</span> description</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Monotonic stack is often used to find the next/previous greater/smaller elements in a sequence.
@@ -33,19 +33,19 @@ The following cases give some examples about this.
 </p>
 </div>
 </div>
-<div id="outline-container-orge355605" class="outline-2">
-<h2 id="orge355605"><span class="section-number-2">2.</span> code examples</h2>
+<div id="outline-container-orgbc8e6b4" class="outline-2">
+<h2 id="orgbc8e6b4"><span class="section-number-2">2.</span> code examples</h2>
 <div class="outline-text-2" id="text-2">
 </div>
-<div id="outline-container-orgebe854e" class="outline-3">
-<h3 id="orgebe854e"><span class="section-number-3">2.1.</span> next greater elements</h3>
+<div id="outline-container-org15eaddf" class="outline-3">
+<h3 id="org15eaddf"><span class="section-number-3">2.1.</span> next greater elements</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 Given an array of int nums, for each nums[i] in the array find the index of first greater element that is to the right of i
 </p>
 </div>
-<div id="outline-container-org121d6f4" class="outline-4">
-<h4 id="org121d6f4"><span class="section-number-4">2.1.1.</span> loop from left to right</h4>
+<div id="outline-container-org21c7fe9" class="outline-4">
+<h4 id="org21c7fe9"><span class="section-number-4">2.1.1.</span> loop from left to right</h4>
 <div class="outline-text-4" id="text-2-1-1">
 <p>
 The stack will be used to hold the nums whose next greater not found. Once we found one answer for elements in the stack, the elements become not useful, pop it from the mono stack.
@@ -73,8 +73,8 @@ So the stack will become monotonically decreasing.
 </p>
 </div>
 </div>
-<div id="outline-container-org7072601" class="outline-4">
-<h4 id="org7072601"><span class="section-number-4">2.1.2.</span> loop from the right to left</h4>
+<div id="outline-container-org39a9b4c" class="outline-4">
+<h4 id="org39a9b4c"><span class="section-number-4">2.1.2.</span> loop from the right to left</h4>
 <div class="outline-text-4" id="text-2-1-2">
 <p>
 The stack is used to hold elements that is greater and most in the left. So if we find an element that is greater than the top of stack and is also more left than the top elements.
@@ -111,12 +111,12 @@ Otherwise, the elements becomes not usefull when answering the previous elements
 </div>
 </div>
 </div>
-<div id="outline-container-org9db07ed" class="outline-3">
-<h3 id="org9db07ed"><span class="section-number-3">2.2.</span> next smaller elements</h3>
+<div id="outline-container-orga673e3e" class="outline-3">
+<h3 id="orga673e3e"><span class="section-number-3">2.2.</span> next smaller elements</h3>
 <div class="outline-text-3" id="text-2-2">
 </div>
-<div id="outline-container-org4569669" class="outline-4">
-<h4 id="org4569669"><span class="section-number-4">2.2.1.</span> loop from left to right</h4>
+<div id="outline-container-org25f5d6c" class="outline-4">
+<h4 id="org25f5d6c"><span class="section-number-4">2.2.1.</span> loop from left to right</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_next_smaller</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
@@ -144,8 +144,8 @@ This will lead to monotonically increasing stack
 </p>
 </div>
 </div>
-<div id="outline-container-orgb62d98f" class="outline-4">
-<h4 id="orgb62d98f"><span class="section-number-4">2.2.2.</span> loop from right to left</h4>
+<div id="outline-container-orgb3a36ba" class="outline-4">
+<h4 id="orgb3a36ba"><span class="section-number-4">2.2.2.</span> loop from right to left</h4>
 <div class="outline-text-4" id="text-2-2-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_next_smaller</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
@@ -170,12 +170,12 @@ This will lead to monotonically increasing stack
 </div>
 </div>
 </div>
-<div id="outline-container-orgea55e3f" class="outline-3">
-<h3 id="orgea55e3f"><span class="section-number-3">2.3.</span> prev greater elements</h3>
+<div id="outline-container-org9ff8ed9" class="outline-3">
+<h3 id="org9ff8ed9"><span class="section-number-3">2.3.</span> prev greater elements</h3>
 <div class="outline-text-3" id="text-2-3">
 </div>
-<div id="outline-container-org986404f" class="outline-4">
-<h4 id="org986404f"><span class="section-number-4">2.3.1.</span> loop from left to right</h4>
+<div id="outline-container-org9b6ca9f" class="outline-4">
+<h4 id="org9b6ca9f"><span class="section-number-4">2.3.1.</span> loop from left to right</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_prev_greater</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
@@ -202,8 +202,8 @@ This will lead to monotonically increasing stack
 </div>
 </div>
 </div>
-<div id="outline-container-org399c92b" class="outline-4">
-<h4 id="org399c92b"><span class="section-number-4">2.3.2.</span> loop from right to left</h4>
+<div id="outline-container-orgd0af560" class="outline-4">
+<h4 id="orgd0af560"><span class="section-number-4">2.3.2.</span> loop from right to left</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_prev_greater</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
@@ -228,12 +228,12 @@ This will lead to monotonically increasing stack
 </div>
 </div>
 </div>
-<div id="outline-container-org7234e6b" class="outline-3">
-<h3 id="org7234e6b"><span class="section-number-3">2.4.</span> prev smaller elements</h3>
+<div id="outline-container-org0bb60ab" class="outline-3">
+<h3 id="org0bb60ab"><span class="section-number-3">2.4.</span> prev smaller elements</h3>
 <div class="outline-text-3" id="text-2-4">
 </div>
-<div id="outline-container-org4ec7745" class="outline-4">
-<h4 id="org4ec7745"><span class="section-number-4">2.4.1.</span> loop from left to right</h4>
+<div id="outline-container-org87290d7" class="outline-4">
+<h4 id="org87290d7"><span class="section-number-4">2.4.1.</span> loop from left to right</h4>
 <div class="outline-text-4" id="text-2-4-1">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_prev_smaller</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {
@@ -260,8 +260,8 @@ This will lead to monotonically increasing stack
 </div>
 </div>
 </div>
-<div id="outline-container-orgc909af0" class="outline-4">
-<h4 id="orgc909af0"><span class="section-number-4">2.4.2.</span> loop from right to left</h4>
+<div id="outline-container-org696809c" class="outline-4">
+<h4 id="org696809c"><span class="section-number-4">2.4.2.</span> loop from right to left</h4>
 <div class="outline-text-4" id="text-2-4-2">
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #c678dd;">find_prev_smaller</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">nums</span>) {

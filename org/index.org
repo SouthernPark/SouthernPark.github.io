@@ -16,17 +16,13 @@ nav_exclude: true
 * [[file:~/org_private_repo/behavior_question.org][Behavior Question]]
 
 * Operating System
-** [[file:pages/os/xv6.org][MIT 6.S081 xv6 OS with RISCV CPU]]
-
+** [[file:pages/os/xv6/xv6.org][MIT 6.S081 xv6 OS with RISCV CPU]]
 
 * Programming Language
-** [[file:programming_language/C++.org][C++]]
+** [[file:pages/programming_language/C++.org][C++]]
 
 * [[file:~/org_private_repo/visa.org][US Visa Info (CPT/OPT/H1B)]]
 
 * TODO [[file:~/org_private_repo/applications.org][Application]]
-
-
-
 * other
 ** [[file:pages/how-to-blog-with-Emacs-Jeklly.org][Blogs with Emacs org mode, Jeklly and Github Pages]]

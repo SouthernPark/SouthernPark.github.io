@@ -73,8 +73,7 @@ vector<vector<int>> graph(m, vector<int>(n));
 // each node at coordinate (i, j) can be represented with id i * n + j
 
 // to traverse ajacently, you can use the following array to specify the up, down, left, right directions
-vector<pair<int, int>> dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
+vector<pair<int, int>> dirs = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
 #+end_src
 
 * Neighbour

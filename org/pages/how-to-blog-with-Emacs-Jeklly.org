@@ -214,3 +214,28 @@ in _config.yml
 header_pages:
   - about.markdown
 #+end_src
+* Corner cases
+** \{\{ or not \}\} better not appear because of they are special char
+Jekyll (via Liquid), {{ ... }} is used to output variables, so using them directly in your HTML (especially for things like math expressions, code snippets, or data) will cause errors unless you escape or suppress them.
+
+one way is to add space amongthem
+
+Another way is to use the following:
+{% raw %}
+{{1, 2, 3}} is a set of values
+{% endraw %}
+
+** Org export will only generate html files once the org file is modified
+To avoid this, you can delete the org export timestamp in the following file:
+
+~/.emacs.d/.local/cache/org/timestamps/
+#+begin_src
+(setq org-publish-cache (make-hash-table :test 'equal :weakness nil :size 100))
+(puthash ":project:" "org-ianbarton" org-publish-cache)
+(puthash ":cache-file:" "./.emacs.d/.local/cache/org/timestamps/org-ianbarton.cache" org-publish-cache)
+
+<<< delete from here
+(puthash "./SouthernPark.github.io/org/index.org" '(:crossrefs (((other "OTHER") . 241588112) ((headline "OTHER") . 241588112) ((other "[[FILE:PAGES/HOW-TO-BLOG-WITH-EMACS-JEKLLY.ORG][BLOGS" "WITH" "EMACS" "ORG" "MODE," "JEKLLY" "AND" "GITHUB" "PAGES]]") . 133800015) ((headline "[[FILE:PAGES/HOW-TO-BLOG-WITH-EMACS-JEKLLY.ORG][BLOGS" "WITH" "EMACS" "ORG" "MODE," "JEKLLY" "AND" "GITHUB" "PAGES]]") . 133800015) ((other "[[FILE:~/ORG_PRIVATE_REPO/APPLICATIONS.ORG][APPLICATION]]") . 66852479) ((headline "[[FILE:~/ORG_PRIVATE_REPO/APPLICATIONS.ORG][APPLICATION]]") . 66852479) ((other "[[FILE:~/ORG_PRIVATE_REPO/VISA.ORG][US" "VISA" "INFO" "(CPT/OPT/H1B)]]") . 15348691) ((headline "[[FILE:~/ORG_PRIVATE_REPO/VISA.ORG][US" "VISA" "INFO" "(CPT/OPT/H1B)]]") . 15348691) ((other "PROGRAMMING" "LANGUAGE") . 7219876) ((headline "PROGRAMMING" "LANGUAGE") . 7219876) ((other "[[FILE:PAGES/PROGRAMMING_LANGUAGE/C++.ORG][C++]]") . 252688390) ((headline "[[FILE:PAGES/PROGRAMMING_LANGUAGE/C++.ORG][C++]]") . 252688390) ((other "OPERATING" "SYSTEM") . 98189774) ((headline "OPERATING" "SYSTEM") . 98189774) ((other "[[FILE:PAGES/OS/XV6/XV6.ORG][MIT" "6.S081" "XV6" "OS" "WITH" "RISCV" "CPU]]") . 149546473) ((headline "[[FILE:PAGES/OS/XV6/XV6.ORG][MIT" "6.S081" "XV6" "OS" "WITH" "RISCV" "CPU]]") . 149546473) ((other "[[FILE:~/ORG_PRIVATE_REPO/BEHAVIOR_QUESTION.ORG][BEHAVIOR" "QUESTION]]") . 170993380) ((headline "[[FILE:~/ORG_PRIVATE_REPO/BEHAVIOR_QUESTION.ORG][BEHAVIOR" "QUESTION]]") . 170993380) ((other "[[FILE:PAGES/ALGORITHM/ALGORITHM.ORG][ALGORITHM]]") . 163051564) ((headline "[[FILE:PAGES/ALGORITHM/ALGORITHM.ORG][ALGORITHM]]") . 163051564))) org-publish-cache)
+(puthash "X7463dbcc975a05c0934dfa69a0654651a15c97b7" '(26687 52976 0 0) org-publish-cache)
+
+#+end_src
