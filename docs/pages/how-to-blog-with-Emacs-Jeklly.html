@@ -335,3 +335,89 @@ To avoid this, you can delete the org export timestamp in the following file:
 </div>
 </div>
 </div>
+<div id="outline-container-orge184731" class="outline-2">
+<h2 id="orge184731"><span class="section-number-2">8.</span> Image</h2>
+<div class="outline-text-2" id="text-8">
+</div>
+<div id="outline-container-orgf3ea30f" class="outline-3">
+<h3 id="orgf3ea30f"><span class="section-number-3">8.1.</span> org-ros</h3>
+<div class="outline-text-3" id="text-8-1">
+<p>
+<a href="https://github.com/LionyxML/ros">org-ros github link</a>
+in ~/.doom.d/packages.el include the following
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">(package! org-ros)
+</pre>
+</div>
+
+<p>
+run ./doom sync, the scripts will be downloaded from melpa
+</p>
+</div>
+<div id="outline-container-org9efff66" class="outline-4">
+<h4 id="org9efff66"><span class="section-number-4">8.1.1.</span> corner cases (for Windows powershell.exe run failed because of permission)</h4>
+<div class="outline-text-4" id="text-8-1-1">
+<p>
+~/.emacs.d/.local/straight/repos/ros/org-ros.el contains the lisp code to call the screenshot tool for Windows,
+add &ldquo;-ExecutionPolicy&rdquo; &ldquo;Bypass&rdquo; to the following to by pass policy
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #da8548; font-weight: bold;">83</span>
+<span style="color: #da8548; font-weight: bold;">84</span>                 <span style="color: #51afef;">(</span><span style="color: #c678dd;">(</span><span style="color: #a9a1e1;">executable-find</span> <span style="color: #dcaeea;">org-ros-windows-screencapture</span><span style="color: #c678dd;">)</span>
+<span style="color: #da8548; font-weight: bold;">85</span>                  <span style="color: #c678dd;">(</span><span style="color: #a9a1e1;">start-process</span> <span style="color: #98be65;">"powershell"</span> <span style="color: #98be65;">"*PowerShell*"</span> <span style="color: #98be65;">"powershell.exe"</span> <span style="color: #98be65;">"-ExecutionPolicy"</span> <span style="color: #98be65;">"Bypass"</span> <span style="color: #98be65;">"-File"</span> <span style="color: #98be65;">(</span><span style="color: #a9a1e1;">expand-file-name</span> <span style="color: #98be65;">"./printsc.ps1"</span> <span style="color: #dcaeea;">org-ros-dir</span><span style="color: #98be65;">)</span> filepath<span style="color: #c678dd;">)</span><span style="color: #51afef;">)</span><span style="color: #ff6c6b; font-weight: bold;">)</span>
+</pre>
+</div>
+
+<p>
+don&rsquo;t forget to run ./doom sync
+</p>
+</div>
+</div>
+<div id="outline-container-org8457eed" class="outline-4">
+<h4 id="org8457eed"><span class="section-number-4">8.1.2.</span> inline image</h4>
+<div class="outline-text-4" id="text-8-1-2">
+<p>
+Only inline images can be displayed directly in org mode and exported to inline image in HTML.
+Inline image does not have description part, so replace the following code in ~/.emacs.d/.local/straight/repos/ros/org-ros.el
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #51afef;">(</span><span style="color: #a9a1e1;">insert</span> <span style="color: #98be65;">"[["</span> filepath <span style="color: #98be65;">"]"</span> <span style="color: #98be65;">"["</span> display-name <span style="color: #98be65;">"]]"</span><span style="color: #51afef;">)</span>
+</pre>
+</div>
+<p>
+to the following
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #5B6268;">;; </span><span style="color: #5B6268;">the ros stores the img in the same dir as current org, so it's ok to use relative path</span>
+<span style="color: #5B6268;">;; </span><span style="color: #5B6268;">use relative path also helps for org to HTML export</span>
+<span style="color: #51afef;">(</span><span style="color: #a9a1e1;">insert</span> <span style="color: #c678dd;">(</span><span style="color: #a9a1e1;">format</span> <span style="color: #98be65;">"[[file:%s]]\n"</span> default-filename<span style="color: #c678dd;">)</span><span style="color: #51afef;">)</span>
+</pre>
+</div>
+
+<p>
+Also change the following
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">(display-name (read-string
+                              (format "Name the screenshot (default: \"%s\"): " default-filename)
+                              nil nil default-filename))
+</pre>
+</div>
+<p>
+to
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">(default-filename (read-string
+                              (format "Name the screenshot (default: \"%s\"): " default-filename)
+                              nil nil default-filename))
+</pre>
+</div>
+
+<p>
+don&rsquo;t forget to run ./doom sync
+</p>
+</div>
+</div>
+</div>
+</div>

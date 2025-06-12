@@ -1,0 +1,322 @@
+---
+layout: default
+title: OS Interfaces
+nav_exclude: true
+---
+
+<p>
+Operating systems provide interfaces to user programs through system calls.
+</p>
+<div id="outline-container-orgd112849" class="outline-2">
+<h2 id="orgd112849"><span class="section-number-2">1.</span> xv6 system calls</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+The following are the system calls provided by xv6.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">function</th>
+<th scope="col" class="org-left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">int fork()</td>
+<td class="org-left">Create a process, return child’s PID.</td>
+</tr>
+
+<tr>
+<td class="org-left">int exit(int status)</td>
+<td class="org-left">Terminate the current process; status reported to wait(). No return.</td>
+</tr>
+
+<tr>
+<td class="org-left">int wait(int *status)</td>
+<td class="org-left">Wait for a child to exit; exit status in *status; returns child PID</td>
+</tr>
+
+<tr>
+<td class="org-left">int kill(int pid)</td>
+<td class="org-left">Terminate process PID. Returns 0, or -1 for error.</td>
+</tr>
+
+<tr>
+<td class="org-left">int getpid()</td>
+<td class="org-left">Return the current process’s PID.</td>
+</tr>
+
+<tr>
+<td class="org-left">int sleep(int n)</td>
+<td class="org-left">Pause for n clock ticks.</td>
+</tr>
+
+<tr>
+<td class="org-left">int exec(char *file, char *argv[])</td>
+<td class="org-left">Load a file and execute it with arguments; only returns if error.</td>
+</tr>
+
+<tr>
+<td class="org-left">char *sbrk(int n)</td>
+<td class="org-left">Grow process’s memory by n bytes. Returns start of new memory.</td>
+</tr>
+
+<tr>
+<td class="org-left">int open(char *file, int flags)</td>
+<td class="org-left">Open a file; flags indicate read/write; returns an fd (file descriptor).</td>
+</tr>
+
+<tr>
+<td class="org-left">int write(int fd, char *buf, int n)</td>
+<td class="org-left">Write n bytes from buf to file descriptor fd; returns n</td>
+</tr>
+
+<tr>
+<td class="org-left">int read(int fd, char *buf, int n)</td>
+<td class="org-left">Read n bytes into buf; returns number read; or 0 if end of file</td>
+</tr>
+
+<tr>
+<td class="org-left">int close(int fd)</td>
+<td class="org-left">Release open file fd.</td>
+</tr>
+
+<tr>
+<td class="org-left">int dup(int fd)</td>
+<td class="org-left">Return a new file descriptor referring to the same file as fd.</td>
+</tr>
+
+<tr>
+<td class="org-left">int pipe(int p[])</td>
+<td class="org-left">Create a pipe, put read/write file descriptors in p[0] and p[1].</td>
+</tr>
+
+<tr>
+<td class="org-left">int chdir(char *dir)</td>
+<td class="org-left">Change the current directory.</td>
+</tr>
+
+<tr>
+<td class="org-left">int mkdir(char *dir)</td>
+<td class="org-left">Create a new directory.</td>
+</tr>
+
+<tr>
+<td class="org-left">int mknod(char *file, int, int)</td>
+<td class="org-left">Create a device file.</td>
+</tr>
+
+<tr>
+<td class="org-left">int fstat(int fd, struct stat *st)</td>
+<td class="org-left">Place info about an open file into *st.</td>
+</tr>
+
+<tr>
+<td class="org-left">int stat(char *file, struct stat *st)</td>
+<td class="org-left">Place info about a named file into *st</td>
+</tr>
+
+<tr>
+<td class="org-left">int link(char *file1, char *file2)</td>
+<td class="org-left">Create another name (file2) for the file file1</td>
+</tr>
+
+<tr>
+<td class="org-left">int unlink(char *file)</td>
+<td class="org-left">Remove a file.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="outline-container-org98b2ee3" class="outline-2">
+<h2 id="org98b2ee3"><span class="section-number-2">2.</span> shell</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The shell (like sh or bash) is just a user-space program that:
+</p>
+<ol class="org-ol">
+<li>Reads user input (commands).</li>
+<li>Uses fork() to create a new process. (except from cd)</li>
+<li>Uses exec() to run a program.</li>
+<li>Waits for it using wait().</li>
+</ol>
+
+<p>
+For xv6, the shell is directly connected to console, it does not have ssh. So read and write (stdout, stderr) are directly go to console device
+The following codes show you the stdin, stdout, stderr opened when shell process start.
+Remember that fd created by open system call, it&rsquo;s underlying fd tables are different, so these three fds uses different offset.
+You may also wondering how to keep the stdout and stderr write to console in order, so that output won&rsquo;t jumbled.
+The write to console is specially handled with consolewrite, which has a lock to keep the output in a good order.
+</p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/user/sh.c#L160">user/sh.c shell fds connected to console device</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">main</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  ...
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Ensure that three file descriptors are open.</span>
+  <span style="color: #51afef;">while</span>((fd = open(<span style="color: #98be65;">"console"</span>, O_RDWR)) &gt;= <span style="color: #da8548; font-weight: bold;">0</span>){
+    <span style="color: #51afef;">if</span>(fd &gt;= <span style="color: #da8548; font-weight: bold;">3</span>){
+      close(fd);
+      <span style="color: #51afef;">break</span>;
+    }
+  }
+ ...
+</pre>
+</div>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv//user/sh.c#L135">user/sh.c print prompt and read input from console</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">getcmd</span>(<span style="color: #ECBE7B;">char</span> *<span style="color: #dcaeea;">buf</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">nbuf</span>)
+{
+  write(<span style="color: #da8548; font-weight: bold;">2</span>, <span style="color: #98be65;">"$ "</span>, <span style="color: #da8548; font-weight: bold;">2</span>);
+  memset(buf, <span style="color: #da8548; font-weight: bold;">0</span>, nbuf);
+  gets(buf, nbuf);                  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">&lt;&lt;&lt; get a whole line as input</span>
+  <span style="color: #51afef;">if</span> (condition) {
+
+  }(buf[<span style="color: #da8548; font-weight: bold;">0</span>] == <span style="color: #da8548; font-weight: bold;">0</span>) <span style="color: #5B6268;">// </span><span style="color: #5B6268;">EOF</span>
+    <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+  <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">0</span>;
+}
+</pre>
+</div>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv//user/sh.c#L160">user/sh.c shell loop framework</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">main</span>(<span style="color: #ECBE7B;">void</span>)
+{
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Read and run input commands.</span>
+  <span style="color: #51afef;">while</span>(getcmd(buf, <span style="color: #51afef;">sizeof</span>(buf)) &gt;= <span style="color: #da8548; font-weight: bold;">0</span>){
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">cd command</span>
+    <span style="color: #51afef;">if</span>(buf[<span style="color: #da8548; font-weight: bold;">0</span>] == <span style="color: #98be65;">'c'</span> &amp;&amp; buf[<span style="color: #da8548; font-weight: bold;">1</span>] == <span style="color: #98be65;">'d'</span> &amp;&amp; buf[<span style="color: #da8548; font-weight: bold;">2</span>] == <span style="color: #98be65;">' '</span>){
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Chdir must be called by the parent, not the child.</span>
+      buf[strlen(buf)-<span style="color: #da8548; font-weight: bold;">1</span>] = <span style="color: #da8548; font-weight: bold;">0</span>;  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">chop \n</span>
+      <span style="color: #51afef;">if</span>(chdir(buf+<span style="color: #da8548; font-weight: bold;">3</span>) &lt; <span style="color: #da8548; font-weight: bold;">0</span>)
+        fprintf(<span style="color: #da8548; font-weight: bold;">2</span>, <span style="color: #98be65;">"cannot cd %s\n"</span>, buf+<span style="color: #da8548; font-weight: bold;">3</span>);
+      <span style="color: #51afef;">continue</span>;
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">other types of command, fork and run in child process</span>
+    <span style="color: #51afef;">if</span>(fork1() == <span style="color: #da8548; font-weight: bold;">0</span>)
+      runcmd(parsecmd(buf));    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">parsecmd helps to build a tree from the input, runcmd will help to go down the tree and run the commands</span>
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">shell wait for child process</span>
+    wait(<span style="color: #da8548; font-weight: bold;">0</span>);
+  }
+  exit(<span style="color: #da8548; font-weight: bold;">0</span>);
+}
+</pre>
+</div>
+
+<p>
+There are 5 types of command that can be run by xv6, which are defined in the <a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/user/sh.c#L8">following</a>:
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">//</span><span style="color: #5B6268;">e.g. xxx</span>
+<span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #dcaeea;">EXEC</span>  <span style="color: #da8548; font-weight: bold;">1</span>
+<span style="color: #5B6268;">//</span><span style="color: #5B6268;">e.g. xxx &gt; xxx</span>
+<span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #dcaeea;">REDIR</span> <span style="color: #da8548; font-weight: bold;">2</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">e.g. xxx | xxx</span>
+<span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #dcaeea;">PIPE</span>  <span style="color: #da8548; font-weight: bold;">3</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">xxx ; xxx</span>
+<span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #dcaeea;">LIST</span>  <span style="color: #da8548; font-weight: bold;">4</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">xxx &amp;</span>
+<span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #dcaeea;">BACK</span>  <span style="color: #da8548; font-weight: bold;">5</span>
+</pre>
+</div>
+
+<p>
+The parser and tree wal through is the harder part for the shell process. The following video explains how the tree is built and walked in details:
+<a href="https://youtu.be/ubt-UjcQUYg">xv6 Shell Program Explained (runcmd walk the cmd tree)</a>
+</p>
+
+<p>
+<a href="https://youtu.be/ZjzMdsTWF0U">Shell Code&#x2013; More Detail (from cmd line input to cmd tree)</a>
+</p>
+
+<p>
+Example of a tree build from the command
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">&lt;file1 pgm opt1 &gt; file2 opt2
+
+Tree:
+| redir cmd | -&gt; | redir cmd | -&gt; | exec cmd |
+
+&lt;file1            &gt;file2           pgm opt1 opt2
+</pre>
+</div>
+
+<p>
+The command will be run from the top of the tree, so the fd will be opened first before the command running
+</p>
+</div>
+</div>
+<div id="outline-container-org10aad57" class="outline-2">
+<h2 id="org10aad57"><span class="section-number-2">3.</span> I/O and File Descriptors</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Each process have their own file descriptor table, so that they have their own private space of fd starting from 0.
+A newly allocated file descriptor is always the lowestnumbered unused descriptor of the current process.
+</p>
+
+<p>
+stdin: 0. stdout: 1. stderr: 2.
+</p>
+
+<p>
+Fork copies the parent’s file descriptor table along with its memory, so that the child starts with exactly the same open files as the parent.
+The system call exec replaces the calling process’s memory but preserves its file table.
+Although fork copies the file descriptor table, each underlying file offset is shared between parent and child.
+</p>
+
+<p>
+Two file descriptors share an offset if they were derived from the same original file descriptor by a sequence of fork and dup calls. Otherwise file descriptors do not share offsets, even if they
+resulted from open calls for the same file.
+</p>
+</div>
+</div>
+<div id="outline-container-org908a656" class="outline-2">
+<h2 id="org908a656"><span class="section-number-2">4.</span> Pipe vs Redirection</h2>
+<div class="outline-text-2" id="text-4">
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #ECBE7B;">echo</span> hello world | wc
+
+could be implemented without pipes as
+
+<span style="color: #ECBE7B;">echo</span> hello world &gt;/tmp/xyz; wc &lt;/tmp/xyz
+</pre>
+</div>
+<p>
+Pipes have at least four advantages over temporary files in this situation.
+</p>
+<ol class="org-ol">
+<li>Pipes automatically clean themselves up; with the file redirection, a shell would have to be careful to remove /tmp/xyz when done.</li>
+<li>pipes can pass arbitrarily long streams of data, while file redirection requires enough free space on disk to store all the data.</li>
+<li>Third, pipes allow for parallel execution of pipeline stages, while the file approach requires the first program to finish before the second starts.</li>
+<li>If you are implementing inter-process communication, pipes’ blocking reads and writes are more efficient than the non-blocking semantics of files</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-orgf954545" class="outline-2">
+<h2 id="orgf954545"><span class="section-number-2">5.</span> <a href="lab1.html">Lab1</a></h2>
+</div>

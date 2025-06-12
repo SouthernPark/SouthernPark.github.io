@@ -171,4 +171,4 @@ Pipes have at least four advantages over temporary files in this situation.
 3. Third, pipes allow for parallel execution of pipeline stages, while the file approach requires the first program to finish before the second starts.
 4. If you are implementing inter-process communication, pipes’ blocking reads and writes are more efficient than the non-blocking semantics of files
 
-* [[file:~/SouthernPark.github.io/org/pages/os/xv6/labs/lab1.org][Lab1]]
+* [[file:lab1.org][Lab1]]

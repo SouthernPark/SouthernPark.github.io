@@ -18,6 +18,9 @@ nav_exclude: true
 * Operating System
 ** [[file:pages/os/xv6/xv6.org][MIT 6.S081 xv6 OS with RISCV CPU]]
 
+* Computer Network
+** [[file:pages/computer_network/foundations.org][Foundations]]
+
 * Programming Language
 ** [[file:pages/programming_language/C++.org][C++]]
 

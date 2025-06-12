@@ -1,0 +1,67 @@
+#+title: Foundations
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Foundations
+nav_exclude: true
+---
+#+END_EXPORT
+
+
+* Layer 3 (Network IP)
+
+** IP address
+IPv4 standards defines the IP address with 32 bits.
+The old style classifies the IP address into 5 classes: A, B, C, D, E.
+But will cause the waste of IP address. Nowadays, Classless IP addressing is used.
+*** Classful IP Addressing
+The first 4 bits of IP address is used to divide the IP address into 5 different classes.
+The first 4 bits used as dividing purpose to classify different classes
+
+**** class A
+0 | Network (7 bits) | Host (24 bits)
+
+So there will be 2 ^ 7 = 128 networks ID under class A.
+And there will be 2 ^ 24 - 2 = 16,777,214 host ID (-2, one for network address 0.0.0, another for broadcast address 256.256.256);
+
+Range (Here we are talking the first 8 bits Octet): 0 ~ 127.
+So every time you see IP whose first Octet is 0 ~ 127, then it's a class A)
+
+**** class B
+1 0 | Network (14 bits) | Host (16 bits)
+
+Range: 128 ~ 191
+
+**** class C
+1 1 0 | Network (21 bits) | Host (8 bits)
+
+Range: 192 ~ 223
+
+**** class D
+1 1 1 0 | Host (28 bits)
+
+Range: 224 ~ 239
+Reseved for multi-cast
+**** classs E
+1 1 1 1 | Host (28 bits)
+
+Range: 240 ~ 255
+Reserved for experimental or research
+*** Classless IP Addressing
+The issue with Classful IP addressing is for network ID like in class A, one network ID it will have a huge number of host IDs.
+This will leads to waste. (For example, company get class A network ID will not use the hosts efficiently).
+
+To solve this issue, subnetting is introduced to divide the class IP into smaller networks.
+The following is an example of how a Class A IP is subnetted
+#+begin_src
+10.0.1.0/24
+It's a Class A IP, the first 8 bits is used for Network purpose. But with the subnet mask, the first 24 bits will be used as network ID.
+So this class A IP is divided into 2 ^ (24 - 8) = 2 ^ 16 subnets, with each subnet has 2 ^ (32 - 24) = 2 ^ 8 hosts
+
+In this way, one class A IP network ID can be divided into different subnets with smaller hosts. So that can be given to smaller companies.
+#+end_src

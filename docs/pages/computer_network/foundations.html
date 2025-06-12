@@ -1,0 +1,119 @@
+---
+layout: default
+title: Foundations
+nav_exclude: true
+---
+<div id="outline-container-orgff74052" class="outline-2">
+<h2 id="orgff74052"><span class="section-number-2">1.</span> Layer 3 (Network IP)</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org7231519" class="outline-3">
+<h3 id="org7231519"><span class="section-number-3">1.1.</span> IP address</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+IPv4 standards defines the IP address with 32 bits.
+The old style classifies the IP address into 5 classes: A, B, C, D, E.
+But will cause the waste of IP address. Nowadays, Classless IP addressing is used.
+</p>
+</div>
+<div id="outline-container-orge98b575" class="outline-4">
+<h4 id="orge98b575"><span class="section-number-4">1.1.1.</span> Classful IP Addressing</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<p>
+The first 4 bits of IP address is used to divide the IP address into 5 different classes.
+The first 4 bits used as dividing purpose to classify different classes
+</p>
+</div>
+<div id="outline-container-orgc550fb1" class="outline-5">
+<h5 id="orgc550fb1"><span class="section-number-5">1.1.1.1.</span> class A</h5>
+<div class="outline-text-5" id="text-1-1-1-1">
+<p>
+0 | Network (7 bits) | Host (24 bits)
+</p>
+
+<p>
+So there will be 2 ^ 7 = 128 networks ID under class A.
+And there will be 2 ^ 24 - 2 = 16,777,214 host ID (-2, one for network address 0.0.0, another for broadcast address 256.256.256);
+</p>
+
+<p>
+Range (Here we are talking the first 8 bits Octet): 0 ~ 127.
+So every time you see IP whose first Octet is 0 ~ 127, then it&rsquo;s a class A)
+</p>
+</div>
+</div>
+<div id="outline-container-org8d3bf44" class="outline-5">
+<h5 id="org8d3bf44"><span class="section-number-5">1.1.1.2.</span> class B</h5>
+<div class="outline-text-5" id="text-1-1-1-2">
+<p>
+1 0 | Network (14 bits) | Host (16 bits)
+</p>
+
+<p>
+Range: 128 ~ 191
+</p>
+</div>
+</div>
+<div id="outline-container-org7ebcd77" class="outline-5">
+<h5 id="org7ebcd77"><span class="section-number-5">1.1.1.3.</span> class C</h5>
+<div class="outline-text-5" id="text-1-1-1-3">
+<p>
+1 1 0 | Network (21 bits) | Host (8 bits)
+</p>
+
+<p>
+Range: 192 ~ 223
+</p>
+</div>
+</div>
+<div id="outline-container-org40ac97b" class="outline-5">
+<h5 id="org40ac97b"><span class="section-number-5">1.1.1.4.</span> class D</h5>
+<div class="outline-text-5" id="text-1-1-1-4">
+<p>
+1 1 1 0 | Host (28 bits)
+</p>
+
+<p>
+Range: 224 ~ 239
+Reseved for multi-cast
+</p>
+</div>
+</div>
+<div id="outline-container-orgce3440d" class="outline-5">
+<h5 id="orgce3440d"><span class="section-number-5">1.1.1.5.</span> classs E</h5>
+<div class="outline-text-5" id="text-1-1-1-5">
+<p>
+1 1 1 1 | Host (28 bits)
+</p>
+
+<p>
+Range: 240 ~ 255
+Reserved for experimental or research
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgf1ccfa5" class="outline-4">
+<h4 id="orgf1ccfa5"><span class="section-number-4">1.1.2.</span> Classless IP Addressing</h4>
+<div class="outline-text-4" id="text-1-1-2">
+<p>
+The issue with Classful IP addressing is for network ID like in class A, one network ID it will have a huge number of host IDs.
+This will leads to waste. (For example, company get class A network ID will not use the hosts efficiently).
+</p>
+
+<p>
+To solve this issue, subnetting is introduced to divide the class IP into smaller networks.
+The following is an example of how a Class A IP is subnetted
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">10.0.1.0/24
+It's a Class A IP, the first 8 bits is used for Network purpose. But with the subnet mask, the first 24 bits will be used as network ID.
+So this class A IP is divided into 2 ^ (24 - 8) = 2 ^ 16 subnets, with each subnet has 2 ^ (32 - 24) = 2 ^ 8 hosts
+
+In this way, one class A IP network ID can be divided into different subnets with smaller hosts. So that can be given to smaller companies.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>

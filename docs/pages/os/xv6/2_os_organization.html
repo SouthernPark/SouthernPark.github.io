@@ -1,0 +1,97 @@
+---
+layout: default
+title: OS Organization
+nav_exclude: true
+---
+
+<p>
+An operating system must fulfill three requirements: multiplexing, isolation, and interaction.
+This chapter discuss how the OS organizaiotn provides the above three functions
+</p>
+<div id="outline-container-orgf8b3513" class="outline-2">
+<h2 id="orgf8b3513"><span class="section-number-2">1.</span> Abstracting physical resources （Service As Resouces, boundary between applications）</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+OS abstract resouces into services is one way to provide strong isolation to forbid applications from directly accessing sensitive data.
+</p>
+
+<p>
+For example, Unix applications interact with storage only through the file system’s open, read, write, and close system
+calls, instead of reading and writing the disk directly.
+</p>
+
+<p>
+Another example is OS Scheduling service, which transparently switches hardware CPUs among processes, which avoid one process occupy CPU resources for long time
+</p>
+
+<p>
+System Calls discussed in Chapter 1 is carefully designed to provide service to applicaitons while keep strong isolations between processes.
+</p>
+</div>
+</div>
+<div id="outline-container-org2501413" class="outline-2">
+<h2 id="org2501413"><span class="section-number-2">2.</span> User mode, supervisor mode and machine mode (Boundary between Applicaiton and OS)</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+To achieve strong isolation, the operating system must arrange that applications cannot modify (or even read) the
+operating system’s data structures and instructions and that applications cannot access other processes’ memory
+</p>
+
+
+<p>
+RISC-V CPU provides three mode: user mode, supervisor mode and machine mode, to support strong isolation between application and OS kernel.
+</p>
+
+<p>
+Machine mode has full privilege and is used to configure a computer when CPU started to load the kernel.
+</p>
+
+<p>
+Applciation run under user mode which has limited access to resouces. Application can not invoke kernel function directly but through system calls.
+When system call is inveoked. CPU will do a set of operations to transform to supervisor mode to verify the arguments the application provided.
+After system call executed, the CPU will go back to user mode.
+</p>
+</div>
+</div>
+<div id="outline-container-org0f4a0c9" class="outline-2">
+<h2 id="org0f4a0c9"><span class="section-number-2">3.</span> Process (The unit of isolation)</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The process abstraction prevents one process from wrecking or spying on another process’s memory, CPU, file descriptors, etc.
+The mechanisms used by the kernel to implement processes include the user/supervisor mode flag, address spaces, and time-slicing of threads.
+</p>
+
+<p>
+A process’s most important pieces of kernel state are its page table, its kernel stack, and its run state (defined in <a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv//kernel/proc.h#L85">proc struct</a>).
+p-&gt;state indicates whether the process is allocated, ready to run, running, waiting for I/O, or exiting.
+p-&gt;pagetable holds the process’s page table, in the format that the RISC-V hardware expects。
+</p>
+
+<p>
+Each process uses two stacks: user stack (in user space) and kernel stack (in kernel space).
+Each process has a thread of execution (or thread for short) that executes the process’s instructions.
+A process’s thread alternates between actively using its user stack and its kernel stack.
+</p>
+
+<p>
+In summary, a process bundles two design ideas:
+</p>
+<ol class="org-ol">
+<li>an address space to give a process the illusion of its own memory,</li>
+<li>a thread, to give the process the illusion of its own CPU.</li>
+</ol>
+
+<p>
+In xv6, a process consists of one address space and one thread.
+</p>
+
+
+<p>
+Process memory lay out in user address space:
+<img src="xv6_process_layout.png" alt="xv6_process_layout.png" />
+</p>
+</div>
+</div>
+<div id="outline-container-org9d58c17" class="outline-2">
+<h2 id="org9d58c17"><span class="section-number-2">4.</span> <span class="todo TODO">TODO</span> </h2>
+</div>

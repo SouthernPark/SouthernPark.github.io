@@ -73,17 +73,18 @@ nav_exclude: true
 * [[file:monotonic_stack.org][Monotonic Stack]]
 | Question                      | Time              |
 |-------------------------------+-------------------|
-| [[https://leetcode.com/problems/next-greater-element-i/description/][496. Next Greater Element I]]   | <2025-05-27 周二> |
-| [[https://leetcode.com/problems/trapping-rain-water/description/][42. Trapping Rain Water]]       | <2025-05-04 周日> |
-| [[https://leetcode.com/problems/next-greater-element-ii/description/][503. Next Greater Element II]]  | <2025-05-04 周日> |
-| [[https://leetcode.com/problems/sum-of-subarray-minimums/description/][907. Sum of Subarray Minimums]] | <2025-05-17 周六> |
-|                               |                   |
+| [[https://leetcode.com/problems/next-greater-element-i/description/][496. Next Greater Element I]]   | <2025-06-07 周六> |
+| [[https://leetcode.com/problems/trapping-rain-water/description/][42. Trapping Rain Water]]       | <2025-06-07 周六> |
+| [[https://leetcode.com/problems/next-greater-element-ii/description/][503. Next Greater Element II]]  | <2025-06-07 周六> |
+| [[https://leetcode.com/problems/sum-of-subarray-minimums/description/][907. Sum of Subarray Minimums]] | <2025-06-07 周六> |
+
 
 * TODO Backtracking
+
 * Simulation
 | Question           | Time              |
 |--------------------+-------------------|
-| [[https://leetcode.com/problems/push-dominoes/description/][838. Push Dominoes]] | <2025-05-02 周五> |
+| [[https://leetcode.com/problems/push-dominoes/description/][838. Push Dominoes]] | <2025-06-07 周六> |
 
 * Tricks
 | Question                                     | Time              | Discussion |
@@ -114,3 +115,8 @@ nav_exclude: true
 | [[https://leetcode.com/problems/build-array-from-permutation/description/][1920. Build Array from Permutation]]       | <2025-05-06 周二> |
 | [[https://leetcode.com/problems/minimum-swaps-to-sort-by-digit-sum/description/][3551. Minimum Swaps to Sort by Digit Sum]] | <2025-05-17 周六> |
 |                                          |                   |
+
+* Dynamic Programming
+| Question                                                 | Time              | Topics Covered                          |
+|----------------------------------------------------------+-------------------+-----------------------------------------|
+| [[https://leetcode.com/problems/count-partitions-with-max-min-difference-at-most-k/description/][3578. Count Partitions With Max-Min Difference at Most K]] | <2025-06-08 周日> | DP, Mono Stack, Sliding Window, Modular |

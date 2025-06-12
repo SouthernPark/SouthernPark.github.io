@@ -239,3 +239,51 @@ To avoid this, you can delete the org export timestamp in the following file:
 (puthash "X7463dbcc975a05c0934dfa69a0654651a15c97b7" '(26687 52976 0 0) org-publish-cache)
 
 #+end_src
+* Image
+** org-ros
+[[https://github.com/LionyxML/ros][org-ros github link]]
+in ~/.doom.d/packages.el include the following
+#+begin_src
+(package! org-ros)
+#+end_src
+
+run ./doom sync, the scripts will be downloaded from melpa
+
+*** corner cases (for Windows powershell.exe run failed because of permission)
+~/.emacs.d/.local/straight/repos/ros/org-ros.el contains the lisp code to call the screenshot tool for Windows,
+add "-ExecutionPolicy" "Bypass" to the following to by pass policy
+#+begin_src emacs-lisp
+83
+84                 ((executable-find org-ros-windows-screencapture)
+85                  (start-process "powershell" "*PowerShell*" "powershell.exe" "-ExecutionPolicy" "Bypass" "-File" (expand-file-name "./printsc.ps1" org-ros-dir) filepath)))
+#+end_src
+
+don't forget to run ./doom sync
+
+*** inline image
+Only inline images can be displayed directly in org mode and exported to inline image in HTML.
+Inline image does not have description part, so replace the following code in ~/.emacs.d/.local/straight/repos/ros/org-ros.el
+#+begin_src emacs-lisp
+(insert "[[" filepath "]" "[" display-name "]]")
+#+end_src
+to the following
+#+begin_src emacs-lisp
+;; the ros stores the img in the same dir as current org, so it's ok to use relative path
+;; use relative path also helps for org to HTML export
+(insert (format "[[file:%s]]\n" default-filename))
+#+end_src
+
+Also change the following
+#+begin_src
+(display-name (read-string
+                              (format "Name the screenshot (default: \"%s\"): " default-filename)
+                              nil nil default-filename))
+#+end_src
+to
+#+begin_src
+(default-filename (read-string
+                              (format "Name the screenshot (default: \"%s\"): " default-filename)
+                              nil nil default-filename))
+#+end_src
+
+don't forget to run ./doom sync

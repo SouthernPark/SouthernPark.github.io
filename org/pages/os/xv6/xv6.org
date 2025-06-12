@@ -18,4 +18,6 @@ The hardware like RISC-V CPU and console UART is simulated with Qemu.
 Course Website: [[https://pdos.csail.mit.edu/6.S081/2024/][MIT 6.S081 Operating System]]
 
 
-* [[file:chapters/1_os_interfaces.org][OS interfaces]]
+* [[file:1_os_interfaces.org][OS interfaces]]
+
+* [[file:2_os_organization.org][OS Organazation]]
