@@ -90,8 +90,255 @@ In xv6, a process consists of one address space and one thread.
 Process memory lay out in user address space:
 <img src="xv6_process_layout.png" alt="xv6_process_layout.png" />
 </p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/user/user.ld#L4">user.ld</a> user process linker helps to set the process virtual addres memo layout during compile time
+</p>
+<div class="org-src-container">
+<pre class="src src-c">SECTIONS
+{
+
+  . = <span style="color: #da8548; font-weight: bold;">0x0</span>;
+  .text : {}       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">code text is stored in in the very bottom</span>
+  .rodata : {}     <span style="color: #5B6268;">// </span><span style="color: #5B6268;">read only const like string literal stores here</span>
+  .data : {}       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Initialized global/static variables go here</span>
+  .bss : {}        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Uninitialized global/static variables</span>
+</pre>
 </div>
 </div>
-<div id="outline-container-org9d58c17" class="outline-2">
-<h2 id="org9d58c17"><span class="section-number-2">4.</span> <span class="todo TODO">TODO</span> </h2>
+</div>
+<div id="outline-container-orgc2685be" class="outline-2">
+<h2 id="orgc2685be"><span class="section-number-2">4.</span> code part: how kernel is loaded into memo</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-org682c0a7" class="outline-3">
+<h3 id="org682c0a7"><span class="section-number-3">4.1.</span> Bootloader loads the kernel binary into memory and set PC to _entry</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+During make, we produced the kernel ELF image which contains all the object files compiled under kernel.
+</p>
+
+<p>
+Machine (CPU, memo, hard disk) is simulated by Qemu.
+The tradational way to load a kernel image is BIOS → bootloader → kernel.
+QEMU acts like a &ldquo;cheat mode&rdquo; BIOS/firmware. It loads the kernel ELF into RAM. Sets the PC (program counter) to the entry point. Begins executing
+</p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/Makefile#L166">Makefile</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-makefile"><span style="color: #5B6268;">#</span><span style="color: #5B6268;">-bios none, -kernel is loader from the kernel/kernel</span>
+<span style="color: #5B6268;"># </span><span style="color: #5B6268;">~/xv6/syscall/kernel/kernel</span>
+<span style="color: #dcaeea;">QEMUOPTS</span> = -machine virt -bios none -kernel $<span style="color: #a9a1e1;">K</span>/kernel -m 128M -smp $(<span style="color: #dcaeea;">CPUS</span>) -nographic
+
+<span style="color: #51afef;">qemu</span>: $<span style="color: #a9a1e1;">K</span>/kernel fs.img
+    $(<span style="color: #dcaeea;">QEMU</span>) $(<span style="color: #dcaeea;">QEMUOPTS</span>)
+</pre>
+</div>
+
+
+<p>
+The linker script helps to build the initial address space layout for the kernel.
+</p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/kernel.ld#L4">kernel/kernel.ld</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c">OUTPUT_ARCH( <span style="color: #98be65;">"riscv"</span> )
+<span style="color: #c678dd;">ENTRY</span>( _entry ) <span style="color: #5B6268;">// </span><span style="color: #5B6268;">&lt;&lt;&lt; tells the linker to set the program couter to _entry</span>
+SECTIONS
+{
+  <span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">   * ensure that entry.S / _entry is at 0x80000000,</span>
+<span style="color: #5B6268;">   * where qemu's -kernel jumps.</span>
+<span style="color: #5B6268;">   */</span>
+  . = <span style="color: #da8548; font-weight: bold;">0x80000000</span>;
+...
+</pre>
+</div>
+
+
+<div class="org-src-container">
+<pre class="src src-makefile"><span style="color: #dcaeea;">LD</span> = $(<span style="color: #dcaeea;">TOOLPREFIX</span>)ld
+<span style="color: #dcaeea;">LDFLAGS</span> = -z max-page-size=<span style="color: #da8548; font-weight: bold;">4096</span>
+<span style="color: #51afef;">$</span><span style="color: #51afef;">K</span><span style="color: #51afef;">/kernel</span>: $(<span style="color: #dcaeea;">OBJS</span>) $<span style="color: #a9a1e1;">K</span>/kernel.ld $<span style="color: #a9a1e1;">U</span>/initcode
+    $(<span style="color: #dcaeea;">LD</span>) $(<span style="color: #dcaeea;">LDFLAGS</span>) -T $<span style="color: #a9a1e1;">K</span>/kernel.ld -o $<span style="color: #a9a1e1;">K</span>/kernel $(<span style="color: #dcaeea;">OBJS</span>) <span style="color: #5B6268;"># </span><span style="color: #5B6268;">&lt;&lt;&lt; linker is used to link all the obj files produced under kernel/ dir to produce the kernel binary</span>
+</pre>
+</div>
+</div>
+<div id="outline-container-org016bf75" class="outline-4">
+<h4 id="org016bf75"><span class="section-number-4">4.1.1.</span> what about the user space applications?</h4>
+<div class="outline-text-4" id="text-4-1-1">
+<p>
+They are also compiled into binary, but stored in the fs
+</p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/Makefile#L99C1-L100C41">makefile</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-makefile"><span style="color: #5B6268;"># </span><span style="color: #5B6268;">example: sh.o is compiled into _sh binary</span>
+<span style="color: #51afef;">_%</span>: %.o $(<span style="color: #dcaeea;">ULIB</span>)
+    $(<span style="color: #dcaeea;">LD</span>) $(<span style="color: #dcaeea;">LDFLAGS</span>) -T $<span style="color: #a9a1e1;">U</span>/user.ld -o <span style="color: #51afef;">$</span><span style="color: #a9a1e1;">@</span> $<span style="color: #a9a1e1;">^</span>
+
+<span style="color: #dcaeea;">UPROGS</span>=\
+    $<span style="color: #a9a1e1;">U</span>/_cat\
+    $<span style="color: #a9a1e1;">U</span>/_echo\
+
+<span style="color: #5B6268;"># </span><span style="color: #5B6268;">stores _cat ... binary into the file system</span>
+<span style="color: #51afef;">fs.img</span>: mkfs/mkfs README $(<span style="color: #dcaeea;">UPROGS</span>)
+    mkfs/mkfs fs.img README $(<span style="color: #dcaeea;">UPROGS</span>)
+</pre>
+</div>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/mkfs/mkfs.c">mkfs.c</a> helps to create the file system: fs.img
+Disk layout
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">// Disk layout:
+// [ boot block | sb block | log | inode blocks | free bit map | data blocks ]
+
+1. Boot Block (Block 0)
+Typically empty or unused in xv6-riscv. In x86 xv6, this would contain the bootloader.
+QEMU doesn’t use it here (remember: kernel loaded via -kernel).
+
+2. Superblock (Block 1)
+Contains metadata about the file system:
+    total size (in blocks),
+    number of inodes,
+    locations of the other regions
+Defined in struct superblock (kernel/fs.h)
+
+3. Log Blocks
+Used for journaling (i.e., making file system writes atomic).
+Before writing to inodes/data, changes go to log blocks.
+Committed later for consistency (used in log.c).
+
+4. Inode Blocks
+Store struct dinodes — the on-disk representation of inodes.
+Each inode describes a file or directory:
+    file size
+    block addresses (direct + indirect)
+
+5. Free Bitmap Blocks
+A bitmap tracking which data blocks are free or allocated.
+1 bit per data block — 0 = free, 1 = used.
+Used by balloc() when allocating a new data block.
+
+6. Data Blocks
+Hold actual file contents: e.g. /init, /sh, user files, etc.
+Data blocks are pointed to by the addrs[] field in the inode.
+</pre>
+</div>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/user/user.ld#L4">user.ld</a> user process linker helps to set the process virtual addres memo layout
+</p>
+<div class="org-src-container">
+<pre class="src src-c">SECTIONS
+{
+
+  . = <span style="color: #da8548; font-weight: bold;">0x0</span>;
+  .text : {}       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">code text is stored in in the very bottom</span>
+  .rodata : {}     <span style="color: #5B6268;">// </span><span style="color: #5B6268;">read only const like string literal stores here</span>
+  .data : {}       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Initialized global/static variables go here</span>
+  .bss : {}        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Uninitialized global/static variables</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org4e03b90" class="outline-3">
+<h3 id="org4e03b90"><span class="section-number-3">4.2.</span> _entry to setup the stack for each CPU hart and call start</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+4KB stack for each CPU
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv//kernel/entry.S#L7">kernel/entry.S</a>
+call start
+</p>
+</div>
+</div>
+<div id="outline-container-org38a7050" class="outline-3">
+<h3 id="org38a7050"><span class="section-number-3">4.3.</span> start setup and return to supervisor moed for main</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/start.c#L15">kernel/start.c</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">start</span>()
+{
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">...</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">set M Exception Program Counter to main, for mret.</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">requires gcc -mcmodel=medany</span>
+  w_mepc((<span style="color: #ECBE7B;">uint64</span>)main);
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">...</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">switch to supervisor mode and jump to main().</span>
+  <span style="color: #51afef;">asm</span> <span style="color: #51afef;">volatile</span>(<span style="color: #98be65;">"mret"</span>);
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgb6f0624" class="outline-3">
+<h3 id="orgb6f0624"><span class="section-number-3">4.4.</span> main turn on page table, trap, fs and all init for the first process</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/main.c#L11">kernel/main.c</a>
+</p>
+</div>
+</div>
+<div id="outline-container-org4f01523" class="outline-3">
+<h3 id="org4f01523"><span class="section-number-3">4.5.</span> userinit to create the very first user process from kernel</h3>
+<div class="outline-text-3" id="text-4-5">
+<p>
+create first process (memo), and put code at the very top of memo and run the code to call exec to reload the memo with init binary
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">a user program that calls exec("/init")</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">assembled from ../user/initcode.S</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">od -t xC ../user/initcode</span>
+<span style="color: #ECBE7B;">uchar</span> <span style="color: #dcaeea;">initcode</span>[] = {
+  <span style="color: #da8548; font-weight: bold;">0x17</span>, <span style="color: #da8548; font-weight: bold;">0x05</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x13</span>, <span style="color: #da8548; font-weight: bold;">0x05</span>, <span style="color: #da8548; font-weight: bold;">0x45</span>, <span style="color: #da8548; font-weight: bold;">0x02</span>,
+  <span style="color: #da8548; font-weight: bold;">0x97</span>, <span style="color: #da8548; font-weight: bold;">0x05</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x93</span>, <span style="color: #da8548; font-weight: bold;">0x85</span>, <span style="color: #da8548; font-weight: bold;">0x35</span>, <span style="color: #da8548; font-weight: bold;">0x02</span>,
+  <span style="color: #da8548; font-weight: bold;">0x93</span>, <span style="color: #da8548; font-weight: bold;">0x08</span>, <span style="color: #da8548; font-weight: bold;">0x70</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x73</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>,
+  <span style="color: #da8548; font-weight: bold;">0x93</span>, <span style="color: #da8548; font-weight: bold;">0x08</span>, <span style="color: #da8548; font-weight: bold;">0x20</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x73</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>,
+  <span style="color: #da8548; font-weight: bold;">0xef</span>, <span style="color: #da8548; font-weight: bold;">0xf0</span>, <span style="color: #da8548; font-weight: bold;">0x9f</span>, <span style="color: #da8548; font-weight: bold;">0xff</span>, <span style="color: #da8548; font-weight: bold;">0x2f</span>, <span style="color: #da8548; font-weight: bold;">0x69</span>, <span style="color: #da8548; font-weight: bold;">0x6e</span>, <span style="color: #da8548; font-weight: bold;">0x69</span>,
+  <span style="color: #da8548; font-weight: bold;">0x74</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x24</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>,
+  <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>
+};
+
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">Set up first user process.</span>
+<span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">userinit</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #51afef;">struct</span> <span style="color: #ECBE7B;">proc</span> *<span style="color: #dcaeea;">p</span>;
+
+  p = allocproc();
+  initproc = p;
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">allocate one user page and copy initcode's instructions</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">and data into it.</span>
+  uvmfirst(p-&gt;pagetable, initcode, <span style="color: #51afef;">sizeof</span>(initcode));
+  p-&gt;sz = PGSIZE;
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">initcode becomes the user code that will be run at virtual address 0x0.</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">prepare for the very first "return" from kernel to user.</span>
+  p-&gt;trapframe-&gt;epc = <span style="color: #da8548; font-weight: bold;">0</span>;      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">user program counter</span>
+  p-&gt;trapframe-&gt;sp = PGSIZE;  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">user stack pointer, stack size 1 page</span>
+
+  safestrcpy(p-&gt;name, <span style="color: #98be65;">"initcode"</span>, <span style="color: #51afef;">sizeof</span>(p-&gt;name));
+  p-&gt;cwd = namei(<span style="color: #98be65;">"/"</span>);
+
+  p-&gt;state = RUNNABLE;
+
+  release(&amp;p-&gt;lock);
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">once run the exec will replace the first process memo layout with init binary</span>
+}
+</pre>
+</div>
+</div>
+</div>
 </div>

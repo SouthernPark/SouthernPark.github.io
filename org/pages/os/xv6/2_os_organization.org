@@ -61,7 +61,193 @@ In xv6, a process consists of one address space and one thread.
 Process memory lay out in user address space:
 [[file:xv6_process_layout.png]]
 
+[[https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/user/user.ld#L4][user.ld]] user process linker helps to set the process virtual addres memo layout during compile time
+#+begin_src c
+SECTIONS
+{
+
+  . = 0x0;
+  .text : {}       // code text is stored in in the very bottom
+  .rodata : {}     // read only const like string literal stores here
+  .data : {}       // Initialized global/static variables go here
+  .bss : {}        // Uninitialized global/static variables
+#+end_src
 
 
 
-* TODO
+* code part: how kernel is loaded into memo
+** Bootloader loads the kernel binary into memory and set PC to _entry
+
+During make, we produced the kernel ELF image which contains all the object files compiled under kernel.
+
+Machine (CPU, memo, hard disk) is simulated by Qemu.
+The tradational way to load a kernel image is BIOS → bootloader → kernel.
+QEMU acts like a "cheat mode" BIOS/firmware. It loads the kernel ELF into RAM. Sets the PC (program counter) to the entry point. Begins executing
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/Makefile#L166][Makefile]]
+#+begin_src makefile
+#-bios none, -kernel is loader from the kernel/kernel
+# ~/xv6/syscall/kernel/kernel
+QEMUOPTS = -machine virt -bios none -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
+
+qemu: $K/kernel fs.img
+	$(QEMU) $(QEMUOPTS)
+#+end_src
+
+
+The linker script helps to build the initial address space layout for the kernel.
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/kernel.ld#L4][kernel/kernel.ld]]
+#+begin_src c
+OUTPUT_ARCH( "riscv" )
+ENTRY( _entry ) // <<< tells the linker to set the program couter to _entry
+SECTIONS
+{
+  /*
+   * ensure that entry.S / _entry is at 0x80000000,
+   * where qemu's -kernel jumps.
+   */
+  . = 0x80000000;
+...
+#+end_src
+
+
+#+begin_src makefile
+LD = $(TOOLPREFIX)ld
+LDFLAGS = -z max-page-size=4096
+$K/kernel: $(OBJS) $K/kernel.ld $U/initcode
+	$(LD) $(LDFLAGS) -T $K/kernel.ld -o $K/kernel $(OBJS) # <<< linker is used to link all the obj files produced under kernel/ dir to produce the kernel binary
+#+end_src
+
+*** what about the user space applications?
+They are also compiled into binary, but stored in the fs
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/Makefile#L99C1-L100C41][makefile]]
+#+begin_src makefile
+# example: sh.o is compiled into _sh binary
+_%: %.o $(ULIB)
+	$(LD) $(LDFLAGS) -T $U/user.ld -o $@ $^
+
+UPROGS=\
+	$U/_cat\
+	$U/_echo\
+
+# stores _cat ... binary into the file system
+fs.img: mkfs/mkfs README $(UPROGS)
+	mkfs/mkfs fs.img README $(UPROGS)
+#+end_src
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv/mkfs/mkfs.c][mkfs.c]] helps to create the file system: fs.img
+Disk layout
+#+begin_src
+// Disk layout:
+// [ boot block | sb block | log | inode blocks | free bit map | data blocks ]
+
+1. Boot Block (Block 0)
+Typically empty or unused in xv6-riscv. In x86 xv6, this would contain the bootloader.
+QEMU doesn’t use it here (remember: kernel loaded via -kernel).
+
+2. Superblock (Block 1)
+Contains metadata about the file system:
+    total size (in blocks),
+    number of inodes,
+    locations of the other regions
+Defined in struct superblock (kernel/fs.h)
+
+3. Log Blocks
+Used for journaling (i.e., making file system writes atomic).
+Before writing to inodes/data, changes go to log blocks.
+Committed later for consistency (used in log.c).
+
+4. Inode Blocks
+Store struct dinodes — the on-disk representation of inodes.
+Each inode describes a file or directory:
+    file size
+    block addresses (direct + indirect)
+
+5. Free Bitmap Blocks
+A bitmap tracking which data blocks are free or allocated.
+1 bit per data block — 0 = free, 1 = used.
+Used by balloc() when allocating a new data block.
+
+6. Data Blocks
+Hold actual file contents: e.g. /init, /sh, user files, etc.
+Data blocks are pointed to by the addrs[] field in the inode.
+#+end_src
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/user/user.ld#L4][user.ld]] user process linker helps to set the process virtual addres memo layout
+#+begin_src c
+SECTIONS
+{
+
+  . = 0x0;
+  .text : {}       // code text is stored in in the very bottom
+  .rodata : {}     // read only const like string literal stores here
+  .data : {}       // Initialized global/static variables go here
+  .bss : {}        // Uninitialized global/static variables
+#+end_src
+
+** _entry to setup the stack for each CPU hart and call start
+4KB stack for each CPU
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv//kernel/entry.S#L7][kernel/entry.S]]
+call start
+** start setup and return to supervisor moed for main
+[[https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/start.c#L15][kernel/start.c]]
+#+begin_src c
+void
+start()
+{
+  // ...
+  // set M Exception Program Counter to main, for mret.
+  // requires gcc -mcmodel=medany
+  w_mepc((uint64)main);
+  // ...
+  // switch to supervisor mode and jump to main().
+  asm volatile("mret");
+}
+#+end_src
+** main turn on page table, trap, fs and all init for the first process
+[[https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/main.c#L11][kernel/main.c]]
+** userinit to create the very first user process from kernel
+create first process (memo), and put code at the very top of memo and run the code to call exec to reload the memo with init binary
+#+begin_src c
+// a user program that calls exec("/init")
+// assembled from ../user/initcode.S
+// od -t xC ../user/initcode
+uchar initcode[] = {
+  0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x45, 0x02,
+  0x97, 0x05, 0x00, 0x00, 0x93, 0x85, 0x35, 0x02,
+  0x93, 0x08, 0x70, 0x00, 0x73, 0x00, 0x00, 0x00,
+  0x93, 0x08, 0x20, 0x00, 0x73, 0x00, 0x00, 0x00,
+  0xef, 0xf0, 0x9f, 0xff, 0x2f, 0x69, 0x6e, 0x69,
+  0x74, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00
+};
+
+// Set up first user process.
+void
+userinit(void)
+{
+  struct proc *p;
+
+  p = allocproc();
+  initproc = p;
+
+  // allocate one user page and copy initcode's instructions
+  // and data into it.
+  uvmfirst(p->pagetable, initcode, sizeof(initcode));
+  p->sz = PGSIZE;
+  // initcode becomes the user code that will be run at virtual address 0x0.
+  // prepare for the very first "return" from kernel to user.
+  p->trapframe->epc = 0;      // user program counter
+  p->trapframe->sp = PGSIZE;  // user stack pointer, stack size 1 page
+
+  safestrcpy(p->name, "initcode", sizeof(p->name));
+  p->cwd = namei("/");
+
+  p->state = RUNNABLE;
+
+  release(&p->lock);
+  // once run the exec will replace the first process memo layout with init binary
+}
+#+end_src
