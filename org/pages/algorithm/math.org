@@ -25,3 +25,22 @@ Key Attributes of Modulo Congruence:
 5. Multiplication: If a ≡ b (mod n) and c ≡ d (mod n), then a * b ≡ c * d (mod n)
 6. Divisibility: If a ≡ b (mod n), then a - b is divisible by n, in other words: a - b | n
 7. Power: If a ≡ b (mod n), then a^k ≡ b^k (mod n)
+
+* Greatest Command Divisor
+Euclidean Algorithm:
+#+begin_src
+gcd(a, 0) = a
+gcd(a, b) = gcd(b, a % b)
+#+end_src
+
+#+begin_src c++
+int gcd(int a, int b) {
+  while(b != 0) {
+    int temp = b;
+    b = a % b;
+    a = temp;
+  }
+  return a;
+}
+
+#+end_src

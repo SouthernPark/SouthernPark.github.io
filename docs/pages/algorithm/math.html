@@ -28,3 +28,29 @@ Key Attributes of Modulo Congruence:
 </ol>
 </div>
 </div>
+<div id="outline-container-orgcd074ab" class="outline-2">
+<h2 id="orgcd074ab"><span class="section-number-2">2.</span> Greatest Command Divisor</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Euclidean Algorithm:
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">gcd(a, 0) = a
+gcd(a, b) = gcd(b, a % b)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">gcd</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">a</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">b</span>) {
+  <span style="color: #51afef;">while</span>(b != <span style="color: #da8548; font-weight: bold;">0</span>) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">temp</span> = b;
+    b = a % b;
+    a = temp;
+  }
+  <span style="color: #51afef;">return</span> a;
+}
+
+</pre>
+</div>
+</div>
+</div>

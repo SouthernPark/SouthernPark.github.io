@@ -45,6 +45,7 @@ nav_exclude: true
 | Question                             | Time              |
 |--------------------------------------+-------------------|
 | [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-05-20 周二> |
+|                                      |                   |
 ** Digits
 | Question                      | Time              |
 |-------------------------------+-------------------|
@@ -116,7 +117,21 @@ nav_exclude: true
 | [[https://leetcode.com/problems/minimum-swaps-to-sort-by-digit-sum/description/][3551. Minimum Swaps to Sort by Digit Sum]] | <2025-05-17 周六> |
 |                                          |                   |
 
-* Dynamic Programming
+* [[file:dp/dp.org][Dynamic Programming]]
 | Question                                                 | Time              | Topics Covered                          |
 |----------------------------------------------------------+-------------------+-----------------------------------------|
 | [[https://leetcode.com/problems/count-partitions-with-max-min-difference-at-most-k/description/][3578. Count Partitions With Max-Min Difference at Most K]] | <2025-06-08 周日> | DP, Mono Stack, Sliding Window, Modular |
+
+** [[file:dp/state_machine_dp.org][State Machine + DP]]
+
+
+
+* Company Tag
+** Google
+| Question                                | Time              |                    |
+|-----------------------------------------+-------------------+--------------------|
+| [[https://leetcode.com/problems/add-two-numbers/description/?envType=company&envId=google&favoriteSlug=google-thirty-days][2. Add Two Numbers]]                      | <2025-06-13 周五> |                    |
+| [[https://leetcode.com/problems/palindrome-number/description/?envType=company&envId=google&favoriteSlug=google-thirty-days][9. Palindrome Number]]                    | <2025-06-13 周五> | Corner cases       |
+| [[https://leetcode.com/problems/best-time-to-buy-and-sell-stock/description/?envType=company&envId=google&favoriteSlug=google-thirty-days][121. Best Time to Buy and Sell Stock]]    | <2025-06-13 周五> |                    |
+| [[https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/description/][122. Best Time to Buy and Sell Stock II]] | <2025-06-14 周六> | [[file:dp/state_machine_dp.org][State Machine + DP]] |
+| [[https://leetcode.com/problems/maximize-subarray-gcd-score/description/][3574. Maximize Subarray GCD Score]]       | <2025-06-15 周日> |                    |

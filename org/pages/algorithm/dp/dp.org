@@ -1,0 +1,46 @@
+#+title: DP
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: DP
+nav_exclude: true
+---
+#+END_EXPORT
+
+* DP tricks
+
+** Add a dummy / hidden state at dp[0]
+In many DP problems, you face annoying edge conditions like: dp[i-1] is undefined for i = 0 where initial transitions require special handling
+
+Take the following state transition functions as an example:
+dp[i] = dp[i-1] + nums[i] where 0 <= i <= n-1
+
+We need to add dp[0] as a special value/state to generalize the function
+
+One trick is changing the range of DP table indexing
+dp[i] = dp[i-1] + nums[i-1] where 1 <= i <= n
+dp[0] = sth_special
+
+Note that we shift the range of i from [0, n-1] to [1, n], the nums table indexing needs to change from i to i-1
+#+begin_src c++
+dp[0] = sth_special
+for (int i = 1; i <= n; ++i)
+    dp[i] = dp[i-1] + nums[i-1]
+
+#+end_src
+
+
+Another way to change the indexing from i to i + 1
+dp[i+1] = dp[i] + nums[i] where 0 <= i <= n-1
+dp[0] = sth_special
+
+Note that since we only changed the indexing of dp[i], i is still from [0, n-1], so nums table indexing does not need to change
+#+begin_src c++
+for (int i = 0; i < n; ++i)
+    dp[i+1] = dp[i] + nums[i]
+#+end_src

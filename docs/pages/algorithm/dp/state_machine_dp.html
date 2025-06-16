@@ -1,0 +1,215 @@
+---
+layout: default
+title: State Machine DP
+nav_exclude: true
+---
+<div id="outline-container-orgba38927" class="outline-2">
+<h2 id="orgba38927"><span class="section-number-2">1.</span> State Machine</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Model the problem as a finite state machine with each state representing a key decision or phase in the process.
+We can use numbers to represent each unique state. For example: using 0 to represent weather is sunny while using 1 represent weather is rainny.
+</p>
+
+<p>
+In dynamic programming, we can use one dimision to represent the state. For example: dp[i][0] represent state weather is sunny, dp[i][1] represent the weather is rainy.
+</p>
+</div>
+</div>
+<div id="outline-container-org0014487" class="outline-2">
+<h2 id="org0014487"><span class="section-number-2">2.</span> Classi Problems</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-orgfd2ed9c" class="outline-3">
+<h3 id="orgfd2ed9c"><span class="section-number-3">2.1.</span> Stock Buy and sell problem</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+<a href="https://www.bilibili.com/video/BV1ho4y1W7QK/?vd_source=65691673f75c70bd7052dc22994205cc">Best time to sell and buy stock</a>
+At one time we can only hold one stock. So we will have two states: hold and not<sub>hold</sub>.
+we can use:
+dp[i][0] represents the max profit we can in [0..i] days, and the ending state is not<sub>hold</sub> stock,
+dp[i][1] represents the max profit we can in [0..i] days, and the ending state is hold stock,
+</p>
+
+
+<div id="org007d749" class="figure">
+<p><img src="stock_problem_state_machine.png" alt="stock_problem_state_machine.png" />
+</p>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i]);
+dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i]);
+where 0 &lt;= i &lt;= n-1
+
+dp[-1][0] = 0 which means initially we do not have stock;
+dp[-1][1] = -inf which means initially we have stock, impossible
+</pre>
+</div>
+
+<p>
+We need to add one dummy state in front of dp.
+One way is to change the indexing range of i from [0, n-1] to [1, n], but this will require the indexing of prices to be changed from i to i-1
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i-1]);
+dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i-1]);
+where 1 &lt;= i &lt;= n-1
+
+dp[0][0] = 0 which means initially we do not have stock;
+dp[0][1] = -inf which means initially we have stock, impossible
+</pre>
+</div>
+
+<p>
+Another way is to change the index mapping of i from i to i + 1 on the dp table. So the indexing of prices tale does not need to be changed
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">dp[i+1][0] = max(dp[i][0], dp[i][1] + prices[i]);
+dp[i+1][1] = max(dp[i][1], dp[i][0] - prices[i]);
+where 0 &lt;= i &lt;= n-1
+
+dp[0][0] = 0 which means initially we do not have stock;
+dp[0][1] = -inf which means initially we have stock, impossible
+</pre>
+</div>
+</div>
+<div id="outline-container-org934fcb7" class="outline-4">
+<h4 id="org934fcb7"><span class="section-number-4">2.1.1.</span> <a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/">Best Time to Buy and Sell Stock II</a></h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+DP way to handle this problem
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">Solution</span> {
+<span style="color: #51afef;">public</span>:
+  <span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">maxProfit</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">prices</span>) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = prices.size();
+    <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt; <span style="color: #dcaeea;">dp</span>(n+<span style="color: #da8548; font-weight: bold;">1</span>, vector&lt;<span style="color: #ECBE7B;">int</span>&gt;(<span style="color: #da8548; font-weight: bold;">2</span>));
+    dp[<span style="color: #da8548; font-weight: bold;">0</span>][<span style="color: #da8548; font-weight: bold;">0</span>] = <span style="color: #da8548; font-weight: bold;">0</span>;
+    dp[<span style="color: #da8548; font-weight: bold;">0</span>][<span style="color: #da8548; font-weight: bold;">1</span>] = INT_MIN;
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">1</span>; i&lt;=n; i++) {
+      dp[i][<span style="color: #da8548; font-weight: bold;">0</span>] = max(<span style="color: #ECBE7B;">dp</span>[i-<span style="color: #da8548; font-weight: bold;">1</span>][<span style="color: #da8548; font-weight: bold;">0</span>], <span style="color: #ECBE7B;">dp</span>[i-<span style="color: #da8548; font-weight: bold;">1</span>][<span style="color: #da8548; font-weight: bold;">1</span>] + prices[i-<span style="color: #da8548; font-weight: bold;">1</span>]);
+      dp[i][<span style="color: #da8548; font-weight: bold;">1</span>] = max(<span style="color: #ECBE7B;">dp</span>[i-<span style="color: #da8548; font-weight: bold;">1</span>][<span style="color: #da8548; font-weight: bold;">1</span>], <span style="color: #ECBE7B;">dp</span>[i-<span style="color: #da8548; font-weight: bold;">1</span>][<span style="color: #da8548; font-weight: bold;">0</span>] - prices[i-<span style="color: #da8548; font-weight: bold;">1</span>]);
+    }
+
+    <span style="color: #51afef;">return</span> dp[n][<span style="color: #da8548; font-weight: bold;">0</span>];
+  }
+};
+</pre>
+</div>
+
+<p>
+Another idea is sold the stock on ext day as long as the stock increases the next day. If decreases next day, sold it today.
+So it will become add all the incrrements in the prices array
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">Solution</span> {
+  <span style="color: #51afef;">public</span>:
+  <span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">maxProfit</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">prices</span>) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">profit</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;prices.size()-<span style="color: #da8548; font-weight: bold;">1</span>; i++) {
+      <span style="color: #51afef;">if</span>(prices[i+<span style="color: #da8548; font-weight: bold;">1</span>] &gt; prices[i]) {
+        proft += prices[i+<span style="color: #da8548; font-weight: bold;">1</span>] - prices[i];
+      }
+    }
+  }
+};
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgdad53f4" class="outline-4">
+<h4 id="orgdad53f4"><span class="section-number-4">2.1.2.</span> <a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/">123. Best Time to Buy and Sell Stock III</a></h4>
+<div class="outline-text-4" id="text-2-1-2">
+<p>
+In this problem, introduced another aspect to consider, the number of transactions we can made is at most k. So in the dp, we also need to introduce another dimision to count the number of transaction times
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">dp[i][j][0] means given prices[0..i] and max transactions j, how much max profit we can gain without holding stock
+dp[i][j][1] means ... hold the stock
+
+Some aspects to consider:
+1. If we don't do anything yesterday, the state will remain as it is and no transction will be conducted
+2. we consider but and sell as one transaction, so we can using one state transaction to deduct the transation count. For example if we consider buy a stock to deduct j, then sell a stock does not to deduct j
+
+dp[i][j][0] = max(dp[i-1][j][0], dp[i-1][j][1] + prices[i])
+dp[i][j][1] = max(dp[i-1][j][1], dp[i-1][j-1][0] - prices[i])
+
+dp[-1][.][0] = 0
+dp[-1][.][11] = -INF
+dp[.][-1][.] = -INF
+where i in the range [0, n-1], j in the range [0, k]
+
+Currently the dimension of dp table is dp[n][k+1][2]
+
+We need to add one hidden state for dp[-1][.][.] and dp[.][-1][.]
+
+The final dimension for the dp table will be dp[n+1][k+2][2]
+
+so we can add one state for i, and change the range for j
+
+dp[i+1][j][0] = max(dp[i][j][0], dp[i][j][1] + prices[i])
+dp[i+1][j][1] = max(dp[i][j][1], dp[i][j-1][0] - prices[i])
+
+dp[0][.][0] = 0
+dp[0][.][1] = -INF
+dp[.][0][.] = -INF
+
+where i in the range [0, n-1], j in the range [1, k+1]
+</pre>
+</div>
+
+<p>
+From DP fucntion to code
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">Solution</span> {
+<span style="color: #51afef;">public</span>:
+  <span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">maxProfit</span>(<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">int</span>&gt;&amp; <span style="color: #dcaeea;">prices</span>) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span> = prices.size();
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">k</span> = <span style="color: #da8548; font-weight: bold;">2</span>;
+    <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">long</span>&gt;&gt;&gt; <span style="color: #dcaeea;">dp</span>(n+<span style="color: #da8548; font-weight: bold;">1</span>, vector&lt;<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">long</span>&gt;&gt;(k+<span style="color: #da8548; font-weight: bold;">2</span>, vector&lt;<span style="color: #ECBE7B;">long</span>&gt;(<span style="color: #da8548; font-weight: bold;">2</span>, -<span style="color: #da8548; font-weight: bold;">10e10</span>)));
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">dp[0][j][0] = 0, where j &gt;= 1</span>
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">j</span>=<span style="color: #da8548; font-weight: bold;">1</span>; j&lt;=k+<span style="color: #da8548; font-weight: bold;">1</span>; j++) {
+      dp[<span style="color: #da8548; font-weight: bold;">0</span>][j][<span style="color: #da8548; font-weight: bold;">0</span>] = <span style="color: #da8548; font-weight: bold;">0</span>;
+    }
+
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;n; i++) {
+      <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">j</span>=<span style="color: #da8548; font-weight: bold;">1</span>; j&lt;=k+<span style="color: #da8548; font-weight: bold;">1</span>; j++) {
+        dp[i+<span style="color: #da8548; font-weight: bold;">1</span>][j][<span style="color: #da8548; font-weight: bold;">0</span>] = max(<span style="color: #ECBE7B;">dp</span>[i][j][<span style="color: #da8548; font-weight: bold;">0</span>], <span style="color: #ECBE7B;">dp</span>[i][j-<span style="color: #da8548; font-weight: bold;">1</span>][<span style="color: #da8548; font-weight: bold;">1</span>] + prices[i]);
+        dp[i+<span style="color: #da8548; font-weight: bold;">1</span>][j][<span style="color: #da8548; font-weight: bold;">1</span>] = max(<span style="color: #ECBE7B;">dp</span>[i][j][<span style="color: #da8548; font-weight: bold;">1</span>], <span style="color: #ECBE7B;">dp</span>[i][j][<span style="color: #da8548; font-weight: bold;">0</span>] - prices[i]);
+      }
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">not hold stock must be greater than hold stock</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">have more transaction oppportunity must be greater than have less opportunity</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">so return dp[n][k+1][0]</span>
+
+    <span style="color: #51afef;">return</span> dp[n][k+<span style="color: #da8548; font-weight: bold;">1</span>][<span style="color: #da8548; font-weight: bold;">0</span>];
+  }
+};
+</pre>
+</div>
+
+
+<p>
+Another idear is split the 2 transactions into first and second transaction.
+The first transactions happens at [0&#x2026;i] while the second one happens in [i+1 &#x2026; n-1].
+We can use prefix sum idea to create an array first<sub>tran</sub>[i], which gives the max profit can gain using the prices[0..i]
+while another array second<sub>tran</sub>[i], which gives the max profit can gain using the prices[i..n-1].
+We can using the cur<sub>min</sub> / cur<sub>max</sub> ideas in <a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock/description/">121. Best Time to Buy and Sell Stock</a> to calculate the two array easily
+</p>
+</div>
+</div>
+<div id="outline-container-orgbe02a1a" class="outline-4">
+<h4 id="orgbe02a1a"><span class="section-number-4">2.1.3.</span> <a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/">188. Best Time to Buy and Sell Stock IV</a></h4>
+<div class="outline-text-4" id="text-2-1-3">
+<p>
+The same idea as Best Time to Buy and Sell Stock III above, istead k = 2, k can be any number else
+</p>
+</div>
+</div>
+</div>
+</div>

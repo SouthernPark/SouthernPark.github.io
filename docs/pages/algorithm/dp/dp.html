@@ -1,0 +1,60 @@
+---
+layout: default
+title: DP
+nav_exclude: true
+---
+<div id="outline-container-orgaae403a" class="outline-2">
+<h2 id="orgaae403a"><span class="section-number-2">1.</span> DP tricks</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org76d9323" class="outline-3">
+<h3 id="org76d9323"><span class="section-number-3">1.1.</span> Add a dummy / hidden state at dp[0]</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+In many DP problems, you face annoying edge conditions like: dp[i-1] is undefined for i = 0 where initial transitions require special handling
+</p>
+
+<p>
+Take the following state transition functions as an example:
+dp[i] = dp[i-1] + nums[i] where 0 &lt;= i &lt;= n-1
+</p>
+
+<p>
+We need to add dp[0] as a special value/state to generalize the function
+</p>
+
+<p>
+One trick is changing the range of DP table indexing
+dp[i] = dp[i-1] + nums[i-1] where 1 &lt;= i &lt;= n
+dp[0] = sth<sub>special</sub>
+</p>
+
+<p>
+Note that we shift the range of i from [0, n-1] to [1, n], the nums table indexing needs to change from i to i-1
+</p>
+<div class="org-src-container">
+<pre class="src src-c++">dp[<span style="color: #da8548; font-weight: bold;">0</span>] = sth_special
+<span style="color: #51afef;">for</span> (<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span> = <span style="color: #da8548; font-weight: bold;">1</span>; i &lt;= n; ++i)
+    dp[i] = dp[i-<span style="color: #da8548; font-weight: bold;">1</span>] + nums[i-<span style="color: #da8548; font-weight: bold;">1</span>]
+
+</pre>
+</div>
+
+
+<p>
+Another way to change the indexing from i to i + 1
+dp[i+1] = dp[i] + nums[i] where 0 &lt;= i &lt;= n-1
+dp[0] = sth<sub>special</sub>
+</p>
+
+<p>
+Note that since we only changed the indexing of dp[i], i is still from [0, n-1], so nums table indexing does not need to change
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #51afef;">for</span> (<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span> = <span style="color: #da8548; font-weight: bold;">0</span>; i &lt; n; ++i)
+    dp[i+<span style="color: #da8548; font-weight: bold;">1</span>] = dp[i] + nums[i]
+</pre>
+</div>
+</div>
+</div>
+</div>
