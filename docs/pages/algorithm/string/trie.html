@@ -1,0 +1,130 @@
+---
+layout: default
+title: Trie
+nav_exclude: true
+---
+<div id="outline-container-orgb36f977" class="outline-2">
+<h2 id="orgb36f977"><span class="section-number-2">1.</span> Trie</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+A Trie is a tree-like data structure used to store a dynamic set of strings, where each node represents a character of a string.
+</p>
+
+<p>
+Each node has:
+</p>
+<ol class="org-ol">
+<li>An array/hashmap of child nodes (e.g., 26 for lowercase a–z)</li>
+<li>A boolean flag isEnd to mark the end of a word</li>
+</ol>
+
+<p>
+What can Trie help us:
+</p>
+<ol class="org-ol">
+<li>Hold a list of strings</li>
+<li>search a string is in the list. Time Complexity: O(n) where n is the lenght of the longest string</li>
+<li>Get the common prefix for strings we see so far</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-org4bbef32" class="outline-2">
+<h2 id="org4bbef32"><span class="section-number-2">2.</span> code</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The following code assumes, the string only contains lowercase letters. And is using a vector of length 26 to hold lower case letters in each level.
+For other cases, just change the vector to unordered<sub>map</sub>&lt;char, TrieNode*&gt;
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #dcaeea;">NUMBER_OF_LOWERCASE_LETTERS</span> <span style="color: #da8548; font-weight: bold;">26</span>
+<span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">Trie</span> {
+  <span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">TrieNode</span> {
+    <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">TrieNode</span>*&gt; <span style="color: #dcaeea;">children</span>;
+    <span style="color: #ECBE7B;">bool</span> <span style="color: #dcaeea;">is_end</span>;
+
+    <span style="color: #c678dd;">TrieNode</span>() : children(NUMBER_OF_LOWERCASE_LETTERS, <span style="color: #a9a1e1;">nullptr</span>), is_end(<span style="color: #a9a1e1;">false</span>) {}
+
+  };
+
+  <span style="color: #ECBE7B;">TrieNode</span>* <span style="color: #dcaeea;">root</span>;
+<span style="color: #51afef;">public</span>:
+
+  <span style="color: #c678dd;">Trie</span>() {
+    root = <span style="color: #51afef;">new</span> <span style="color: #ECBE7B;">TrieNode</span>;
+  }
+
+  <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">insert</span>(<span style="color: #ECBE7B;">string</span>&amp; <span style="color: #dcaeea;">s</span>) {
+    <span style="color: #ECBE7B;">TrieNode</span>* <span style="color: #dcaeea;">cur</span> = root;
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">char</span> <span style="color: #dcaeea;">ch</span> : s) {
+      <span style="color: #51afef;">if</span>(<span style="color: #51afef; font-weight: bold;">!</span>cur-&gt;children[ch-<span style="color: #98be65;">'a'</span>]) {
+        cur-&gt;children[ch] = <span style="color: #51afef;">new</span> <span style="color: #ECBE7B;">TrieNode</span>();
+      }
+      cur = cur-&gt;children[ch];
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now cur is pointing to the end char node and end of string</span>
+    cur-&gt;is_end = <span style="color: #a9a1e1;">true</span>;
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">return true if string s is in the Trie</span>
+  <span style="color: #ECBE7B;">bool</span> <span style="color: #c678dd;">search</span>(<span style="color: #ECBE7B;">string</span>&amp; <span style="color: #dcaeea;">s</span>) {
+    <span style="color: #ECBE7B;">TrieNode</span>* <span style="color: #dcaeea;">cur</span> = root;
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">char</span> <span style="color: #dcaeea;">ch</span> : s) {
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">go to char node</span>
+      cur = cur-&gt;children[ch-<span style="color: #98be65;">'a'</span>];
+      <span style="color: #51afef;">if</span>(cur == <span style="color: #a9a1e1;">nullptr</span>) <span style="color: #51afef;">return</span> <span style="color: #a9a1e1;">false</span>;
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">need to check if there is string ends here</span>
+    <span style="color: #51afef;">return</span> cur-&gt;is_end;
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">command prefix: break at the branching point (node that have two or more childrent)</span>
+  <span style="color: #ECBE7B;">string</span> <span style="color: #c678dd;">common_prefix</span>() {
+    <span style="color: #ECBE7B;">string</span> <span style="color: #dcaeea;">prefix</span> = <span style="color: #98be65;">""</span>;
+    <span style="color: #ECBE7B;">TrieNode</span>* <span style="color: #dcaeea;">cur</span> = root;
+    <span style="color: #51afef;">while</span>(cur != <span style="color: #a9a1e1;">nullptr</span>) {
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">should have only one child</span>
+      <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">child</span> = -<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #dcaeea;">count</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+      <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">TrieNode</span>*&gt; <span style="color: #dcaeea;">children</span> = cur-&gt;children;
+      <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;children.size(); i++) {
+        <span style="color: #51afef;">if</span>(children[i]) {
+          child = i;
+          count ++;
+        }
+        <span style="color: #51afef;">if</span>(count &gt; <span style="color: #da8548; font-weight: bold;">1</span>) <span style="color: #51afef;">break</span>;
+      }
+
+      <span style="color: #51afef;">if</span>(count &gt; <span style="color: #da8548; font-weight: bold;">1</span>) {
+        <span style="color: #51afef;">break</span>;
+      }
+
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now count = 1 and child is the index of child</span>
+      prefix += (<span style="color: #98be65;">'a'</span> + child);
+      cur = cur-&gt;children[child];
+    }
+
+    <span style="color: #51afef;">return</span> prefix;
+  }
+
+  <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">free_trie</span>(<span style="color: #ECBE7B;">TrieNode</span>* <span style="color: #dcaeea;">cur</span>) {
+    <span style="color: #51afef;">if</span>(cur == <span style="color: #a9a1e1;">nullptr</span>) <span style="color: #51afef;">return</span>;
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">1. free children</span>
+    <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">TrieNode</span>* <span style="color: #dcaeea;">child</span> : cur-&gt;children) {
+      free_trie(child);
+    }
+    <span style="color: #5B6268;">//</span><span style="color: #5B6268;">2. free itself</span>
+    <span style="color: #51afef;">delete</span> cur;
+  }
+
+  ~<span style="color: #c678dd;">Trie</span>() {
+    free_trie(root);
+  }
+
+};
+
+
+</pre>
+</div>
+</div>
+</div>

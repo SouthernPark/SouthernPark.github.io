@@ -1,0 +1,119 @@
+#+title: Trie
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Trie
+nav_exclude: true
+---
+#+END_EXPORT
+
+* Trie
+A Trie is a tree-like data structure used to store a dynamic set of strings, where each node represents a character of a string.
+
+Each node has:
+a. An array/hashmap of child nodes (e.g., 26 for lowercase a–z)
+b. A boolean flag isEnd to mark the end of a word
+
+What can Trie help us:
+1. Hold a list of strings
+2. search a string is in the list. Time Complexity: O(n) where n is the lenght of the longest string
+3. Get the common prefix for strings we see so far
+
+* code
+The following code assumes, the string only contains lowercase letters. And is using a vector of length 26 to hold lower case letters in each level.
+For other cases, just change the vector to unordered_map<char, TrieNode*>
+#+begin_src c++
+#define NUMBER_OF_LOWERCASE_LETTERS 26
+class Trie {
+  class TrieNode {
+    vector<TrieNode*> children;
+    bool is_end;
+
+    TrieNode() : children(NUMBER_OF_LOWERCASE_LETTERS, nullptr), is_end(false) {}
+
+  };
+
+  TrieNode* root;
+public:
+
+  Trie() {
+    root = new TrieNode;
+  }
+
+  void insert(string& s) {
+    TrieNode* cur = root;
+    for(char ch : s) {
+      if(!cur->children[ch-'a']) {
+        cur->children[ch] = new TrieNode();
+      }
+      cur = cur->children[ch];
+    }
+
+    // now cur is pointing to the end char node and end of string
+    cur->is_end = true;
+  }
+
+  // return true if string s is in the Trie
+  bool search(string& s) {
+    TrieNode* cur = root;
+    for(char ch : s) {
+      // go to char node
+      cur = cur->children[ch-'a'];
+      if(cur == nullptr) return false;
+    }
+
+    // need to check if there is string ends here
+    return cur->is_end;
+  }
+
+  // command prefix: break at the branching point (node that have two or more childrent)
+  string common_prefix() {
+    string prefix = "";
+    TrieNode* cur = root;
+    while(cur != nullptr) {
+      // should have only one child
+      int child = -1, count = 0;
+      vector<TrieNode*> children = cur->children;
+      for(int i=0; i<children.size(); i++) {
+        if(children[i]) {
+          child = i;
+          count ++;
+        }
+        if(count > 1) break;
+      }
+
+      if(count > 1) {
+        break;
+      }
+
+      // now count = 1 and child is the index of child
+      prefix += ('a' + child);
+      cur = cur->children[child];
+    }
+
+    return prefix;
+  }
+
+  void free_trie(TrieNode* cur) {
+    if(cur == nullptr) return;
+    // 1. free children
+    for(TrieNode* child : cur->children) {
+      free_trie(child);
+    }
+    //2. free itself
+    delete cur;
+  }
+
+  ~Trie() {
+    free_trie(root);
+  }
+
+};
+
+
+#+end_src
