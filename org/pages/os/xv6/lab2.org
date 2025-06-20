@@ -1,0 +1,115 @@
+#+title: Lab2
+
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Lab2
+nav_exclude: true
+---
+#+END_EXPORT
+
+
+* how to use GDB Qemu
+#+begin_src
+1. compile and run gdb qemu
+   make
+   make qemu-gdb
+
+2. in another window
+   cd to kernel dir
+   gdb-multiarch kernel
+   target remote localhost:25000
+#+end_src
+
+** break at system call
+#+begin_src c
+(gdb) b syscall
+Breakpoint 1 at 0x80001c7a: file kernel/syscall.c, line 160.
+
+(gdb) c
+Continuing.
+Thread 3 hit Breakpoint 1, syscall () at kernel/syscall.c:160
+(gdb) bt
+#0  syscall () at kernel/syscall.c:160
+#1  0x0000000080001a36 in usertrap () at kernel/trap.c:67
+#2  0x0000000000000000 in ?? ()
+
+(gdb) list
+158     void
+159     syscall(void)
+160     {
+#+end_src
+
+Looking at the backtrace output, which function called syscall?
+#+begin_src c
+(gdb) frame 1
+#1  0x0000000080001a36 in usertrap () at kernel/trap.c:67
+
+36 void
+37 usertrap(void)
+38 {
+53   if(r_scause() == 8){
+54     // system call
+  // ...
+67     syscall();
+#+end_src
+
+Type n a few times to step past struct proc *p = myproc(); Once past this statement, type p /x *p, which prints the current process's proc struct (see kernel/proc.h>) in hex.
+What is the value of p->trapframe->a7 and what does that value represent? (Hint: look user/initcode.S, the first user program xv6 starts.)
+
+#+begin_src c
+(gdb) n
+162       struct proc *p = myproc();
+
+(gdb) n
+164       num = p->trapframe->a7;
+
+(gdb) p /x *p
+$2 = {lock = {locked = 0x0, name = 0x800071c8, cpu = 0x0}, state = 0x4, chan = 0x0, killed = 0x0, xstate = 0x0, pid = 0x1, parent = 0x0, kstack = 0x3fffffd000, sz = 0x1000, pagetable = 0x87f55000, trapframe = 0x87f56000, context = {ra = 0x800012b6,
+    sp = 0x3fffffde80, s0 = 0x3fffffdeb0, s1 = 0x8000a810, s2 = 0x8000a3e0, s3 = 0x1, s4 = 0x80010898, s5 = 0x3, s6 = 0x8001b6b0, s7 = 0x1, s8 = 0x8001b7d8, s9 = 0x4, s10 = 0x0, s11 = 0x0}, ofile = {0x0 <repeats 16 times>}, cwd = 0x80018b20, name = {
+    0x69, 0x6e, 0x69, 0x74, 0x63, 0x6f, 0x64, 0x65, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, trace_mask = 0x0}
+
+(gdb) p p->trapframe->a7
+$3 = 7
+#+end_src
+
+p->trapframe->a7 is used to store the system call number defined in [[https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/syscall.h#L8][syscall.h]]
+#+begin_src c
+#define SYS_exec    7
+#+end_src
+
+The processor is running in supervisor mode, and we can print privileged registers such as sstatus. What was the previous mode that the CPU was in?
+#+begin_src c
+(gdb) p /x $sstatus
+$4 = 0x200000022
+
+0x200000022 = 0b10_0000_0000_0000_0000_0000_0000_0010_0010
+                                               ^ (bit 8 is 0)
+
+Bit 8: SPP (Supervisor Previous Privilege)
+0 = Previous mode was User
+1 = Previous mode was Supervisor
+#+end_src
+
+The xv6 kernel code contains consistency checks whose failure causes the kernel to panic; you may find that your kernel modifications cause panics. For example, replace the statement num = p->trapframe->a7; with num = * (int *) 0; at the beginning of syscall, run make qemu, and you will see something similar to:
+#+begin_src c
+ 158 void
+ 159 syscall(void)
+ 160 {
+ 161   int num;
+ 162   struct proc *p = myproc();
+ 163
+ 164   // num = p->trapframe->a7;
+ 165   num = * (int *) 0;
+
+scause=0xd sepc=0x80001c8c stval=0x0
+
+4302   // num = p->trapframe->a7;
+4303   num = * (int *) 0;
+4304     80001c8c:   00002903                lw      s2,0(zero) # 0 <_entry-0x80000000>
+#+end_src

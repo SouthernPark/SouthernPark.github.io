@@ -74,7 +74,6 @@ SECTIONS
 #+end_src
 
 
-
 * code part: how kernel is loaded into memo
 ** Bootloader loads the kernel binary into memory and set PC to _entry
 
@@ -251,3 +250,5 @@ userinit(void)
   // once run the exec will replace the first process memo layout with init binary
 }
 #+end_src
+
+* [[file:lab2.org][Lab2]]

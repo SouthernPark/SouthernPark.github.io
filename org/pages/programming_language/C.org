@@ -1,0 +1,31 @@
+#+title: C
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: C
+nav_exclude: true
+---
+#+END_EXPORT
+
+* extern
+The extern keyword tells the compiler that a variable or function is defined elsewhere, possibly in another file.
+As long as the variable or fucntion is not declared as static.
+#+begin_src c
+// file1.c
+int counter = 0;
+
+// file2.c
+extern int counter;  // refers to the same counter defined in file1.c
+extern void print_result();  // function defined in another file
+#+end_src
+
+
+#+begin_src c
+// It is still global (lives the whole program), but only visible within that file.
+static int count = 0;
+#+end_src

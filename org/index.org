@@ -1,3 +1,4 @@
+#+title: SouthernPark Blogs
 #+STARTUP: showall indent
 #+STARTUP: hidestars
 #+TOC: nil  ;; Disable table of contents by default
@@ -23,7 +24,7 @@ nav_exclude: true
 
 * Programming Language
 ** [[file:pages/programming_language/C++.org][C++]]
-
+** [[file:pages/programming_language/C.org][C]]
 * [[file:~/org_private_repo/visa.org][US Visa Info (CPT/OPT/H1B)]]
 
 * TODO [[file:~/org_private_repo/applications.org][Application]]
