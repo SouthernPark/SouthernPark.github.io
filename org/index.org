@@ -16,11 +16,15 @@ nav_exclude: true
 
 * [[file:~/org_private_repo/behavior_question.org][Behavior Question]]
 
+* [[file:~/org_private_repo/experience.org][Experience]]
+
 * Operating System
 ** [[file:pages/os/xv6/xv6.org][MIT 6.S081 xv6 OS with RISCV CPU]]
-
+** [[file:pages/os/questions.org][八股]]
 * Computer Network
 ** [[file:pages/computer_network/foundations.org][Foundations]]
+** [[file:pages/computer_network/questions.org][八股]]
+* [[file:pages/compiler/compiler.org][Compiler]]
 
 * Programming Language
 ** [[file:pages/programming_language/C++.org][C++]]
@@ -30,3 +34,4 @@ nav_exclude: true
 * TODO [[file:~/org_private_repo/applications.org][Application]]
 * other
 ** [[file:pages/how-to-blog-with-Emacs-Jeklly.org][Blogs with Emacs org mode, Jeklly and Github Pages]]
+* [[file:pages/mock/mock.org][mock]]

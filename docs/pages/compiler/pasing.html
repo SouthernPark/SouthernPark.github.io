@@ -1,0 +1,198 @@
+---
+layout: default
+title: Parsing
+nav_exclude: true
+---
+
+<p>
+As before, we say that a language is a set of strings; each string is a finite
+sequence of symbols taken from a finite alphabet.
+</p>
+
+<p>
+Just as regular expressions can be used to define lexical structure in a static,
+declarative way, grammars define syntactic structure declaratively.
+</p>
+<div id="outline-container-org4f54287" class="outline-2">
+<h2 id="org4f54287"><span class="section-number-2">1.</span> Context Free Grammar</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+A context-free grammar describes a language. A grammar has a set of productions of the form:
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">symbol -&gt; symbol symbol . . . symbol
+</pre>
+</div>
+<p>
+where there are zero or more symbols on the right-hand side. Each symbol
+is either terminal, meaning that it is a token from the alphabet of strings in the language, or nonterminal, meaning that it appears on the left-hand side of some production.
+</p>
+
+<p>
+No token can ever appear on the left-hand side of a production.
+</p>
+
+<p>
+Finally, one of the nonterminals is distinguished as the start symbol of
+the grammar.
+</p>
+
+<p>
+The following is a grammar for straignt-line program
+<img src="grammar_for_straight_line_program.png" alt="grammar_for_straight_line_program.png" />
+</p>
+</div>
+<div id="outline-container-org93c9e41" class="outline-3">
+<h3 id="org93c9e41"><span class="section-number-3">1.1.</span> Ambiguous gramma</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+A grammar is ambiguous if it can derive a sentence with two different parse trees.
+The following is a ambiguous gramma that can lead to two different parsing tree for the same sentence.
+<img src="ambiguous_gramma.png" alt="ambiguous_gramma.png" />
+</p>
+
+
+<div id="org7c8daf7" class="figure">
+<p><img src="pasing_trees_for_same_sentence.png" alt="pasing_trees_for_same_sentence.png" />
+</p>
+</div>
+
+<p>
+Ambiguous grammars are problematic for compiling: in general we would prefer to have unambiguous grammars. Fortunately, we can often transform ambiguous grammars to unambiguous grammars.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgf16964a" class="outline-2">
+<h2 id="orgf16964a"><span class="section-number-2">2.</span> Predictive Parsing</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+For the following programmer, we can use the terminals to classify which grammar to use.
+We call these kind of grammars predictive, it is easier for to write program.
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">S -&gt; IF E TEHN S
+S -&gt; BEGIN S L
+S -&gt; PRINT E
+</pre>
+</div>
+
+<p>
+But for the following grammars, there is a conflict here: the E function has no way to know which clause to
+use.
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">S -&gt; E $
+E -&gt; E + T
+E -&gt; E - T
+E -&gt; T
+</pre>
+</div>
+
+<p>
+Recursive-descent, or predictive, parsing works only on grammars where the first terminal symbol of each subexpression provides enough information to choose which production to use.
+</p>
+
+<p>
+To understand this better, we will formalize the notion of FIRST sets, and then derive conflict-free recursive-descent
+parsers using a simple algorithm.
+</p>
+</div>
+<div id="outline-container-orgd88c068" class="outline-3">
+<h3 id="orgd88c068"><span class="section-number-3">2.1.</span> FIRST AND FOLLOW SETS</h3>
+<div class="outline-text-3" id="text-2-1">
+<div class="org-src-container">
+<pre class="src src-nil">nullable(X) is true if X can derive the empty string.
+FIRST(R) is the set of terminals that can begin strings derived from y.
+FOLLOW(Z) is the set of terminals that can immediately follow X. That is,
+</pre>
+</div>
+
+
+<div id="org85bd258" class="figure">
+<p><img src="grammar_3_12.png" alt="grammar_3_12.png" />
+</p>
+</div>
+
+<p>
+We can run some iteration algorithm to compute the first and following set for the above grammars:
+<img src="first_follow_set_for_grammar_3_12.png" alt="first_follow_set_for_grammar_3_12.png" />
+</p>
+
+<p>
+The following is the table of grammar we constructed with using the first and follow set table and following rules:
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">To construct this table, enter production X -&gt; R in row X, column T of the table for each T belongs to FIRST(R).
+Also, if y is nullable, enter the production in row X, column T for each T belongs FOLLOW[X].
+</pre>
+</div>
+
+
+<div id="orgbeb2c5d" class="figure">
+<p><img src="Predictive_parsing_for_grammar_3_12.png" alt="Predictive_parsing_for_grammar_3_12.png" />
+</p>
+</div>
+
+<p>
+But some of the entries like matrix[X][a], matrix[Y][c], matrix[Z][d] contain more than one production!
+The presence of duplicate entries means that predictive parsing will not work on Grammar 3.12.
+</p>
+</div>
+<div id="outline-container-orgf591425" class="outline-4">
+<h4 id="orgf591425"><span class="section-number-4">2.1.1.</span> LL(1) parsing</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+Grammars whose predictive parsing tables contain no duplicate entries are called LL(1).
+This stands for Left-to-right parse, Leftmost-derivation, 1-symbol lookahead
+</p>
+
+<p>
+We can generalize the notion of FIRST sets to describe the first k tokens of
+a string, and to make an LL(&amp;) parsing table whose rows are the nonterminals
+and columns are every sequence of k terminals. This is rarely done (because
+the tables are so large)
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org267218e" class="outline-2">
+<h2 id="org267218e"><span class="section-number-2">3.</span> LR Parsing</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The weakness of LL(k) parsing techniques is that they must predict which
+production to use, having seen only the first k <code>tokens</code> of the right-hand side
+</p>
+
+<p>
+A more powerful technique, LR(k) parsing, is able to postpone the decision
+until it has seen input tokens corresponding to the entire right-hand side of
+the production in question (and k more input tokens beyond).
+</p>
+
+<p>
+LR(k) stands for Left-to-right parse, Rightmost-derivation, k-token lookahead.
+The use of a rightmost derivation seems odd; how is that compatible with a left-to-right parse?
+</p>
+
+<p>
+The parser has a stack and an input. The first k tokens of the input are the
+lookahead. Based on the contents of the stack and the lookahead, the parser
+performs two kinds of actions:
+</p>
+
+<p>
+Shift: move the first input token to the top of the stack.
+Reduce: Choose a grammar rule X -&gt; A B C; pop C, B, A from the top of the stack; push X onto the stack.
+</p>
+</div>
+</div>
+<div id="outline-container-org703c76d" class="outline-2">
+<h2 id="org703c76d"><span class="section-number-2">4.</span> Yacc (Parser Generator)</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Parsing Grammar Rules user defined to generate LR parser.
+</p>
+</div>
+</div>

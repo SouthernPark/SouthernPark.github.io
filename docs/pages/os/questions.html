@@ -1,0 +1,118 @@
+---
+layout: default
+title: 八股
+nav_exclude: true
+---
+<div id="outline-container-org1703c36" class="outline-2">
+<h2 id="org1703c36"><span class="section-number-2">1.</span> how does linux kernel implement fork</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+a new process object will be created and the kernel will help to fill the entries in the process, like pid, page table, file table, sheduling info, program counter.
+</p>
+
+<p>
+The parent page table will be copied to child page table. With the tech of COW, new physical address spaces will not be allocated. But pointing to the same address as the parent.
+Page fault will be used to create new physical memo for the child later.
+Because vitual address space is copied, so the stack and heap, global variable, text will also be copied.
+</p>
+
+<p>
+Child will point to the same open file table as parent.
+</p>
+
+<p>
+Child process will be marked as runnable for the scheduling process to run.
+</p>
+</div>
+</div>
+<div id="outline-container-org7221018" class="outline-2">
+<h2 id="org7221018"><span class="section-number-2">2.</span> how does atomicity(lock) is implemented</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The root cause of race coonditon is two CPUs access the same resoucers / memo at the same time.
+</p>
+
+<p>
+most CPU provides test<sub>and</sub><sub>set</sub> logic which prevents other CPU to access one address if current CPU is used test<sub>and</sub><sub>set</sub> to access the address.
+</p>
+
+<p>
+This helps to prevent two CPUs access the same memo at the same time.
+</p>
+
+<p>
+Spin Lock or mutual lock is implemeted based on the test<sub>and</sub><sub>set</sub> atomic operation provided by CPU.
+</p>
+
+<p>
+Threads / process who acquired the lock (ownership) needs to relase the lock, so that other threads can use.
+</p>
+</div>
+</div>
+<div id="outline-container-org61cc439" class="outline-2">
+<h2 id="org61cc439"><span class="section-number-2">3.</span> how to avoid dead lock</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-org75f9b65" class="outline-3">
+<h3 id="org75f9b65"><span class="section-number-3">3.1.</span> one way is the ensure code paths that acquire locks in the same order.</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+This is some kind of global deadlock-avoiding order
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org27bb3cd" class="outline-2">
+<h2 id="org27bb3cd"><span class="section-number-2">4.</span> what is a zoombie process</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Child process finishes execution (exit()) → becomes zombie. But the parent has not yet called wait to collect the exit status.
+Once the parent process calls wait, the zombie process will be removed from process table.
+</p>
+
+<p>
+If parent dies without waiting, the init process will become its parent and automatically collect the zoombie process&rsquo;s exit status, clean it up.
+</p>
+</div>
+<div id="outline-container-org1e7a179" class="outline-3">
+<h3 id="org1e7a179"><span class="section-number-3">4.1.</span> how to count the number of zoombie process in linux</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+using ps to get the ps status, status marked with &rsquo;Z&rsquo; is zoombie process.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org021ba0c" class="outline-2">
+<h2 id="org021ba0c"><span class="section-number-2">5.</span> Sychronizaiton</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Sychronizaiton primitives are basic building blocks provided by OS and hardware to coordinate executions between threads and processes, prevent race conditions.
+</p>
+</div>
+<div id="outline-container-org5f363a8" class="outline-3">
+<h3 id="org5f363a8"><span class="section-number-3">5.1.</span> blocking primitives</h3>
+<div class="outline-text-3" id="text-5-1">
+</div>
+<div id="outline-container-orgb67c416" class="outline-4">
+<h4 id="orgb67c416"><span class="section-number-4">5.1.1.</span> mutex lock</h4>
+</div>
+<div id="outline-container-orgc2b7314" class="outline-4">
+<h4 id="orgc2b7314"><span class="section-number-4">5.1.2.</span> spiclock</h4>
+</div>
+<div id="outline-container-org22051c2" class="outline-4">
+<h4 id="org22051c2"><span class="section-number-4">5.1.3.</span> semaphroe</h4>
+</div>
+<div id="outline-container-org8e36c35" class="outline-4">
+<h4 id="org8e36c35"><span class="section-number-4">5.1.4.</span> condition variable</h4>
+</div>
+</div>
+<div id="outline-container-orge86670b" class="outline-3">
+<h3 id="orge86670b"><span class="section-number-3">5.2.</span> non-blocking primitives</h3>
+<div class="outline-text-3" id="text-5-2">
+</div>
+<div id="outline-container-orgc492923" class="outline-4">
+<h4 id="orgc492923"><span class="section-number-4">5.2.1.</span> atomic operations</h4>
+</div>
+</div>
+</div>

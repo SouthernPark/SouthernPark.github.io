@@ -1,0 +1,129 @@
+---
+layout: default
+title: Intermediate Representation
+nav_exclude: true
+---
+
+
+<p>
+An intermediate representation (IR) is a kind of abstract machine language
+that can express the target-machine operations without committing to too
+much machine-specific detail.
+</p>
+
+<p>
+It is also independent of the details of the source language.
+</p>
+
+<p>
+The <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/intermediate_representation/tree.sml">tree.sml</a> defines the node type for IR representation, which is similar to instruction selection set.
+</p>
+
+<p>
+The intermediate representation (Tree) language expresses only one abstract operation in each tree node: memory fetch or store, addition or subtraction, conditional jump, and so on.
+</p>
+<div id="outline-container-orgd60e391" class="outline-2">
+<h2 id="orgd60e391"><span class="section-number-2">1.</span> IR tree</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Example:
+<img src="example_IR_tree.png" alt="example_IR_tree.png" />
+</p>
+</div>
+</div>
+<div id="outline-container-orgbf4b834" class="outline-2">
+<h2 id="orgbf4b834"><span class="section-number-2">2.</span> Translation Expression into Trees</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Translation of abstract syntax expressions into intermediate trees is reasonably straightforward; but there are many cases to handle.
+</p>
+</div>
+<div id="outline-container-org9696e95" class="outline-3">
+<h3 id="org9696e95"><span class="section-number-3">2.1.</span> kinds of exression</h3>
+<div class="outline-text-3" id="text-2-1">
+<ol class="org-ol">
+<li>Expression that returns a value</li>
+<li>Expression that returns no value (while expression, procedure call)</li>
+<li>Conditional expression (if .. else)</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-orgf65fa4a" class="outline-3">
+<h3 id="orgf65fa4a"><span class="section-number-3">2.2.</span> Simple Variable</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+For a simple variable v declared in the current procedure&rsquo;s stack frame, we translate it as
+<img src="var_declared_in_stack.png" alt="var_declared_in_stack.png" />
+</p>
+</div>
+</div>
+<div id="outline-container-org9852b1c" class="outline-3">
+<h3 id="org9852b1c"><span class="section-number-3">2.3.</span> <span class="todo TODO">TODO</span> Static Link</h3>
+</div>
+
+<div id="outline-container-org7448ee7" class="outline-3">
+<h3 id="org7448ee7"><span class="section-number-3">2.4.</span> Array variable</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+Array may need external call to allocall like malloc to allocate size and move the return value to a variable or register.
+</p>
+</div>
+</div>
+<div id="outline-container-orgc450b31" class="outline-3">
+<h3 id="orgc450b31"><span class="section-number-3">2.5.</span> Conditionals</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+can be created with SEQ and JUMP
+</p>
+</div>
+</div>
+<div id="outline-container-org35df6b0" class="outline-3">
+<h3 id="org35df6b0"><span class="section-number-3">2.6.</span> strings</h3>
+<div class="outline-text-3" id="text-2-6">
+<p>
+add new lael to the string, and put into a global list, so that later we can put it into global section.
+</p>
+</div>
+</div>
+<div id="outline-container-org574168a" class="outline-3">
+<h3 id="org574168a"><span class="section-number-3">2.7.</span> <span class="todo TODO">TODO</span> funciton call</h3>
+</div>
+</div>
+<div id="outline-container-orgc618783" class="outline-2">
+<h2 id="orgc618783"><span class="section-number-2">3.</span> Declarations</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The call to transDec will not only return a result record (containing a
+new type environment, value environment, and Trans l a t e , exp) but also
+will have side effects: for each variable declaration within the declaration,
+additional space will be reserved in the current level&rsquo;s frame. Also, for each
+function declaration, a new &ldquo;fragment&rdquo; of Tree code will be kept for the
+function&rsquo;s body
+</p>
+</div>
+<div id="outline-container-org18c0192" class="outline-3">
+<h3 id="org18c0192"><span class="section-number-3">3.1.</span> variable definition</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+transDec must also return an exp l i s t of assignment expressions that accomplish these
+initializations.
+</p>
+</div>
+</div>
+<div id="outline-container-org52a3c3c" class="outline-3">
+<h3 id="org52a3c3c"><span class="section-number-3">3.2.</span> function definition</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Each Tiger function is translated into a segment of assembly language with a prologue, a body, and an epilogue. The body of a Tiger function is an expression, and the body of the translation is simply the translation of that expression.
+</p>
+
+<p>
+prolog and epilogue are used to handle stack pointer to allocate frame and exit from new frame.
+</p>
+
+<p>
+Fucntion body is what really do by the function.
+</p>
+</div>
+</div>
+</div>

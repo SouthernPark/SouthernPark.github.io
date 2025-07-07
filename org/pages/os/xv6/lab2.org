@@ -113,3 +113,15 @@ scause=0xd sepc=0x80001c8c stval=0x0
 4303   num = * (int *) 0;
 4304     80001c8c:   00002903                lw      s2,0(zero) # 0 <_entry-0x80000000>
 #+end_src
+
+* system call tracing
+trace takes a mask (which contains system call bits) and triggers the kernel print messages once the system call is hit. The process id, system call name and return value will be printed out.
+
+Core idea:
+1. [[https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/syscall.c#L132][syscall]] is the kernel entry point for every system call, we can print the message there
+
+2. where to get the system call argument for trace?
+When system call is made, trap will be generated to store same the user register which contains user arguments into trapframe.
+The function [[https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/syscall.c#L57][argint]] is provided by xv6 to retrive the n the argument as int.
+
+[[https://github.com/SouthernPark/xv6/commit/b0fb7f9afa607ff4903246f98602dcdb58e653ce#diff-e55fdcf2d73c0e8f8a2ca30646f76849618bba9cbc2ad2ffc2191b39a81cd3f3][Diff for trace]]

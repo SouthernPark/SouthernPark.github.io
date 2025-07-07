@@ -37,7 +37,7 @@ nav_exclude: true
 * [[file:prefix_suffix_sum.org][Prefix/Suffix Sum]]
 | Question                             | Time              |
 |--------------------------------------+-------------------|
-| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-05-20 周二> |
+| [[https://leetcode.com/problems/count-of-interesting-subarrays/description/][2845. Count of Interesting Subarrays]] | <2025-06-23 周一> |
 | [[https://leetcode.com/problems/range-sum-query-immutable/description/][303. Range Sum Query - Immutable]]     | <2025-05-21 周三> |
 
 * [[file:math.org][Math]]

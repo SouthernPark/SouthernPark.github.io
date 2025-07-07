@@ -1,0 +1,60 @@
+#+title: 八股
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: 八股
+nav_exclude: true
+---
+#+END_EXPORT
+
+* how does linux kernel implement fork
+a new process object will be created and the kernel will help to fill the entries in the process, like pid, page table, file table, sheduling info, program counter.
+
+The parent page table will be copied to child page table. With the tech of COW, new physical address spaces will not be allocated. But pointing to the same address as the parent.
+Page fault will be used to create new physical memo for the child later.
+Because vitual address space is copied, so the stack and heap, global variable, text will also be copied.
+
+Child will point to the same open file table as parent.
+
+Child process will be marked as runnable for the scheduling process to run.
+
+
+* how does atomicity(lock) is implemented
+
+The root cause of race coonditon is two CPUs access the same resoucers / memo at the same time.
+
+most CPU provides test_and_set logic which prevents other CPU to access one address if current CPU is used test_and_set to access the address.
+
+This helps to prevent two CPUs access the same memo at the same time.
+
+Spin Lock or mutual lock is implemeted based on the test_and_set atomic operation provided by CPU.
+
+Threads / process who acquired the lock (ownership) needs to relase the lock, so that other threads can use.
+
+* how to avoid dead lock
+** one way is the ensure code paths that acquire locks in the same order.
+This is some kind of global deadlock-avoiding order
+
+* what is a zoombie process
+Child process finishes execution (exit()) → becomes zombie. But the parent has not yet called wait to collect the exit status.
+Once the parent process calls wait, the zombie process will be removed from process table.
+
+If parent dies without waiting, the init process will become its parent and automatically collect the zoombie process's exit status, clean it up.
+
+** how to count the number of zoombie process in linux
+using ps to get the ps status, status marked with 'Z' is zoombie process.
+* Sychronizaiton
+Sychronizaiton primitives are basic building blocks provided by OS and hardware to coordinate executions between threads and processes, prevent race conditions.
+
+** blocking primitives
+*** mutex lock
+*** spiclock
+*** semaphroe
+*** condition variable
+** non-blocking primitives
+*** atomic operations

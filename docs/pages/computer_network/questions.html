@@ -1,0 +1,177 @@
+---
+layout: default
+title: 八股
+nav_exclude: true
+---
+<div id="outline-container-org1223a01" class="outline-2">
+<h2 id="org1223a01"><span class="section-number-2">1.</span> Tiktok</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org6345a70" class="outline-3">
+<h3 id="org6345a70"><span class="section-number-3">1.1.</span> TCP/IP 5 layers protocol</h3>
+<div class="outline-text-3" id="text-1-1">
+<div class="org-src-container">
+<pre class="src src-nil">physical layer: ethernet pysical signal
+
+Data Link layer: Ethernet, MAC, ARP, VLAN
+
+Nework Layer: IP, ICMP (ping, traceroute, ), BGP, IPsec
+
+Transport Layer: TCP / UDP
+
+Applicaiton Layer: HTTP, HTPPs, FTP, DNS, SSH, DNS
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgdedee05" class="outline-3">
+<h3 id="orgdedee05"><span class="section-number-3">1.2.</span> layer 2 CRC</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+In Ethernet: a 32-bit CRC (Frame Check Sequence, FCS) is appended to each frame.
+The receiver recalculates CRC and compares with the received CRC: If mismatch → frame discarded (hardware drop, not passed to IP layer).
+</p>
+
+<p>
+This part is ususally done by the NIC.
+</p>
+</div>
+</div>
+<div id="outline-container-org72665ee" class="outline-3">
+<h3 id="org72665ee"><span class="section-number-3">1.3.</span> TCP/IP packet 校验和计算 checksum</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+sender side: header + data, using 16 bits (2 bytes) as a group, sum them up and do negation we can get the check sum
+receiver side: also 16 bits as a group, add the header, check sum and data, the final result should be FFFF
+</p>
+</div>
+</div>
+<div id="outline-container-orgfc9d7c0" class="outline-3">
+<h3 id="orgfc9d7c0"><span class="section-number-3">1.4.</span> what if the IP packets is too large to fit into the ethernet frame?</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+Layer 4 TCP segment and Layer 3 IP fragmentation.
+</p>
+</div>
+</div>
+<div id="outline-container-orga2aca31" class="outline-3">
+<h3 id="orga2aca31"><span class="section-number-3">1.5.</span> Does TCP segmentation cause later segments to contain the TCP header?</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+yes, each TCP segment is independent from each other, and each contains different seq number, which ensures ack and segment replay.
+</p>
+</div>
+</div>
+<div id="outline-container-org8d78ce2" class="outline-3">
+<h3 id="org8d78ce2"><span class="section-number-3">1.6.</span> TCP 3 way handshake connection</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+It is the connection establishment process in TCP (Layer 4) ensuring: Both client and server agree on starting sequence numbers (propsed by each side). Both sides are ready to transmit and receive data reliably.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nil">1. SYN (Client → Server)
+Client sends a SYN packet to initiate the connection. Chooses an Client side Initial Sequence Number (ex: ISN_C = 10). No payload (only header). Header Flag (SYC = 1)
+
+Purpose: Client requests a connection. Informs the server of the client's starting sequence number for the session.
+
+2. SYN-ACK (Server → Client)
+Client sends back an ACK packet to the server. Propose Server side Initial Sequence Number. Ack back client side sequence number, Flags (SYC = 1, ACK = 1). No
+
+3. ACK  (Client → Server)
+Client sends back an ACK packet to the server. Ack back Server side sequence number
+
+Both client side and server side maintains its own sequence number, so that's why the thrid step is still need for client to ack back to server.
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org38b3425" class="outline-3">
+<h3 id="org38b3425"><span class="section-number-3">1.7.</span> TCP 4 way termination</h3>
+<div class="outline-text-3" id="text-1-7">
+<p>
+TCP 4-way termination is the connection closing procedure in TCP, ensuring graceful, reliable, bidirectional shutdown of a TCP connection.
+</p>
+
+<p>
+Why 4-Way?
+Each direction must be closed independently. Termination requires: Each side to send a FIN (to indicate no more data to send). Each side to ACK the peer’s FIN.
+4 control packets (FIN, ACK, FIN, ACK) → “4-way” termination.
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-nil">1. Active Close (Client sends FIN)
+The client (or the actively closing side) sends: FIN = 1 Sequence Number = X
+
+2. Passive Close Acknowledgment (Server sends ACK)
+The server (or passively closing side) replies: ACK = 1 Acknowledgment Number = X + 1
+
+At this point, Client → Server direction is closed for sending (half-close).
+Server can still send data to the client.
+
+3. Passive Close (Server sends FIN)
+When the server finishes sending remaining data, it sends: FIN = 1 Sequence Number = Y
+
+4. Active Close Acknowledgment (Client sends ACK) The client replies: ACK = 1 Acknowledgment Number = Y + 1
+</pre>
+</div>
+
+
+<p>
+Why 3 way handshke only needs 3 compared with 4 way handshake?
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">In the second SYN-ACK, the server do propse new seq number and accept client sequence number. two actions in one step simoutinuously.
+
+For 4 way handshake, the server on the third step side may need to finsih the data flush after close connection with client
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org38e2de4" class="outline-3">
+<h3 id="org38e2de4"><span class="section-number-3">1.8.</span> Why is Time<sub>WAIT</sub> needed in TCP?</h3>
+<div class="outline-text-3" id="text-1-8">
+<p>
+TIME<sub>WAIT</sub> happens only on the side that actively closes the connection. (The one First send the FIN or the one sends the final ACK) (In the above example: it&rsquo;s the client)
+On the passive closer’s side: after sending its FIN and receiving the ACK, it immediately transitions to the CLOSED state.
+</p>
+
+<p>
+Avoid delayed packets interfere with the next new connections:
+Allows retransmission of the final ACK if the peer’s FIN is retransmitted.
+</p>
+</div>
+</div>
+<div id="outline-container-orge440f66" class="outline-3">
+<h3 id="orge440f66"><span class="section-number-3">1.9.</span> What are the 4 primary timers used by TCP</h3>
+<div class="outline-text-3" id="text-1-9">
+<div class="org-src-container">
+<pre class="src src-nil">1. retransmission timer (RTO)
+Detects lost segments. Triggers retransmission if an ACK is not received within the calculated RTO (Retransmission Timeout).
+
+2. Persist Timer
+TCP uses flow control with the Window Size (rwnd) to indicate how much data the receiver can accept.
+If the receiver’s window = 0, it tells the sender: "I cannot receive any more data now."
+The persist timer ensures that the sender periodically probes the receiver to check if the window has opened
+
+
+3. Keepalive Timer
+Detects dead TCP connections when there is no activity for a long period. Used to ensure the peer is still alive.
+
+4. TIME_WAIT Timer
+Ensures the connection remains in TIME_WAIT state after connection termination.
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgbed535a" class="outline-3">
+<h3 id="orgbed535a"><span class="section-number-3">1.10.</span> how does IP longest</h3>
+<div class="outline-text-3" id="text-1-10">
+<p>
+Trie,
+Masks which can perform parallel matching
+</p>
+</div>
+</div>
+</div>

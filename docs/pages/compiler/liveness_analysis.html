@@ -1,0 +1,95 @@
+---
+layout: default
+title: Liveness Analysis
+nav_exclude: true
+---
+
+
+<p>
+The front end of the compiler translates programs into an intermediate language with an unbounded number of temporaries. This program must run on a machine with a bounded number of registers. Two temporaries a and b
+can fit into the same register, if a and b are never &ldquo;in use&rdquo; at the same time.
+Thus, many temporaries can fit in few registers; if they don&rsquo;t all fit, the excess
+temporaries can be kept in memory.
+</p>
+
+<p>
+Therefore, the compiler needs to analyze the intermediate-representation
+program to determine which temporaries are in use at the same time. We say
+a variable is live if it holds a value that may be needed in the future, so this
+analysis is called liveness analysis.
+</p>
+<div id="outline-container-org44b2c4d" class="outline-2">
+<h2 id="org44b2c4d"><span class="section-number-2">1.</span> Liveness</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Live-in: A variable v is live-in at a program point p if v is used (not defined) at current point or later point.
+</p>
+
+<p>
+A variable v is live-out at a program point p if is live in the later point of v
+</p>
+
+
+<div id="org1456ee1" class="figure">
+<p><img src="live_in_live_out.png" alt="live_in_live_out.png" />
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org59230d6" class="outline-2">
+<h2 id="org59230d6"><span class="section-number-2">2.</span> Interference</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+One of the most important applications of liveness analysis is for register
+allocation: we have a set of temporaries a,b,c,&#x2026; that must be allocated to
+registers r1,&#x2026;, rk. A condition that prevents a and b being allocated to the
+same register is called an interference
+</p>
+
+<p>
+The most common kind of interference is caused by overlapping live ranges:
+when a and b are both live at the same program point, then they cannot be
+put in the same register.
+</p>
+
+<p>
+If a and b has inference, we can add an edge between them to mark, they can not appear at the same time.
+The following is an example:
+<img src="representation_of_interference.png" alt="representation_of_interference.png" />
+</p>
+</div>
+</div>
+<div id="outline-container-org9c95284" class="outline-2">
+<h2 id="org9c95284"><span class="section-number-2">3.</span> Liveness in Tiger</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+After the instruction selection, we get a list of assembly code with inifinite registers.
+</p>
+
+<p>
+The flow analysis for the Tiger compiler is done in two stages:
+first, the control flow of the Ass em program is analyzed, producing a control-flow graph;
+then, the liveness of variables in the control-flow graph is analyzed, producing
+an interference graph
+</p>
+
+
+<p>
+Each instruction (or basic block) is represented by a node in the flow graph. If instruction m can be
+followed by instruction n (either by a jump or by falling through), then there
+will be an edge (m, n) in the graph.
+</p>
+
+<p>
+The <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/liveness_regalloc/makegraph.sml">makegraph.sml</a> defines how the flow graph is made according to the assembly.
+The graph will also note the reg used in current node and the defined in current node to help build the
+interference graph.
+</p>
+
+
+<p>
+<a href="https://github.com/SouthernPark/TigerCompiler/blob/494d75775b80c3ed636ddc38eb15b413363be0e3/liveness_regalloc/liveness.sml">liveness.sml</a> takes a flowgraph and return an IGraph and a table mapping each flowgraph node to the
+liveout set of temps. (the interference reg are those in the live-out set)
+</p>
+</div>
+</div>

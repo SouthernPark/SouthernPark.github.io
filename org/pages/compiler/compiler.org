@@ -1,0 +1,35 @@
+#+title: Compiler
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Compiler
+nav_exclude: true
+---
+#+END_EXPORT
+
+[[https://github.com/SouthernPark/TigerCompiler][Tiger Compiler]]
+
+* [[file:intro.org][Introduction]]
+
+* [[file:lexical_analysis.org][Lexical Analysis]] (Tokens Regular Expression, DFA)
+
+* [[file:pasing.org][Parsing]] (Grammar, LR Parsing)
+
+* [[file:abstract_syntax.org][Abstract Syntax]] (Parser produce Abstract Parse Tree)
+
+* [[file:semantic_analysis.org][Semantic Analysis]] (Type Environment (Type declartion), Variable/Function Environment (var, func declaration),  type checking)
+
+* [[file:activation_records.org][Activation Records]] (Abstract Frame and Fucntion Label)
+
+* [[file:intermediate_representation.org][Intermediate Representation]] (Trees of nodes which abstract the CPU instructions)
+
+* [[file:instruction_selection.org][Instruction Selection]] (Tile the tree pattern into MIPS Assembly instrucitons)
+
+* [[file:liveness_analysis.org][Liveness Analysis]] (Take the Assembly, at each point find the temp registers that are live, interference)
+
+* [[file:register_allocation.org][Regsiter Allocation]] (resolve the interfence graph, replace the temp register in Assembly with real registers)

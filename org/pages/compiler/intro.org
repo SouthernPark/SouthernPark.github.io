@@ -1,0 +1,22 @@
+#+title: Intro
+
+
+* Phases of Compiler
+[[file:phases_compiler.png]]
+
+Breaking the compiler into this many pieces allows for reuse of the components.
+
+Change target CPU?: Just replace the Frame Layout and Instruction Selection modules.
+
+The front-end of the compiler (Lexer, Parser, Translate) handles source language syntax and parsing, transforming it into a language-independent AST.
+After Translate, the rest of the compiler (IR, optimization, backend) does not care about the original source language syntax and works on the AST and IR.
+
+[[file:description_of_compiler_phase.png]]
+
+** data structure (Tree) for programming language representation
+[[file:data_structure_tree.png]]
+
+[[file:example_program_as_a_tree.png]]
+
+[[file:program_to_represent_synta.png]]
+

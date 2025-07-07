@@ -1,0 +1,112 @@
+---
+layout: default
+title: Activation Records
+nav_exclude: true
+---
+
+
+<p>
+Languages like C / Tiger have stackable local variables.
+Local variables are created on function entry and
+destroyed on function exit, then we can use a LIFO data structure - a stack -
+to hold them.
+</p>
+
+<p>
+For other languages like SML, which support high order functions, can not use stack way to hold local variables.
+</p>
+<div id="outline-container-org8254044" class="outline-2">
+<h2 id="org8254044"><span class="section-number-2">1.</span> stack frame</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+The stack usually grows only at the entry to a function, by an increment large enough to hold all the local variables for
+that function, and, just before the exit from the function, shrinks by the same amount.
+</p>
+
+<p>
+The area on the stack devoted to the local variables, parameters, return address, and other temporaries
+for a function is called the function&rsquo;s activation record or stackframe.
+</p>
+
+<p>
+The manufacturer of a computer often prescribes a &ldquo;standard&rdquo; frame layout to be used on that architecture.
+</p>
+
+<p>
+The following is one example of stack frame calling convention:
+</p>
+
+
+<div id="orgf040cac" class="figure">
+<p><img src="stack_frame_calling_convention.png" alt="stack_frame_calling_convention.png" />
+</p>
+</div>
+
+
+<p>
+CPU also have registers which can be used to hold variable when use current stack frame.
+</p>
+
+<p>
+A modern procedure-call convention will pass function parameters in registers, pass the return address in a register, and return the function result in a
+register. Many of the local variables will be allocated to registers, as will the
+intermediate results of expression evaluation. Values are written to memory
+(in the stack frame) only when necessary
+</p>
+</div>
+<div id="outline-container-org874b39b" class="outline-3">
+<h3 id="org874b39b"><span class="section-number-3">1.1.</span> STATIC LINKS</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Static link is used for lower level stack frame to access higher level stack frame.
+This senorio happens when upper functions create a local variable and lower function uses it.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org3628a67" class="outline-2">
+<h2 id="org3628a67"><span class="section-number-2">2.</span> Frames in Tiger</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Here we face the fact that every target machine architecture will have a different standard stack
+frame layout. If we want Tiger functions to be able to call C functions, we
+should use the standard layout. But we don&rsquo;t want the specifics of any particular machine intruding on the implementation of the semantic analysis module of the Tiger compiler.
+</p>
+
+<p>
+We must use abstraction.
+</p>
+</div>
+<div id="outline-container-orgeb0bcb7" class="outline-3">
+<h3 id="orgeb0bcb7"><span class="section-number-3">2.1.</span> Two layer of abstractions</h3>
+<div class="outline-text-3" id="text-2-1">
+
+<div id="org667e436" class="figure">
+<p><img src="two_layers_abs.png" alt="two_layers_abs.png" />
+</p>
+</div>
+
+<p>
+The FRAME and TEMP interfaces provide machine-independent views of memory-resident and register-resident variables.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org1cf27eb" class="outline-2">
+<h2 id="org1cf27eb"><span class="section-number-2">3.</span> code</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/intermediate_representation/main.sml">main.sml</a> parse the source file to produce the abstract syntax tree, and then using findescape to check if there are var needs to escape.
+</p>
+
+<p>
+The <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/intermediate_representation/semant.sml">semant.sml</a> will take abstract syntax tree and do translate, instead of return types, it will return traslated Intermediate Rerpesentation.
+</p>
+
+
+<p>
+The <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/intermediate_representation/mipsframe.sml">mipsframe.sml</a> is used to record function call and frames needed for local variables. The frame abstrac 2 ways to store variables, one way is to store it
+in frame if escape, ow store in register (asume we have unlimited registers).
+</p>
+</div>
+</div>

@@ -1,0 +1,112 @@
+---
+layout: default
+title: Abstract Syntax
+nav_exclude: true
+---
+
+<p>
+The LR parser can be used to shift and reduce according to grammar rules.
+</p>
+
+<p>
+A compiler must do more than recognize whether a sentence belongs to the
+language of a grammar - it must do something useful with that sentence.
+</p>
+
+<p>
+The parser also need to record the semantic inluding the type / value during parsing.
+</p>
+
+<p>
+Two ways: semantic actions or abstract syntax tree.
+</p>
+<div id="outline-container-orgda9ec85" class="outline-2">
+<h2 id="orgda9ec85"><span class="section-number-2">1.</span> semantic actions</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+For a rule A —&gt; B C D, the semantic action must return a value whose type
+is the one associated with the nonterminal A.
+</p>
+
+<p>
+The value associated with the terminals / non-terminals, usually stored in a table.
+</p>
+
+<p>
+Everyt time we reduce one rule, we need to update the table to record the rule.
+</p>
+
+<p>
+Semantic actions also require us to do type checking while parsing.
+</p>
+
+
+<p>
+It is possible to write an entire compiler that fits within the semantic action
+phrases of an ML-Yacc parser. However, such a compiler is difficult to read
+and maintain. And this approach constrains the compiler to analyze the program
+in exactly the order it is parsed.
+</p>
+
+<p>
+To improve modularity, it is better to separate issues of syntax (parsing)
+from issues of semantics (type-checking and translation to machine code).
+</p>
+</div>
+</div>
+<div id="outline-container-orga973cd5" class="outline-2">
+<h2 id="orga973cd5"><span class="section-number-2">2.</span> Abstract Syntax Tree</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The abstract syntax tree conveys the phrase structure of the source program,
+with all parsing issues resolved but without any semantic interpretation.
+</p>
+
+<p>
+The ML-Yacc (or recursive-descent) parser, parsing the concrete syntax,
+constructs the abstract syntax tree.
+</p>
+
+<p>
+In ML we represent an abstract syntax as a set of mutually recursive datatypes.
+</p>
+
+<p>
+Each abstract syntax grammar production is represented by a single data constructor in ML;
+each nonterminal is represented by an ML type. Just as nonterminals are mutually recursive in the
+grammar, the ML types for abstract syntax refer to each other recursively.
+(For the nonterminal L of expression lists, the ML data constructors are ::
+and nil of the built-in list datatype.)
+</p>
+</div>
+<div id="outline-container-org13e6651" class="outline-3">
+<h3 id="org13e6651"><span class="section-number-3">2.1.</span> positions</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Comparing with semantic actions, which parse from begin to end.
+The abstract synctax tree may lose the position of source code, so we need
+to remember the pos of terminals / non-terminals in the parsing tree.
+</p>
+</div>
+</div>
+<div id="outline-container-orgbae960b" class="outline-3">
+<h3 id="orgbae960b"><span class="section-number-3">2.2.</span> Abstract Syntax Tree for Tiger</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+The <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/parser/parse.sml">parse.sml</a> file is the main file to include ML Lex and ML Yacc LrParser to build the abstract syntax tree.
+</p>
+
+<p>
+In the <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/parser/tiger.lex">tiger.lex</a>, we defined the regular expression to match each tokens and the Token types (including the position) it will produce.
+</p>
+
+<p>
+In the <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/parser/tiger.grm">tiger.grm</a>, we defined the syntax grammar and the Abstract Syntax Tree/Node it will produce based on the rule
+</p>
+
+<p>
+In the <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/parser/absyn.sml">absyn.sml</a>, we define the tree structure, which will be used in tiger.grm
+</p>
+</div>
+</div>
+</div>

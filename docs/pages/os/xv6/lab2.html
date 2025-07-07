@@ -1,0 +1,153 @@
+---
+layout: default
+title: Lab2
+nav_exclude: true
+---
+<div id="outline-container-orgfb3ec9c" class="outline-2">
+<h2 id="orgfb3ec9c"><span class="section-number-2">1.</span> how to use GDB Qemu</h2>
+<div class="outline-text-2" id="text-1">
+<div class="org-src-container">
+<pre class="src src-nil">1. compile and run gdb qemu
+   make
+   make qemu-gdb
+
+2. in another window
+   cd to kernel dir
+   gdb-multiarch kernel
+   target remote localhost:25000
+</pre>
+</div>
+</div>
+<div id="outline-container-org9c45ea1" class="outline-3">
+<h3 id="org9c45ea1"><span class="section-number-3">1.1.</span> break at system call</h3>
+<div class="outline-text-3" id="text-1-1">
+<div class="org-src-container">
+<pre class="src src-c">(<span style="color: #ECBE7B;">gdb</span>) b <span style="color: #ECBE7B;">syscall</span>
+<span style="color: #dcaeea;">Breakpoint</span> <span style="color: #da8548; font-weight: bold;">1</span> at <span style="color: #da8548; font-weight: bold;">0x80001c7a</span>: file kernel/syscall.c, <span style="color: #c678dd;">line</span> <span style="color: #da8548; font-weight: bold;">160</span>.
+
+(<span style="color: #ECBE7B;">gdb</span>) <span style="color: #ECBE7B;">c</span>
+<span style="color: #dcaeea;">Continuing</span>.
+Thread <span style="color: #da8548; font-weight: bold;">3</span> hit Breakpoint <span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #c678dd;">syscall</span> () <span style="color: #ECBE7B;">at</span> <span style="color: #c678dd;">kernel</span>/syscall.c:<span style="color: #da8548; font-weight: bold;">160</span>
+(gdb) <span style="color: #c678dd;">bt</span>
+<span style="color: #51afef; font-weight: bold;">#0</span>  syscall () <span style="color: #ECBE7B;">at</span> <span style="color: #dcaeea;">kernel</span>/syscall.c:<span style="color: #da8548; font-weight: bold;">160</span>
+<span style="color: #51afef; font-weight: bold;">#1</span>  <span style="color: #da8548; font-weight: bold;">0x0000000080001a36</span> in usertrap () <span style="color: #ECBE7B;">at</span> <span style="color: #dcaeea;">kernel</span>/trap.c:<span style="color: #da8548; font-weight: bold;">67</span>
+<span style="color: #51afef; font-weight: bold;">#2</span>  <span style="color: #da8548; font-weight: bold;">0x0000000000000000</span> in ?? ()
+
+(<span style="color: #ECBE7B;">gdb</span>) list
+<span style="color: #da8548; font-weight: bold;">158</span>     <span style="color: #ECBE7B;">void</span>
+<span style="color: #da8548; font-weight: bold;">159</span>     syscall(<span style="color: #ECBE7B;">void</span>)
+<span style="color: #da8548; font-weight: bold;">160</span>     {
+</pre>
+</div>
+
+<p>
+Looking at the backtrace output, which function called syscall?
+</p>
+<div class="org-src-container">
+<pre class="src src-c">(<span style="color: #ECBE7B;">gdb</span>) frame <span style="color: #da8548; font-weight: bold;">1</span>
+<span style="color: #51afef; font-weight: bold;">#1</span>  <span style="color: #da8548; font-weight: bold;">0x0000000080001a36</span> in usertrap () <span style="color: #ECBE7B;">at</span> <span style="color: #dcaeea;">kernel</span>/trap.c:<span style="color: #da8548; font-weight: bold;">67</span>
+
+<span style="color: #da8548; font-weight: bold;">36</span> <span style="color: #ECBE7B;">void</span>
+<span style="color: #da8548; font-weight: bold;">37</span> usertrap(<span style="color: #ECBE7B;">void</span>)
+<span style="color: #da8548; font-weight: bold;">38</span> {
+<span style="color: #da8548; font-weight: bold;">53</span>   <span style="color: #51afef;">if</span>(r_scause() == <span style="color: #da8548; font-weight: bold;">8</span>){
+<span style="color: #da8548; font-weight: bold;">54</span>     <span style="color: #5B6268;">// </span><span style="color: #5B6268;">system call</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">...</span>
+<span style="color: #da8548; font-weight: bold;">67</span>     syscall();
+</pre>
+</div>
+
+<p>
+Type n a few times to step past struct proc *p = myproc(); Once past this statement, type p /x *p, which prints the current process&rsquo;s proc struct (see kernel/proc.h&gt;) in hex.
+What is the value of p-&gt;trapframe-&gt;a7 and what does that value represent? (Hint: look user/initcode.S, the first user program xv6 starts.)
+</p>
+
+<div class="org-src-container">
+<pre class="src src-c">(<span style="color: #ECBE7B;">gdb</span>) n
+<span style="color: #da8548; font-weight: bold;">162</span>       <span style="color: #51afef;">struct</span> proc *p = myproc();
+
+(<span style="color: #ECBE7B;">gdb</span>) n
+<span style="color: #da8548; font-weight: bold;">164</span>       num = p-&gt;trapframe-&gt;a7;
+
+(<span style="color: #ECBE7B;">gdb</span>) p /x *p
+$2 = {lock = {locked = <span style="color: #da8548; font-weight: bold;">0x0</span>, name = <span style="color: #da8548; font-weight: bold;">0x800071c8</span>, cpu = <span style="color: #da8548; font-weight: bold;">0x0</span>}, state = <span style="color: #da8548; font-weight: bold;">0x4</span>, chan = <span style="color: #da8548; font-weight: bold;">0x0</span>, killed = <span style="color: #da8548; font-weight: bold;">0x0</span>, xstate = <span style="color: #da8548; font-weight: bold;">0x0</span>, pid = <span style="color: #da8548; font-weight: bold;">0x1</span>, parent = <span style="color: #da8548; font-weight: bold;">0x0</span>, kstack = <span style="color: #da8548; font-weight: bold;">0x3fffffd000</span>, sz = <span style="color: #da8548; font-weight: bold;">0x1000</span>, pagetable = <span style="color: #da8548; font-weight: bold;">0x87f55000</span>, trapframe = <span style="color: #da8548; font-weight: bold;">0x87f56000</span>, context = {ra = <span style="color: #da8548; font-weight: bold;">0x800012b6</span>,
+    sp = <span style="color: #da8548; font-weight: bold;">0x3fffffde80</span>, s0 = <span style="color: #da8548; font-weight: bold;">0x3fffffdeb0</span>, s1 = <span style="color: #da8548; font-weight: bold;">0x8000a810</span>, s2 = <span style="color: #da8548; font-weight: bold;">0x8000a3e0</span>, s3 = <span style="color: #da8548; font-weight: bold;">0x1</span>, s4 = <span style="color: #da8548; font-weight: bold;">0x80010898</span>, s5 = <span style="color: #da8548; font-weight: bold;">0x3</span>, s6 = <span style="color: #da8548; font-weight: bold;">0x8001b6b0</span>, s7 = <span style="color: #da8548; font-weight: bold;">0x1</span>, s8 = <span style="color: #da8548; font-weight: bold;">0x8001b7d8</span>, s9 = <span style="color: #da8548; font-weight: bold;">0x4</span>, s10 = <span style="color: #da8548; font-weight: bold;">0x0</span>, s11 = <span style="color: #da8548; font-weight: bold;">0x0</span>}, ofile = {<span style="color: #da8548; font-weight: bold;">0x0</span> &lt;repeats <span style="color: #da8548; font-weight: bold;">16</span> times&gt;}, cwd = <span style="color: #da8548; font-weight: bold;">0x80018b20</span>, name = {
+    <span style="color: #da8548; font-weight: bold;">0x69</span>, <span style="color: #da8548; font-weight: bold;">0x6e</span>, <span style="color: #da8548; font-weight: bold;">0x69</span>, <span style="color: #da8548; font-weight: bold;">0x74</span>, <span style="color: #da8548; font-weight: bold;">0x63</span>, <span style="color: #da8548; font-weight: bold;">0x6f</span>, <span style="color: #da8548; font-weight: bold;">0x64</span>, <span style="color: #da8548; font-weight: bold;">0x65</span>, <span style="color: #da8548; font-weight: bold;">0x0</span>, <span style="color: #da8548; font-weight: bold;">0x0</span>, <span style="color: #da8548; font-weight: bold;">0x0</span>, <span style="color: #da8548; font-weight: bold;">0x0</span>, <span style="color: #da8548; font-weight: bold;">0x0</span>, <span style="color: #da8548; font-weight: bold;">0x0</span>, <span style="color: #da8548; font-weight: bold;">0x0</span>, <span style="color: #da8548; font-weight: bold;">0x0</span>}, trace_mask = <span style="color: #da8548; font-weight: bold;">0x0</span>}
+
+(<span style="color: #ECBE7B;">gdb</span>) <span style="color: #ECBE7B;">p</span> <span style="color: #dcaeea;">p</span>-&gt;trapframe-&gt;a7
+$3 = <span style="color: #da8548; font-weight: bold;">7</span>
+</pre>
+</div>
+
+<p>
+p-&gt;trapframe-&gt;a7 is used to store the system call number defined in <a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/syscall.h#L8">syscall.h</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #dcaeea;">SYS_exec</span>    <span style="color: #da8548; font-weight: bold;">7</span>
+</pre>
+</div>
+
+<p>
+The processor is running in supervisor mode, and we can print privileged registers such as sstatus. What was the previous mode that the CPU was in?
+</p>
+<div class="org-src-container">
+<pre class="src src-c">(<span style="color: #ECBE7B;">gdb</span>) p /x $sstatus
+$4 = <span style="color: #da8548; font-weight: bold;">0x200000022</span>
+
+<span style="color: #da8548; font-weight: bold;">0x200000022</span> = 0b10_0000_0000_0000_0000_0000_0000_0010_0010
+                                               ^ (bit <span style="color: #da8548; font-weight: bold;">8</span> is <span style="color: #da8548; font-weight: bold;">0</span>)
+
+Bit <span style="color: #da8548; font-weight: bold;">8</span>: SPP (Supervisor <span style="color: #ECBE7B;">Previous</span> <span style="color: #dcaeea;">Privilege</span>)
+<span style="color: #da8548; font-weight: bold;">0</span> = Previous mode was User
+<span style="color: #da8548; font-weight: bold;">1</span> = Previous mode was Supervisor
+</pre>
+</div>
+
+<p>
+The xv6 kernel code contains consistency checks whose failure causes the kernel to panic; you may find that your kernel modifications cause panics. For example, replace the statement num = p-&gt;trapframe-&gt;a7; with num = * (int *) 0; at the beginning of syscall, run make qemu, and you will see something similar to:
+</p>
+<div class="org-src-container">
+<pre class="src src-c"> <span style="color: #da8548; font-weight: bold;">158</span> <span style="color: #ECBE7B;">void</span>
+ <span style="color: #da8548; font-weight: bold;">159</span> syscall(<span style="color: #ECBE7B;">void</span>)
+ <span style="color: #da8548; font-weight: bold;">160</span> {
+ <span style="color: #da8548; font-weight: bold;">161</span>   <span style="color: #ECBE7B;">int</span> num;
+ <span style="color: #da8548; font-weight: bold;">162</span>   <span style="color: #51afef;">struct</span> proc *p = myproc();
+ <span style="color: #da8548; font-weight: bold;">163</span>
+ <span style="color: #da8548; font-weight: bold;">164</span>   <span style="color: #5B6268;">// </span><span style="color: #5B6268;">num = p-&gt;trapframe-&gt;a7;</span>
+ <span style="color: #da8548; font-weight: bold;">165</span>   num = * (<span style="color: #ECBE7B;">int</span> *) <span style="color: #da8548; font-weight: bold;">0</span>;
+
+scause=<span style="color: #da8548; font-weight: bold;">0xd</span> sepc=<span style="color: #da8548; font-weight: bold;">0x80001c8c</span> stval=<span style="color: #da8548; font-weight: bold;">0x0</span>
+
+<span style="color: #da8548; font-weight: bold;">4302</span>   <span style="color: #5B6268;">// </span><span style="color: #5B6268;">num = p-&gt;trapframe-&gt;a7;</span>
+<span style="color: #da8548; font-weight: bold;">4303</span>   num = * (<span style="color: #ECBE7B;">int</span> *) <span style="color: #da8548; font-weight: bold;">0</span>;
+<span style="color: #da8548; font-weight: bold;">4304</span>     80001c8c:   <span style="color: #da8548; font-weight: bold;">00002903</span>                lw      s2,<span style="color: #da8548; font-weight: bold;">0</span>(zero) # <span style="color: #da8548; font-weight: bold;">0</span> &lt;_entry-<span style="color: #da8548; font-weight: bold;">0x80000000</span>&gt;
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-orga92bfdc" class="outline-2">
+<h2 id="orga92bfdc"><span class="section-number-2">2.</span> system call tracing</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+trace takes a mask (which contains system call bits) and triggers the kernel print messages once the system call is hit. The process id, system call name and return value will be printed out.
+</p>
+
+<p>
+Core idea:
+</p>
+<ol class="org-ol">
+<li><a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/syscall.c#L132">syscall</a> is the kernel entry point for every system call, we can print the message there</li>
+
+<li>where to get the system call argument for trace?</li>
+</ol>
+<p>
+When system call is made, trap will be generated to store same the user register which contains user arguments into trapframe.
+The function <a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/syscall.c#L57">argint</a> is provided by xv6 to retrive the n the argument as int.
+</p>
+
+<p>
+<a href="https://github.com/SouthernPark/xv6/commit/b0fb7f9afa607ff4903246f98602dcdb58e653ce#diff-e55fdcf2d73c0e8f8a2ca30646f76849618bba9cbc2ad2ffc2191b39a81cd3f3">Diff for trace</a>
+</p>
+</div>
+</div>

@@ -1,0 +1,288 @@
+---
+layout: default
+title: Lexical Analysis
+nav_exclude: true
+---
+<div id="outline-container-orgc602192" class="outline-2">
+<h2 id="orgc602192"><span class="section-number-2">1.</span> Lexical Analysis</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+The front end of the compiler performs analysis; the back end does synthesis.
+</p>
+
+<p>
+Lexical analysis: breaking the input into individual words or &ldquo;tokens&rdquo;;
+Syntax analysis: parsing the phrase structure of the program; and
+Semantic analysis: calculating the program&rsquo;s meaning.
+</p>
+
+<p>
+Lexer uses regular expression and 2 basic rules (longest match, rule priority) to
+match tokens from the output.
+</p>
+
+<p>
+Regular expression is good for simple notion, but not easy for computer program to
+implement it.
+</p>
+
+<p>
+It&rsquo;s easier for computer program to use Deterministic Finite Automata (DFA) to implement
+the explict state transactions from one state to another state and emission tokens.
+</p>
+
+<p>
+But it&rsquo;s hard for human to write DFA when rules are complicated.
+NFA (Non -deterministic Finite Automata) is much easier for human to rule out.
+</p>
+
+<p>
+It turns out regular expression, DFA and NFA can be transformed to each other.
+</p>
+</div>
+<div id="outline-container-org8d08f1f" class="outline-3">
+<h3 id="org8d08f1f"><span class="section-number-3">1.1.</span> Lexical Tokens</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+A lexical token is a sequence of characters that can be treated as a unit in the grammar of a programming language.
+Example:
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">Type Examples
+ID        foo nl4 last
+NUM       73 0 00 515 082
+REAL      6 6 . 1 . 5 1 0 . I e 6 7 5 . 5 e - 1 0
+IF        if
+COMMA     ,
+NOTEQ     !=
+LPAREN    (
+RPAREN    )
+</pre>
+</div>
+
+<p>
+Some strings are reserved keywords like return, if, void, they are not treated as ID, but as a type directly.
+</p>
+
+<p>
+soruce code to tokens example
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">float</span> <span style="color: #c678dd;">matchO</span>(<span style="color: #ECBE7B;">char</span> *<span style="color: #dcaeea;">s</span>) <span style="color: #5B6268;">/* </span><span style="color: #5B6268;">find a zero</span><span style="color: #5B6268;"> */</span>
+{<span style="color: #51afef;">if</span> (<span style="color: #51afef; font-weight: bold;">!</span>strncmp(s, <span style="color: #98be65;">"0.0"</span>, <span style="color: #da8548; font-weight: bold;">3</span>))
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">0</span>.;
+}
+
+<span style="color: #ECBE7B;">FLOAT</span> <span style="color: #c678dd;">ID</span>(matchO) LPAREN CHAR <span style="color: #ECBE7B;">STAR</span> <span style="color: #c678dd;">ID</span>(s) RPAREN LBRACE
+IF LPAREN <span style="color: #ECBE7B;">BANG</span> <span style="color: #c678dd;">ID</span>(strncmp) <span style="color: #ECBE7B;">LPAREN</span> <span style="color: #c678dd;">ID</span>(s)
+<span style="color: #ECBE7B;">COMMA</span> <span style="color: #c678dd;">STRING</span>(O.O) <span style="color: #ECBE7B;">COMMA</span> <span style="color: #c678dd;">NUM</span>(<span style="color: #da8548; font-weight: bold;">3</span>) RPAREN RPAREN
+<span style="color: #ECBE7B;">RETURN</span> <span style="color: #c678dd;">REAL</span>(O.O) SEMI <span style="color: #ECBE7B;">RBRACE</span> <span style="color: #dcaeea;">EOF</span>
+</pre>
+</div>
+</div>
+<div id="outline-container-orgd496fa5" class="outline-4">
+<h4 id="orgd496fa5"><span class="section-number-4">1.1.1.</span> preprocessor directive</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<div class="org-src-container">
+<pre class="src src-nil">preprocessor directive #include&lt;stdio. h&gt;
+preprocessor directive # define NUMS 5 , 6
+</pre>
+</div>
+
+<p>
+the preprocessor operates on the source character stream, producing another character stream that is then fed to the lexical analyzer.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org97807d8" class="outline-3">
+<h3 id="org97807d8"><span class="section-number-3">1.2.</span> regular expression</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Regular expression is used to match tokens.
+</p>
+
+<p>
+The following is some regexp notations
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">if                                   (IF);
+[a-z][a-zO-9]*                       (ID);
+[0-9]+                               (NUM);
+([0-9]+"."[0-9]*)|([0-9]*"."[0-9]+)  (REAL) ;
+("--"[a-z]*"\n")I(" "I"\n"I"\t")+    (continue());
+.                                    (error();continue() )
+</pre>
+</div>
+
+
+<p>
+Two rules usually used in regular expression when multi regexp can be used on the string:
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">Longest match: The longest initial substring of the input that can match any
+regular expression is taken as the next token.
+Some the regexp always match as longer as possible.
+
+Rule priority: For a particular longest initial substring, thefirstregular expression
+that can match determines its token type. This means that the order of writing down
+the regular-expression rules has significance
+One token can be matched by multi regexp rule, use the first rule defined.
+
+</pre>
+</div>
+
+<p>
+if8 is matched as an ID(if8) using the longest match, ranther than matched as IF and ID(8)
+if is matched as IF because of rule priority, rather then ID(IF)
+</p>
+</div>
+</div>
+<div id="outline-container-orgf0fe18b" class="outline-3">
+<h3 id="orgf0fe18b"><span class="section-number-3">1.3.</span> Finite Automata</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Regular expression is a good for notion, but we not good for program.
+Finite automata can be used by program to specify how many states, which state is acceptale
+and how to transform from one state to another state.
+The following diagram list 6 seperate finite automata for the above 6 regexp
+<img src="finite_automata_for_tokens.png" alt="finite_automata_for_tokens.png" />
+Need someway to hoc them up into one finite automata
+</p>
+</div>
+<div id="outline-container-org97afdd8" class="outline-4">
+<h4 id="org97afdd8"><span class="section-number-4">1.3.1.</span> DFA (Deterministic Finite Automata)</h4>
+<div class="outline-text-4" id="text-1-3-1">
+<p>
+A Deterministic Finite Automaton (DFA) is a theoretical finite-state machine used in formal language theory to recognize regular languages.
+</p>
+
+<p>
+For each state and input symbol, there is exactly one possible next state.
+(Contrast with NFA, where multiple or zero transitions may exist for a state and input.)
+</p>
+
+<p>
+The following diagram is a combined finite automata by the 6 seperate finite automata
+<img src="combined_finite_automata.png" alt="combined_finite_automata.png" />
+</p>
+
+<p>
+We can have a 2D matrix : m[state1][symbol1] = state2, which represets state1 will transit to state2 after reading
+symbol1.
+</p>
+</div>
+<div id="outline-container-org497d4b5" class="outline-5">
+<h5 id="org497d4b5"><span class="section-number-5">1.3.1.1.</span> recognize the longest match</h5>
+<div class="outline-text-5" id="text-1-3-1-1">
+<p>
+The lexer needs to identify the longest match. The lexer uses 2 pointer approach to track the pointer to last-final and input-position-at-last-final.
+</p>
+
+<p>
+When it hits a final state, the pointers will be updated. When a dead state is hit, the pointers tell what tokens
+are matched and where it ends.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org3ac13db" class="outline-4">
+<h4 id="org3ac13db"><span class="section-number-4">1.3.2.</span> NFA (Non-deterministic Finite Automata)</h4>
+<div class="outline-text-4" id="text-1-3-2">
+<p>
+Derministic is easy for program to implement it, but hard for human to write it out.
+NFA is easier for human to write it out when rules are complicated.
+</p>
+
+<p>
+From a given state and a input symbol, the NFA may: Move to multiple next states; Move to no state (no transition);
+Move without consuming any input (ε-transitions / epsilon moves).
+</p>
+
+<p>
+The following shows how NFA is simply used to include 4 regexp into one automata:
+<img src="NFA_4_regexp.png" alt="NFA_4_regexp.png" />
+</p>
+</div>
+<div id="outline-container-org651be24" class="outline-5">
+<h5 id="org651be24"><span class="section-number-5">1.3.2.1.</span> converting an NFA to DFA</h5>
+<div class="outline-text-5" id="text-1-3-2-1">
+<p>
+It&rsquo;s hard for computer program to implement NFA. Need to translate it to DFA.
+</p>
+
+<p>
+The key to translate from NFA to DFA is to find the e-closure (epsilon: empty which can help to translate
+from one state to another state without consume chars).
+</p>
+
+<p>
+The e-closure for one state will be a set of states that can be reached from that state through e.
+</p>
+
+<p>
+For each state, we find its e-closure and the transitions between different closures.
+</p>
+
+<p>
+The following is an example traslate the above NFA to DFA:
+<img src="NFA_to_DFA.png" alt="NFA_to_DFA.png" />
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-orgdae8aa7" class="outline-3">
+<h3 id="orgdae8aa7"><span class="section-number-3">1.4.</span> ML-Lex</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+ML-Lex is a lexical analyzer generator which helps to translate and combine regexp to DFA.
+</p>
+
+<p>
+For each token type in the programming language to be lexically analyzed, the specification contains a regular expression and an action.
+The action communicates the token type (perhaps along with other information) to the next phase of the compiler.
+</p>
+
+<p>
+The output of ML-Lex is a program in ML - a lexical analyzer that interprets a DFA using the algorithm described in Section 2.3 and executes the
+action fragments on each match.
+</p>
+
+<p>
+The following is part of snap code in <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/lexical_analysis/tiger.lex">tiger.lex</a> using ML-Lex
+</p>
+<div class="org-src-container">
+<pre class="src src-sml"><span style="color: #51afef;">type</span> <span style="font-weight: bold;">pos</span> = int
+<span style="color: #51afef;">type</span> <span style="font-weight: bold;">lexresult</span> = Tokens.token
+...
+
+%%
+digit = [<span style="color: #da8548; font-weight: bold;">0</span>-<span style="color: #da8548; font-weight: bold;">9</span>];
+id = [a-zA-Z][a-zA-Z0-9_]*;
+ws = [\t\ \n\r];
+%%
+
+...
+&lt;INITIAL&gt;<span style="color: #51afef;">type</span>       =&gt; (Tokens.TYPE(yypos, yypos + <span style="color: #da8548; font-weight: bold;">4</span>));
+&lt;INITIAL&gt;var        =&gt; (Tokens.VAR(yypos, yypos + <span style="color: #da8548; font-weight: bold;">3</span>));
+
+&lt;INITIAL&gt;{digit}+   =&gt; (Tokens.INT(valOf(Int.fromString yytext), yypos, yypos + size yytext));
+&lt;INITIAL&gt;{ws}       =&gt; (continue());
+&lt;INITIAL&gt;{id}       =&gt; (Tokens.ID(yytext, yypos, yypos + size(yytext)));
+</pre>
+</div>
+
+
+<p>
+<a href="https://github.com/SouthernPark/TigerCompiler/blob/main/lexical_analysis/tokens.sig">tokens.sig</a> defines the interface for Tokens and functions which takes parameters and return tokens.
+In tokens.sig we manually define the token signature, which is good for learning the lexer mechanics without depending on the parser yet.
+</p>
+
+<p>
+In the next chapter Parser, the ML-Yacc generates its own Token Structure. So before run the ML-Tacc,
+you will not see the Token structures.
+</p>
+</div>
+</div>
+</div>

@@ -1,0 +1,37 @@
+---
+layout: default
+title: Semantic Analysis
+nav_exclude: true
+---
+
+<p>
+The semantic Analysis phase helps to maintain the symbol table, which help to record the type of symbol
+and conduct type checking.
+</p>
+<div id="outline-container-org79c9c02" class="outline-2">
+<h2 id="org79c9c02"><span class="section-number-2">1.</span> Bindings for Tiger</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Tiger has two separate name spaces, one for types and the other for functions and variables.
+</p>
+
+
+<p>
+The <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/semantic_analysis/semant.sml">semant.sml</a> file contains the fuction to translate Expression, Decleration, Type to types. Also have the function if two types share the same parents.
+The fucntions will take either a value environment (for function or variable declaration) or a type environment (for type declaration).
+Type checking are conducted on Expression, (Variable, Subscripts, Fields) and declaration
+</p>
+
+
+<p>
+The <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/semantic_analysis/symbol.sml">symbol.sml</a> is used to store ID efficiently for hash map/set.
+</p>
+
+
+<p>
+The <a href="https://github.com/SouthernPark/TigerCompiler/blob/main/semantic_analysis/findescape.sml">findescape.sml</a> help us to find out which variable needs to escape. Escape means the variables can not be stored in register for some reasons, instead we need to escape them in memo.
+For Tiger, we do not have a grammar for adressing, so we do not need to worry about this case. But there is one case, we need to take care of:
+When variable is used in a lower level than its declaration level, then we need to escape this variable. Why? We use static link to find this variable is in which frame.
+</p>
+</div>
+</div>

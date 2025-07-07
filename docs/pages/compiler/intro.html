@@ -1,0 +1,63 @@
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orgfe86d82">1. Phases of Compiler</a>
+<ul>
+<li><a href="#orgf3a14ef">1.1. data structure (Tree) for programming language representation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgfe86d82" class="outline-2">
+<h2 id="orgfe86d82"><span class="section-number-2">1.</span> Phases of Compiler</h2>
+<div class="outline-text-2" id="text-1">
+
+<div id="orgd9d7a6e" class="figure">
+<p><img src="phases_compiler.png" alt="phases_compiler.png" />
+</p>
+</div>
+
+<p>
+Breaking the compiler into this many pieces allows for reuse of the components.
+</p>
+
+<p>
+Change target CPU?: Just replace the Frame Layout and Instruction Selection modules.
+</p>
+
+<p>
+The front-end of the compiler (Lexer, Parser, Translate) handles source language syntax and parsing, transforming it into a language-independent AST.
+After Translate, the rest of the compiler (IR, optimization, backend) does not care about the original source language syntax and works on the AST and IR.
+</p>
+
+
+<div id="orgdde25eb" class="figure">
+<p><img src="description_of_compiler_phase.png" alt="description_of_compiler_phase.png" />
+</p>
+</div>
+</div>
+<div id="outline-container-orgf3a14ef" class="outline-3">
+<h3 id="orgf3a14ef"><span class="section-number-3">1.1.</span> data structure (Tree) for programming language representation</h3>
+<div class="outline-text-3" id="text-1-1">
+
+<div id="org6be2dd4" class="figure">
+<p><img src="data_structure_tree.png" alt="data_structure_tree.png" />
+</p>
+</div>
+
+
+<div id="orgfc40e72" class="figure">
+<p><img src="example_program_as_a_tree.png" alt="example_program_as_a_tree.png" />
+</p>
+</div>
+
+
+<div id="org78d52f5" class="figure">
+<p><img src="program_to_represent_synta.png" alt="program_to_represent_synta.png" />
+</p>
+</div>
+</div>
+</div>
+</div>

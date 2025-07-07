@@ -12,9 +12,78 @@ nav_exclude: true
 ---
 #+END_EXPORT
 
+* layers
+
+| **Layer**                  | **Name of Data Unit**                   | **Example**                   |
+| -------------------------- | --------------------------------------- | ----------------------------- |
+| **Layer 7 (Application)**  | **Data 报文**                             | HTTP request, DNS query       |
+| **Layer 6 (Presentation)** | **Data 报文**                             | (often combined with Layer 7) |
+| **Layer 5 (Session)**      | **Data 报文**                             | (often combined with Layer 7) |
+| **Layer 4 (Transport)**    | **Segment 段(TCP)** or**Datagram (UDP)** | TCP segment, UDP datagram     |
+| **Layer 3 (Network)**      | **Packet 包**                            | IP packet                     |
+| **Layer 2 (Data Link)**    | **Frame 帧**                             | Ethernet frame                |
+| **Layer 1 (Physical)**     | **Bits 位流**                             | 0s and 1s on the wire         |
+
+
+In network layers, upper layer's whole data becomes the payload of the lower layer .
+But usually upper layer data size is larger than lower level data size.
+Example:
+
+** Layer 4 TCP segment
+Splits application data into segments sized to fit the path’s MTU using MSS (Maximum Segment Size) negotiation during the TCP handshake.
+Ensures each TCP segment fits within an IP packet under normal conditions.
+
+Application data (large) is split into multiple TCP segments according to: MSS (Maximum Segment Size, e.g., 1460 bytes).
+
+~Each TCP segment is independent and complete:~
+Has its own TCP header (20 bytes minimum).
+Has its own TCP sequence number indicating the byte offset in the stream.
+Contains a portion of the application data payload.
+Ensures each segment can be acknowledged and retransmitted independently.
+
+UDP does not segment, instead passing datagrams to IP directly,
+** Layer 3 fragmentation
+One TCP segment / UDP data can be fragment into milt IP packets
+Mulit IP packets may be used to send the TCP headers and data payload.
+
+IP fragment/packet from the same TCP segment (or UDP datagram) will have the most of the same IP header
+
+* Layer 2
+host1 <--> switches <--> host2
+** MAC learning (SRC MAC address -> ports)
+MAC learning build a mac address to ports mapping to tell which port can be used to access given dest MAC address under the same subnet.
+MAC learning is mainly used by switches.
+MAC Learning is Based on the Source MAC Address of Incoming Frames.
+Every time a frame enters a port of a switch, the swithc will record source MAC address X is reachable via port Y.
+This is stored in the MAC (CAM) table. MAC address (learned from source MAC) -> Port
+
+Destination MAC is used for forwarding, not learning.
+
+*** what if the CAM table does not have the mapping for dest MAC?
+Flood the packets on all ports. The switch may learn the MAC from the reply for next time forwarding.
+
+*** MAC flapping (Switch keeps updating the MAC table entry because src mac frames came from different ports)
+causes:
+1. Layer 2 Loop
+2. misconfig of duplicate MAC on different ports
+3. LACP not properly negotiated between switches ??
+
+
+** ARP (IP -> DEST MAC address)
+ARP is needed when a Layer 3 (IP) packet needs to be sent over a Layer 2.
+The senario is given the dest IP on Layer 3 packet, how to fill the dest MAC address on Layer 2 packets.
+
+There are 2 main use cases:
+1. end host to find MAC for an IP on the same subnet
+2. L3 switch / router needs to forward IP packets and must resolve next-hot MAC
+
+A pure Layer 2 switch never looks at IP header, but just fowarding based on DEST MAC and MAC learning
+
+ARP happends before IP packet is sent on the wire.
+
+In the above two cases, if the ARP can not be resolved in host or layer 3 router / switch, it can not build the ethernet frame and the packet can not be sent out.
 
 * Layer 3 (Network IP)
-
 ** IP address
 IPv4 standards defines the IP address with 32 bits.
 The old style classifies the IP address into 5 classes: A, B, C, D, E.

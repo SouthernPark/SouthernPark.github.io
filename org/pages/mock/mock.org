@@ -1,0 +1,29 @@
+#+title: Mock
+
+* Feedback 1
+intro in 2 minutes,
+1. 2 years experience
+2. tools I used, gdb, docker, infrra tools
+control plane and data plane
+covered 2 main projects you prepared well.
+
+
+** BQ
+
+*** how do you track you ownership
+key points: 问题是自己发现的, propse to manager,create PR， keep everyone loop, track and updates in daily meeting
+test, deliver
+
+*** biggest chanllenge
+STAR:
+
+*** biggest achievement
+
+*** confilct
+let manager know, manager have more broader view, broader view
+
+*** how do you prooritize this tasks
+too many taks, how do you prioritize
+sync with my manager immediately, and ask my manager to check which task is the most urgent one, ask help, hard deadline, re-prioriotize
+
+manager, customer support, dev_ops, QA testing
