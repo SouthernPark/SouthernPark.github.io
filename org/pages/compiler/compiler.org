@@ -20,7 +20,7 @@ nav_exclude: true
 
 * [[file:pasing.org][Parsing]] (Grammar, LR Parsing)
 
-* [[file:abstract_syntax.org][Abstract Syntax]] (Parser produce Abstract Parse Tree)
+* [[file:abstract_syntax.org][Abstract Syntax]] (Parser produce Abstract Parse Tree. Expression, Declaration, operation, type)
 
 * [[file:semantic_analysis.org][Semantic Analysis]] (Type Environment (Type declartion), Variable/Function Environment (var, func declaration),  type checking)
 

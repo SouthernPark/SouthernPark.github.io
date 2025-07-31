@@ -1,0 +1,376 @@
+#+title: subnet
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: subnet
+nav_exclude: true
+---
+#+END_EXPORT
+
+* idea
+
+#+begin_src
+user input:
+1. subnet ipv4: in string format dot decimal. (example: 192.168.1.1)
+2. mask: string int range from [0, 32]
+3. ipv4: in string format dot decimal. (example: 192.168.1.1)
+
+The question is to check if ipiv4 is in the same subnet
+#+end_src
+
+1. Transform the string dot decimal ipv4 into byte binary format.
+2. The mask will also be transformed to byte binary format. ex:(mask 24 is 0xFF FF FF 00 )
+3. (subnet_ip & mask) == (ip & mask)
+
+bit manipulation operations are needed.
+or (|) operation can be add the octet (8 bits) to another octet = 0;
+shift opertion can be used to get bit probe for example 1 << 31 can used to create
+a probe point to the highest bit in the ipv4.
+
+To create a ipv4 byte binary from scratch, we usually start from 0.
+
+
+* code
+
+function to split string using string find
+#+begin_src c++
+/*
+  @brief: split string s using delimiter
+ */
+vector<string> split(const string& s, const string& delimiter)
+{
+  vector<string> ans;
+  size_t start = 0, end = 0;
+  while((end = s.find(delimiter, start)) != string::npos) {
+    ans.push_back(s.substr(start, end-start));
+    start = end + delimiter.size();
+  }
+
+  ans.push_back(s.substr(start));
+  return ans;
+}
+#+end_src
+
+function to transform string to int
+#+begin_src c++
+/*
+  @breif translate string to int
+  @return
+    -1 if octet is invalid (not integer or out of range)
+    ow int represented by the string
+ */
+
+int to_int(const string& str) {
+
+  try {
+    size_t end = 0;
+    int ans = stoi(str, &end);
+    // invalid case: 123abc
+    if(end != str.size()) return -1;
+
+    return ans;
+  } catch(...) {
+    return -1;
+  }
+
+  return -1;
+}
+#+end_src
+
+function to parse ipv4 octet to int
+#+begin_src c++
+/*
+  @breif translate ipc4 octet to byte order binary form
+  @return
+    byte order of the ipv4 octet
+    -1 if octet is invalid (not integer or out of range)
+ */
+int octet_to_byte(const string& octet) {
+  int octet_byte = to_int(octet);
+
+  if(octet_byte < 0 || octet_byte > 255) return -1;
+
+  return octet_byte;
+}
+#+end_src
+
+function to parse ipv4 to long long
+#+begin_src c++
+/*
+  read string ipv4 in dot decimal format,
+  @return
+    -1 if ipv4 is not valid,
+    ow ipv4 in binary format hold by long long
+  @note:
+    ipv4 bin can be held in the 4 bytes int, but need
+    a way to represent invalid ipv4, so use long long 8
+    bytes to hold ipv4 bin
+ */
+long long parse_ipv4(const string &ipv4)
+{
+  vector<string> octets = split(ipv4, ".");
+  if(octets.size() != 4) return -1;
+
+  long long ipv4_byte = 0;
+  for(string &s : octets) {
+    int octet_byte = octet_to_byte(s);
+    if(octet_byte == -1) return -1;
+    ipv4_byte <<= OCTET_LEN;
+    ipv4_byte |= octet_byte;
+  }
+
+  return ipv4_byte;
+}
+#+end_src
+
+fucntion to parse mask to byte
+#+begin_src c++
+/*
+  @brief: ipv4 mask where the first mask bits are 1 and others are 0
+  @return:
+    the mask in binary byte format
+    -1 if mask out of range
+,*/
+long long mask_byte(const string &str_mask) {
+
+  long long mask = to_int(str_mask);
+
+  if(mask < 0 || mask > 32) return -1;
+
+  long long ans = 0;
+  long long probe = 1LL << 31;
+
+  for(int i=0; i<mask; i++) {
+    ans |= probe;
+    probe >>= 1;
+  }
+  // ex: 0x00 00 00 00 FF FF FF 00 for str_maks = "24"
+  return ans;
+}
+#+end_src
+
+main function
+#+begin_src c++
+/*
+user input:
+./subnet subnet_ip mask ip_address
+@param1[string]: subnet_ip ipv4 address of current subnet in the dot decimal format
+@param2[string]: can be transfer to number in the range [0,32]
+@param3[string]: ipv4 in the dot decimal format like 192.168.0.2
+*/
+
+int main(int argc, char* argv[])
+{
+
+  // parsing input
+  if(argc != 4) {
+    cerr << "usage: ./subnet subnet_ip mask ip_address" << endl;
+    return 1;
+  }
+
+  string str_subnet_ip = argv[1];
+  string str_mask = argv[2];
+  string str_ip = argv[3];
+
+  long long subnet_ip = parse_ipv4(str_subnet_ip);
+  if(subnet_ip == -1) {
+    cerr << "invalid subnet ip: " << subnet_ip;
+    return 1;
+  }
+
+  long long mask = mask_byte(str_mask);
+  if(mask == -1) {
+    cerr << "invalid mask: " << str_mask << endl;
+    return 1;
+  }
+
+  long long ip = parse_ipv4(str_ip);
+  if(mask == -1) {
+    cerr << "invalid ip: " << str_ip;
+    return 1;
+  }
+
+  bool same_subnet = ((subnet_ip & mask) == (ip & mask));
+
+  if(same_subnet) {
+    cout << "ip: " << str_ip << " is in the same subnet as " << str_subnet_ip << "/" << str_mask << endl;
+  }
+  else {
+    cout << "ip: " << str_ip << " is not in the same subnet as " << str_subnet_ip << "/" << str_mask << endl;
+  }
+
+  return 0;
+
+
+}
+#+end_src
+
+
+put it together
+#+begin_src c++
+#include <iostream>
+#include <vector>
+
+using namespace std;
+#define OCTET_LEN 8
+
+/*
+  @brief: split string s using delimiter
+ */
+vector<string> split(const string& s, const string& delimiter)
+{
+  vector<string> ans;
+  size_t start = 0, end = 0;
+  while((end = s.find(delimiter, start)) != string::npos) {
+    ans.push_back(s.substr(start, end-start));
+    start = end + delimiter.size();
+  }
+
+  ans.push_back(s.substr(start));
+  return ans;
+}
+
+/*
+  @breif translate string to int
+  @return
+    -1 if octet is invalid (not integer or out of range)
+    ow int represented by the string
+ */
+
+int to_int(const string& str) {
+
+  try {
+    size_t end = 0;
+    int ans = stoi(str, &end);
+    // invalid case: 123abc
+    if(end != str.size()) return -1;
+
+    return ans;
+  } catch(...) {
+    return -1;
+  }
+
+  return -1;
+}
+
+/*
+  @breif translate ipc4 octet to byte order binary form
+  @return
+    byte order of the ipv4 octet
+    -1 if octet is invalid (not integer or out of range)
+ */
+int octet_to_byte(const string& octet) {
+  int octet_byte = to_int(octet);
+
+  if(octet_byte < 0 || octet_byte > 255) return -1;
+
+  return octet_byte;
+}
+
+/*
+  read string ipv4 in dot decimal format,
+  @return
+    -1 if ipv4 is not valid,
+    ow ipv4 in binary format hold by long long
+  @note:
+    ipv4 bin can be held in the 4 bytes int, but need
+    a way to represent invalid ipv4, so use long long 8
+    bytes to hold ipv4 bin
+ */
+long long parse_ipv4(const string &ipv4)
+{
+  vector<string> octets = split(ipv4, ".");
+  if(octets.size() != 4) return -1;
+
+  long long ipv4_byte = 0;
+  for(string &s : octets) {
+    int octet_byte = octet_to_byte(s);
+    if(octet_byte == -1) return -1;
+    ipv4_byte <<= OCTET_LEN;
+    ipv4_byte |= octet_byte;
+  }
+
+  return ipv4_byte;
+}
+
+/*
+  @brief: ipv4 mask where the first mask bits are 1 and others are 0
+  @return:
+    the mask in binary byte format
+    -1 if mask out of range
+*/
+long long mask_byte(const string &str_mask) {
+
+  long long mask = to_int(str_mask);
+
+  if(mask < 0 || mask > 32) return -1;
+
+  long long ans = 0;
+  long long probe = 1LL << 31;
+
+  for(int i=0; i<mask; i++) {
+    ans |= probe;
+    probe >>= 1;
+  }
+  // ex: 0x00 00 00 00 FF FF FF 00 for str_maks = "24"
+  return ans;
+}
+
+/*
+user input:
+./subnet subnet_ip mask ip_address
+@param1[string]: subnet_ip ipv4 address of current subnet in the dot decimal format
+@param2[string]: can be transfer to number in the range [0,32]
+@param3[string]: ipv4 in the dot decimal format like 192.168.0.2
+*/
+
+int main(int argc, char* argv[])
+{
+
+  // parsing input
+  if(argc != 4) {
+    cerr << "usage: ./subnet subnet_ip mask ip_address" << endl;
+    return 1;
+  }
+
+  string str_subnet_ip = argv[1];
+  string str_mask = argv[2];
+  string str_ip = argv[3];
+
+  long long subnet_ip = parse_ipv4(str_subnet_ip);
+  if(subnet_ip == -1) {
+    cerr << "invalid subnet ip: " << subnet_ip;
+    return 1;
+  }
+
+  long long mask = mask_byte(str_mask);
+  if(mask == -1) {
+    cerr << "invalid mask: " << str_mask << endl;
+    return 1;
+  }
+
+  long long ip = parse_ipv4(str_ip);
+  if(mask == -1) {
+    cerr << "invalid ip: " << str_ip;
+    return 1;
+  }
+
+  bool same_subnet = ((subnet_ip & mask) == (ip & mask));
+
+  if(same_subnet) {
+    cout << "ip: " << str_ip << " is in the same subnet as " << str_subnet_ip << "/" << str_mask << endl;
+  }
+  else {
+    cout << "ip: " << str_ip << " is not in the same subnet as " << str_subnet_ip << "/" << str_mask << endl;
+  }
+
+  return 0;
+
+
+}
+#+end_src

@@ -1,0 +1,372 @@
+#+title: Interrupts And Drivers
+
+* Intro
+A driver is the code in an operating system that manages a particular device:
+it configures the device hardware, tells the device to perform operations,
+handles the resulting interrupts, and
+interacts with processes that may be waiting for I/O from the device.
+
+| Part            | Triggered by                                        | Runs in                              | Key characteristics                                                 |
+| --------------- | --------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------- |
+| **Top half**    | **Hardware interrupt**                              | **Interrupt context**                | 🟠 Runs **immediately**, must be **fast**, **non-blocking**         |
+| **Bottom half** | Deferred work (e.g., via syscall wakeup or tasklet) | **Process or kernel thread context** | 🟢 Can do **slower**, more complex work, may **block** or **sleep** |
+
+
+Why is the top half faster?
+Interrupt context is very sensitive:
+        Cannot sleep
+        Interrupts may be disabled
+        Must acknowledge the hardware fast
+The top half often:
+        Reads from a hardware register
+        Buffers a value
+        Wakes up a process waiting for data
+Example: In uartintr() (xv6), the interrupt handler reads a char and calls wakeup() — that’s all.
+
+Why is the bottom half allowed to be slower?
+    It runs in normal thread/process context
+    It has full kernel privileges
+    It can:
+        Copy data to/from user space
+        Sleep/wait for resources
+        Do file I/O, scheduling, etc.
+Example: In consoleread() in xv6, the process sleeps waiting for input. When the interrupt (top half) wakes it, it finishes reading.
+
+The following sections will give a driver code example using console. Console is implemented using uart.
+When the user types characters (e.g., via terminal in QEMU), they come in through the UART hardware.
+The UART raises an interrupt for each character.
+
+When the kernel or user process calls write(1, "hello", 5), it writes to standard output — the console.
+kernel sends the chars one by one to the UART transmit register
+
+* Code: Console Input
+
+** console.c and uart.c
+xv6 separates console.c and uart.c to abstract the device-specific UART implementation (uart.c)
+from the higher-level console I/O interface (console.c).
+
+1. uart.c → Low-level UART driver
+    Talks directly to the UART hardware
+    Handles:
+        UART register setup
+        Sending/receiving bytes via MMIO
+        Handling UART interrupts (uartintr())
+    Device-specific — tied to the 16550 UART
+    Think of uart.c as the device driver for a specific hardware peripheral.
+
+2. console.c → Higher-level console abstraction
+Implements the OS-facing "console device"
+    User read() and write() go through here
+Uses uart.c as the backend
+Handles:
+    Input buffering (input.buf[])
+    Echoing characters
+    Handling special keys (like backspace or control chars)
+    Connecting read(0,...) and write(1,...) syscalls to UART
+Also supports kernel printf() output
+
+
+uart.c contains the top half of the driver, and
+console.c contains the bottom half of the UART driver logic.
+
+** top part and bottom part for console
+The console uses UART the following is Top half and bottom half involved in the console input process.
+
+Bottom half: User process calls read() → enters kernel
+read(0, buf, n) → syscall → sys_read → consoleread().
+This runs in process context. If no data is available in the input buffer, the process sleeps
+
+Upper half: User types a key → UART raises interrupt
+The UART hardware generates an interrupt:
+CPU jumps to trap handler → calls devintr() → calls uartintr()
+This is interrupt context.
+Reads the incoming character from the UART hardware register
+Pushes it into the input buffer
+Calls wakeup(&input) to resume any process sleeping on input
+
+#+begin_src
+User process
+   |
+   | read(0, buf, n)
+   |→ consoleread()      ← (bottom half)
+   |     |
+   |     | sleep(&input); ← if buffer empty
+   ↓
+UART input event (interrupt)
+   → trap → devintr() → uartintr() ← (top half)
+         |  read char from UART
+         |  store in input.buf
+         |  wakeup(&input)
+
+User process resumes
+   |
+   | consoleread() returns data
+   | read() → back to user space
+#+end_src
+
+** uart init
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv//kernel/console.c#L182][consoleinit]]
+
+after boot up kernel calls main to do console init, then uart init
+from high level abstraction code to low level specific hw level code
+main -> consoleinit -> uartinit
+#+begin_src c
+void
+consoleinit(void)
+{
+  initlock(&cons.lock, "cons");
+
+  uartinit();
+
+  // connect read and write system calls
+  // to consoleread and consolewrite.
+  devsw[CONSOLE].read = consoleread;
+  devsw[CONSOLE].write = consolewrite;
+}
+#+end_src
+
+console init does high level staff, like tell the os where is the routine
+for console read and write.
+
+The hw detailed init will be pointed to uartinit
+hw init are mained to write the hw register to program the hw.
+The UART hardware appears to software as a set of memory-mapped control registers.
+
+The memory-mapped addresses for the UART start at 0x10000000, or [[https://github.com/mit-pdos/xv6-riscv/blob/riscv//kernel/memlayout.h#L21][UART0]]
+
+There are a handful of UART control registers, each the width of a byte.
+Their offsets from UART0 are defined in [[https://github.com/mit-pdos/xv6-riscv/blob/riscv//kernel/uart.c#L22][uart.c]] (hw device specific code).
+
+The following is the table of control registers used by xv6 for UART programming.
+| Name    | Offset | Access | Purpose / Description                                           | Used in xv6?             |
+| ------- | ------ | ------ | --------------------------------------------------------------- | ------------------------ |
+| **RHR** | 0x00   | Read   | **Receiver Holding Register** — read incoming byte              | ✅ Yes                    |
+| **THR** | 0x00   | Write  | **Transmitter Holding Register** — write byte to send           | ✅ Yes                    |
+| **IER** | 0x01   | R/W    | **Interrupt Enable Register** — enables interrupt types         | ✅ Yes                    |
+| **FCR** | 0x02   | Write  | **FIFO Control Register** — enables/clears FIFOs                | ✅ Yes                    |
+| **LCR** | 0x03   | R/W    | **Line Control Register** — sets word length, stop bits, parity | ✅ Yes                    |
+| **MCR** | 0x04   | R/W    | **Modem Control Register** — controls OUT2, RTS, DTR            | ✅ Yes (for enabling IRQ) |
+| **LSR** | 0x05   | Read   | **Line Status Register** — RX ready, TX ready, errors           | ✅ Yes                    |
+| **DLL** | 0x00   | R/W    | **Divisor Latch LSB** — set baud rate (if DLAB=1)               | ✅ Yes                    |
+| **DLM** | 0x01   | R/W    | **Divisor Latch MSB** — set baud rate (if DLAB=1)               | ✅ Yes                    |
+
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/uart.c#L53][uart_init]]
+#+begin_src c
+void
+uartinit(void)
+{
+  // disable interrupts.
+  WriteReg(IER, 0x00);
+
+  // special mode to set baud rate.
+  WriteReg(LCR, LCR_BAUD_LATCH);
+
+  // LSB for baud rate of 38.4K.
+  WriteReg(0, 0x03);
+
+  // MSB for baud rate of 38.4K.
+  WriteReg(1, 0x00);
+
+  // leave set-baud mode,
+  // and set word length to 8 bits, no parity.
+  WriteReg(LCR, LCR_EIGHT_BITS);
+
+  // reset and enable FIFOs.
+  WriteReg(FCR, FCR_FIFO_ENABLE | FCR_FIFO_CLEAR);
+
+  // enable transmit and receive interrupts.
+  WriteReg(IER, IER_TX_ENABLE | IER_RX_ENABLE);
+
+  initlock(&uart_tx_lock, "uart");
+}
+#+end_src
+
+** read -> sys_read -> fileread -> consoleread -> waiting
+The following code path is from system call read to read from console.
+The kernel process thread will enter into sleep if no input is given.
+This part of code belongs to the bottom half of driver.
+
+fd opened when the first init process started
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv//user/init.c#L19][init.c]]
+#+begin_src c
+int
+main(void)
+{
+  if(open("console", O_RDWR) < 0){
+    mknod("console", CONSOLE, 0);
+    open("console", O_RDWR);
+  }
+  dup(0);  // stdout
+  dup(0);  // stderr
+}
+#+end_src
+
+One thing to note is mknod here:
+It creates a special file named "console" in the root directory / with:
+    Major number: 1 (i.e., CONSOLE)
+    Minor number: 0
+
+This tells the OS: Whenever a user reads/writes to this file,
+dispatch the I/O to the driver registered as major number 1 — which is the console driver.
+
+The mapping between major number to console driver funciton is defined in the device switch table:
+
+devsw[] maps major device numbers to their driver functions.
+Each entry has a read and write function pointer.
+This belongs to the file system concept.
+
+| File type   | Where handled             | Example syscall path                |
+| ----------- | ------------------------- | ----------------------------------- |
+| `FD_INODE`  | File system code (`fs.c`) | `read()` → `fileread()` → `readi()` |
+| `FD_DEVICE` | Device driver (`devsw[]`) | `read()` → `devsw[major].read()`    |
+| `FD_PIPE`   | Pipe code (`pipe.c`)      | `read()` → `piperead()`             |
+
+Normal files created with touch or mkdir belongs to FD_INODE, which is handled by file system layer.
+Not through the device switch table.
+
+The following gives a summary of their differences:
+| Operation         | File Type    | Handled By                | Code Path                |
+| ----------------- | ------------ | ------------------------- | ------------------------ |
+| `read("myfile")`  | Regular file | File system layer         | `fileread()` → `readi()` |
+| `read("console")` | Device file  | Device driver (`devsw[]`) | `devsw[CONSOLE].read()`  |
+
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/file.h#L33][file.c]]
+#+begin_src c
+struct devsw {
+  int (*read)(int, uint64, int);
+  int (*write)(int, uint64, int);
+};
+#+end_src
+
+#+begin_src c
+#define CONSOLE 1
+
+void
+consoleinit(void)
+{
+  // connect read and write system calls
+  // to consoleread and consolewrite.
+  devsw[CONSOLE].read = consoleread;         // dispatch the read to driver consoleread
+  devsw[CONSOLE].write = consolewrite;       // dispatch the write to driver consolewrite
+}
+#+end_src
+
+
+The following shows how to read data from file with DEVICE type.
+Note that the OS needs to place the things read from the device to
+somewhere in the user space of the process so that the process can
+access it.
+
+So the addr in the fileread function means the address in process's
+virtual address space. And is used by the kernel to place what it reads.
+The addr is usually a argument input given by ~int read(int fd, void *buf, int n)~
+system call.
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/file.c#L117][file.c]]
+#+begin_src c
+// Read from file f.
+// addr is a user virtual address.
+int
+fileread(struct file *f, uint64 addr, int n)
+{
+  // ...
+  else if(f->type == FD_DEVICE){
+    if(f->major < 0 || f->major >= NDEV || !devsw[f->major].read)
+      return -1;
+    r = devsw[f->major].read(1, addr, n);
+  //...
+}
+#+end_src
+
+The following is the sys_read which will be triggered when
+system call read is made.
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/sysfile.c#L79][sysfile.c]]
+#+begin_src c
+uint64
+sys_read(void)
+{
+  struct file *f;
+  int n;
+  uint64 p;
+
+  argaddr(1, &p);      // get buffer address argument
+  argint(2, &n);       // get number of bytes arg
+  if(argfd(0, 0, &f) < 0)       // get fd arg
+    return -1;
+  return fileread(f, p, n);
+}
+#+end_src
+
+So currently the code trace is: read -> sys_read -> fileread -> console_read
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/c4de4b0285e1c8e5348bdd31f597fe958f37b912/kernel/console.c#L53][console buffer]] is used for console read.
+console write will write to UART directly and will not be buffered
+#+begin_src
+struct {
+  struct spinlock lock;
+
+  // input
+#define INPUT_BUF_SIZE 128
+  char buf[INPUT_BUF_SIZE];
+  uint r;  // Read index
+  uint w;  // Write index
+  uint e;  // Edit index
+} cons;
+
+cons.r – Read Index
+
+    Points to the next character to be read by a process (e.g., the shell or read() syscall).
+
+    Advanced by consoleread() after it consumes a character.
+
+    Sleeps if cons.r == cons.w (i.e., nothing to read).
+
+cons.w – Write Index
+
+    Points to the next position where a new character will be written.
+
+    Advanced by consoleintr() when a character is received (typically from UART via interrupt).
+
+#+end_src
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/c4de4b0285e1c8e5348bdd31f597fe958f37b912/kernel/console.c#L80][consoleread]]
+#+begin_src c
+int
+consoleread(int user_dst, uint64 dst, int n)
+{
+  target = n;
+  acquire(&cons.lock);
+  while(n > 0){
+
+    // cons.r == cons.w means the input buffer is empty (nothing typed yet).
+    // It goes to sleep waiting for new input.
+    while(cons.r == cons.w){
+      if(killed(myproc())){
+        release(&cons.lock);
+        return -1;
+      }
+      // sleeps on the address &cons.r and releases the lock while sleeping
+      // When an interrupt occurs (user types something), the UART interrupt
+      // handler will wake it up via wakeup(&cons.r) (done in consoleintr()).
+      // process context will be changed to another process and resumed back
+      // once interrupt is hit
+      sleep(&cons.r, &cons.lock);
+
+      // now we resumed and will re-check the while loop condition
+    }
+
+    // now we have cons.r != cons.w, we read something from uart
+
+    // the rest of the code is processing char by char
+    // break if we hit EOF, \n, or read n chars.
+  }
+
+
+  release(&cons.lock);
+
+
+
+}
+#+end_src

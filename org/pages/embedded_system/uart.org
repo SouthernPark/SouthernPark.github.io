@@ -1,0 +1,110 @@
+#+title: Uart
+
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Uart
+nav_exclude: true
+---
+#+END_EXPORT
+
+
+* intro
+
+A typical UART uses 2 main signal lanes (wires) to bridge two endpoints:
+    TX (Transmit)
+    RX (Receive)
+
+#+begin_src
+Device A TX ───────────────► Device B RX
+Device A RX ◄────────────── Device B TX
+#+end_src
+
+The receiver (RX) and transmitter (TX) are independent.
+You can read and write UART at the same time without conflict.
+Internally, UART has separate buffers/FIFOs for RX and TX.
+The buffer is FIFO based and in the UART module and seperate for TX and RX
+
+
+Some UART implementations use additional lanes for hardware flow control:
+| Signal | Name                | Direction        | Purpose                          |
+| ------ | ------------------- | ---------------- | -------------------------------- |
+| RTS    | Request To Send     | Output from host | Used to signal readiness         |
+| CTS    | Clear To Send       | Input to host    | Used to grant permission         |
+| DSR    | Data Set Ready      | Optional         | Used in modem control            |
+| DTR    | Data Terminal Ready | Optional         | Legacy modem signals             |
+| RI     | Ring Indicator      | Optional         | Indicates incoming call (modems) |
+
+
+| Configuration             | Lanes Used           | Description                         |
+| ------------------------- | -------------------- | ----------------------------------- |
+| **Minimal UART**          | 2 (TX, RX)           | Used in xv6, embedded systems, etc. |
+| UART + hardware flow ctrl | 4 (TX, RX, RTS, CTS) | Adds robustness for fast links      |
+| RS-232 full modem         | 6–8+                 | Legacy setups, rarely needed today  |
+
+
+* Uart in xv6
+#+begin_src
+  [CPU / SoC] ------------------> [External Device]
+  [CPU / SoC] <----------------- [External Device]
+                         ↑
+                      UART module
+                    Serial protocol
+                   (TX/RX over wires)
+                    with FIFO buffer
+
+#+end_src
+
+The external device could be a host with a terminal emulator consists of:
+   A keyboard (for input)
+   A display (CRT or screen — for output)
+
+So the uart TX connects to the display, while the RX connects to the keyboard.
+
+* control registers in uart
+| Name    | Offset | Access | Purpose / Description                                           | Used in xv6?             |
+| ------- | ------ | ------ | --------------------------------------------------------------- | ------------------------ |
+| **RHR** | 0x00   | Read   | **Receiver Holding Register** — read incoming byte              | ✅ Yes                    |
+| **THR** | 0x00   | Write  | **Transmitter Holding Register** — write byte to send           | ✅ Yes                    |
+| **IER** | 0x01   | R/W    | **Interrupt Enable Register** — enables interrupt types         | ✅ Yes                    |
+| **IIR** | 0x02   | Read   | **Interrupt Identification Register** — why interrupt fired     | (Not used)               |
+| **FCR** | 0x02   | Write  | **FIFO Control Register** — enables/clears FIFOs                | ✅ Yes                    |
+| **LCR** | 0x03   | R/W    | **Line Control Register** — sets word length, stop bits, parity | ✅ Yes                    |
+| **MCR** | 0x04   | R/W    | **Modem Control Register** — controls OUT2, RTS, DTR            | ✅ Yes (for enabling IRQ) |
+| **LSR** | 0x05   | Read   | **Line Status Register** — RX ready, TX ready, errors           | ✅ Yes                    |
+| **MSR** | 0x06   | Read   | **Modem Status Register** — modem control lines                 | ❌ Not used               |
+| **SCR** | 0x07   | R/W    | **Scratch Register** — test register (general-purpose)          | ❌ Not used               |
+| **DLL** | 0x00   | R/W    | **Divisor Latch LSB** — set baud rate (if DLAB=1)               | ✅ Yes                    |
+| **DLM** | 0x01   | R/W    | **Divisor Latch MSB** — set baud rate (if DLAB=1)               | ✅ Yes                    |
+
+* UART Frame
+#+begin_src
+[ Start Bit ] [ Data Bits (5–8) ] [ Optional Parity ] [ Stop Bit(s) ]
+
+Start bit: Always 1 bit, value = 0
+Data bits (word length): Usually 5 to 8 bits
+Optional parity: For error detection
+Stop bit(s): Usually 1 or 2, value = 1
+#+end_src
+
+Word length = number of data bits.
+The LCR (Line Control Register) is used to set word length, stop bits and parity
+
+LCR[1:0] bits 0 and 1 of the LCR (Line Control Register) set the word length:
+| LCR\[1:0] | Word Length (data bits)    |
+| --------- | -------------------------- |
+| `00`      | 5 bits                     |
+| `01`      | 6 bits                     |
+| `10`      | 7 bits                     |
+| `11`      | **8 bits** (standard)    ✅ |
+
+
+One example is following:
+#+begin_src
+*reg_lcr = 0x03;  // 0b00000011 → 8 data bits, 1 stop bit, no parity
+#+end_src

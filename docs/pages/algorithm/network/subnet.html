@@ -1,0 +1,399 @@
+---
+layout: default
+title: subnet
+nav_exclude: true
+---
+<div id="outline-container-org255c6fa" class="outline-2">
+<h2 id="org255c6fa"><span class="section-number-2">1.</span> idea</h2>
+<div class="outline-text-2" id="text-1">
+<div class="org-src-container">
+<pre class="src src-nil">user input:
+1. subnet ipv4: in string format dot decimal. (example: 192.168.1.1)
+2. mask: string int range from [0, 32]
+3. ipv4: in string format dot decimal. (example: 192.168.1.1)
+
+The question is to check if ipiv4 is in the same subnet
+</pre>
+</div>
+
+<ol class="org-ol">
+<li>Transform the string dot decimal ipv4 into byte binary format.</li>
+<li>The mask will also be transformed to byte binary format. ex:(mask 24 is 0xFF FF FF 00 )</li>
+<li>(subnet<sub>ip</sub> &amp; mask) == (ip &amp; mask)</li>
+</ol>
+
+<p>
+bit manipulation operations are needed.
+or (|) operation can be add the octet (8 bits) to another octet = 0;
+shift opertion can be used to get bit probe for example 1 &lt;&lt; 31 can used to create
+a probe point to the highest bit in the ipv4.
+</p>
+
+<p>
+To create a ipv4 byte binary from scratch, we usually start from 0.
+</p>
+</div>
+</div>
+<div id="outline-container-org780a7e0" class="outline-2">
+<h2 id="org780a7e0"><span class="section-number-2">2.</span> code</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+function to split string using string find
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">  @brief: split string s using delimiter</span>
+<span style="color: #5B6268;"> */</span>
+<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">string</span>&gt; <span style="color: #c678dd;">split</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span>&amp; <span style="color: #dcaeea;">s</span>, <span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span>&amp; <span style="color: #dcaeea;">delimiter</span>)
+{
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">string</span>&gt; <span style="color: #dcaeea;">ans</span>;
+  <span style="color: #ECBE7B;">size_t</span> <span style="color: #dcaeea;">start</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">end</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #51afef;">while</span>((end = s.find(delimiter, start)) != <span style="color: #a9a1e1;">string</span>::npos) {
+    ans.push_back(s.substr(start, end-start));
+    start = end + delimiter.size();
+  }
+
+  ans.push_back(s.substr(start));
+  <span style="color: #51afef;">return</span> ans;
+}
+</pre>
+</div>
+
+<p>
+function to transform string to int
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">  @breif translate string to int</span>
+<span style="color: #5B6268;">  @return</span>
+<span style="color: #5B6268;">    -1 if octet is invalid (not integer or out of range)</span>
+<span style="color: #5B6268;">    ow int represented by the string</span>
+<span style="color: #5B6268;"> */</span>
+
+<span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">to_int</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span>&amp; <span style="color: #dcaeea;">str</span>) {
+
+  <span style="color: #51afef;">try</span> {
+    <span style="color: #ECBE7B;">size_t</span> <span style="color: #dcaeea;">end</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">ans</span> = stoi(str, &amp;end);
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">invalid case: 123abc</span>
+    <span style="color: #51afef;">if</span>(end != str.size()) <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+
+    <span style="color: #51afef;">return</span> ans;
+  } <span style="color: #51afef;">catch</span>(...) {
+    <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+
+  <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+}
+</pre>
+</div>
+
+<p>
+function to parse ipv4 octet to int
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">  @breif translate ipc4 octet to byte order binary form</span>
+<span style="color: #5B6268;">  @return</span>
+<span style="color: #5B6268;">    byte order of the ipv4 octet</span>
+<span style="color: #5B6268;">    -1 if octet is invalid (not integer or out of range)</span>
+<span style="color: #5B6268;"> */</span>
+<span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">octet_to_byte</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span>&amp; <span style="color: #dcaeea;">octet</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">octet_byte</span> = to_int(octet);
+
+  <span style="color: #51afef;">if</span>(<span style="color: #ECBE7B;">octet_byte</span> &lt; <span style="color: #da8548; font-weight: bold;">0</span> || octet_byte &gt; <span style="color: #da8548; font-weight: bold;">255</span>) <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+
+  <span style="color: #51afef;">return</span> octet_byte;
+}
+</pre>
+</div>
+
+<p>
+function to parse ipv4 to long long
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">  read string ipv4 in dot decimal format,</span>
+<span style="color: #5B6268;">  @return</span>
+<span style="color: #5B6268;">    -1 if ipv4 is not valid,</span>
+<span style="color: #5B6268;">    ow ipv4 in binary format hold by long long</span>
+<span style="color: #5B6268;">  @note:</span>
+<span style="color: #5B6268;">    ipv4 bin can be held in the 4 bytes int, but need</span>
+<span style="color: #5B6268;">    a way to represent invalid ipv4, so use long long 8</span>
+<span style="color: #5B6268;">    bytes to hold ipv4 bin</span>
+<span style="color: #5B6268;"> */</span>
+<span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #c678dd;">parse_ipv4</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span> &amp;<span style="color: #dcaeea;">ipv4</span>)
+{
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">string</span>&gt; <span style="color: #dcaeea;">octets</span> = split(ipv4, <span style="color: #98be65;">"."</span>);
+  <span style="color: #51afef;">if</span>(octets.size() != <span style="color: #da8548; font-weight: bold;">4</span>) <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">ipv4_byte</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">string</span> &amp;<span style="color: #dcaeea;">s</span> : octets) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">octet_byte</span> = octet_to_byte(s);
+    <span style="color: #51afef;">if</span>(octet_byte == -<span style="color: #da8548; font-weight: bold;">1</span>) <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+    ipv4_byte &lt;&lt;= OCTET_LEN;
+    ipv4_byte |= octet_byte;
+  }
+
+  <span style="color: #51afef;">return</span> ipv4_byte;
+}
+</pre>
+</div>
+
+<p>
+fucntion to parse mask to byte
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">  @brief: ipv4 mask where the first mask bits are 1 and others are 0</span>
+<span style="color: #5B6268;">  @return:</span>
+<span style="color: #5B6268;">    the mask in binary byte format</span>
+<span style="color: #5B6268;">    -1 if mask out of range</span>
+<span style="color: #5B6268;">*/</span>
+<span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #c678dd;">mask_byte</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span> &amp;<span style="color: #dcaeea;">str_mask</span>) {
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">mask</span> = to_int(str_mask);
+
+  <span style="color: #51afef;">if</span>(<span style="color: #ECBE7B;">mask</span> &lt; <span style="color: #da8548; font-weight: bold;">0</span> || mask &gt; <span style="color: #da8548; font-weight: bold;">32</span>) <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">ans</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">probe</span> = <span style="color: #da8548; font-weight: bold;">1LL</span> &lt;&lt; <span style="color: #da8548; font-weight: bold;">31</span>;
+
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;mask; i++) {
+    ans |= probe;
+    probe &gt;&gt;= <span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">ex: 0x00 00 00 00 FF FF FF 00 for str_maks = "24"</span>
+  <span style="color: #51afef;">return</span> ans;
+}
+</pre>
+</div>
+
+<p>
+main function
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">user input:</span>
+<span style="color: #5B6268;">./subnet subnet_ip mask ip_address</span>
+<span style="color: #5B6268;">@param1[string]: subnet_ip ipv4 address of current subnet in the dot decimal format</span>
+<span style="color: #5B6268;">@param2[string]: can be transfer to number in the range [0,32]</span>
+<span style="color: #5B6268;">@param3[string]: ipv4 in the dot decimal format like 192.168.0.2</span>
+<span style="color: #5B6268;">*/</span>
+
+<span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">main</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">argc</span>, <span style="color: #ECBE7B;">char</span>* <span style="color: #dcaeea;">argv</span>[])
+{
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">parsing input</span>
+  <span style="color: #51afef;">if</span>(argc != <span style="color: #da8548; font-weight: bold;">4</span>) {
+    cerr &lt;&lt; <span style="color: #98be65;">"usage: ./subnet subnet_ip mask ip_address"</span> &lt;&lt; endl;
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+
+  <span style="color: #ECBE7B;">string</span> <span style="color: #dcaeea;">str_subnet_ip</span> = argv[<span style="color: #da8548; font-weight: bold;">1</span>];
+  <span style="color: #ECBE7B;">string</span> <span style="color: #dcaeea;">str_mask</span> = argv[<span style="color: #da8548; font-weight: bold;">2</span>];
+  <span style="color: #ECBE7B;">string</span> <span style="color: #dcaeea;">str_ip</span> = argv[<span style="color: #da8548; font-weight: bold;">3</span>];
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">subnet_ip</span> = parse_ipv4(str_subnet_ip);
+  <span style="color: #51afef;">if</span>(subnet_ip == -<span style="color: #da8548; font-weight: bold;">1</span>) {
+    cerr &lt;&lt; <span style="color: #98be65;">"invalid subnet ip: "</span> &lt;&lt; subnet_ip;
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">mask</span> = mask_byte(str_mask);
+  <span style="color: #51afef;">if</span>(mask == -<span style="color: #da8548; font-weight: bold;">1</span>) {
+    cerr &lt;&lt; <span style="color: #98be65;">"invalid mask: "</span> &lt;&lt; str_mask &lt;&lt; endl;
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">ip</span> = parse_ipv4(str_ip);
+  <span style="color: #51afef;">if</span>(mask == -<span style="color: #da8548; font-weight: bold;">1</span>) {
+    cerr &lt;&lt; <span style="color: #98be65;">"invalid ip: "</span> &lt;&lt; str_ip;
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+
+  <span style="color: #ECBE7B;">bool</span> <span style="color: #dcaeea;">same_subnet</span> = ((subnet_ip &amp; mask) == (ip &amp; mask));
+
+  <span style="color: #51afef;">if</span>(same_subnet) {
+    cout &lt;&lt; <span style="color: #98be65;">"ip: "</span> &lt;&lt; str_ip &lt;&lt; <span style="color: #98be65;">" is in the same subnet as "</span> &lt;&lt; str_subnet_ip &lt;&lt; <span style="color: #98be65;">"/"</span> &lt;&lt; str_mask &lt;&lt; endl;
+  }
+  <span style="color: #51afef;">else</span> {
+    cout &lt;&lt; <span style="color: #98be65;">"ip: "</span> &lt;&lt; str_ip &lt;&lt; <span style="color: #98be65;">" is not in the same subnet as "</span> &lt;&lt; str_subnet_ip &lt;&lt; <span style="color: #98be65;">"/"</span> &lt;&lt; str_mask &lt;&lt; endl;
+  }
+
+  <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">0</span>;
+
+
+}
+</pre>
+</div>
+
+
+<p>
+put it together
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #51afef; font-weight: bold;">#include</span> <span style="color: #98be65;">&lt;iostream&gt;</span>
+<span style="color: #51afef; font-weight: bold;">#include</span> <span style="color: #98be65;">&lt;vector&gt;</span>
+
+<span style="color: #51afef;">using</span> <span style="color: #51afef;">namespace</span> <span style="color: #a9a1e1;">std</span>;
+<span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #dcaeea;">OCTET_LEN</span> <span style="color: #da8548; font-weight: bold;">8</span>
+
+<span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">  @brief: split string s using delimiter</span>
+<span style="color: #5B6268;"> */</span>
+<span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">string</span>&gt; <span style="color: #c678dd;">split</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span>&amp; <span style="color: #dcaeea;">s</span>, <span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span>&amp; <span style="color: #dcaeea;">delimiter</span>)
+{
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">string</span>&gt; <span style="color: #dcaeea;">ans</span>;
+  <span style="color: #ECBE7B;">size_t</span> <span style="color: #dcaeea;">start</span> = <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #dcaeea;">end</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #51afef;">while</span>((end = s.find(delimiter, start)) != <span style="color: #a9a1e1;">string</span>::npos) {
+    ans.push_back(s.substr(start, end-start));
+    start = end + delimiter.size();
+  }
+
+  ans.push_back(s.substr(start));
+  <span style="color: #51afef;">return</span> ans;
+}
+
+<span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">  @breif translate string to int</span>
+<span style="color: #5B6268;">  @return</span>
+<span style="color: #5B6268;">    -1 if octet is invalid (not integer or out of range)</span>
+<span style="color: #5B6268;">    ow int represented by the string</span>
+<span style="color: #5B6268;"> */</span>
+
+<span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">to_int</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span>&amp; <span style="color: #dcaeea;">str</span>) {
+
+  <span style="color: #51afef;">try</span> {
+    <span style="color: #ECBE7B;">size_t</span> <span style="color: #dcaeea;">end</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">ans</span> = stoi(str, &amp;end);
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">invalid case: 123abc</span>
+    <span style="color: #51afef;">if</span>(end != str.size()) <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+
+    <span style="color: #51afef;">return</span> ans;
+  } <span style="color: #51afef;">catch</span>(...) {
+    <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+
+  <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+}
+
+<span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">  @breif translate ipc4 octet to byte order binary form</span>
+<span style="color: #5B6268;">  @return</span>
+<span style="color: #5B6268;">    byte order of the ipv4 octet</span>
+<span style="color: #5B6268;">    -1 if octet is invalid (not integer or out of range)</span>
+<span style="color: #5B6268;"> */</span>
+<span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">octet_to_byte</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span>&amp; <span style="color: #dcaeea;">octet</span>) {
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">octet_byte</span> = to_int(octet);
+
+  <span style="color: #51afef;">if</span>(<span style="color: #ECBE7B;">octet_byte</span> &lt; <span style="color: #da8548; font-weight: bold;">0</span> || octet_byte &gt; <span style="color: #da8548; font-weight: bold;">255</span>) <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+
+  <span style="color: #51afef;">return</span> octet_byte;
+}
+
+<span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">  read string ipv4 in dot decimal format,</span>
+<span style="color: #5B6268;">  @return</span>
+<span style="color: #5B6268;">    -1 if ipv4 is not valid,</span>
+<span style="color: #5B6268;">    ow ipv4 in binary format hold by long long</span>
+<span style="color: #5B6268;">  @note:</span>
+<span style="color: #5B6268;">    ipv4 bin can be held in the 4 bytes int, but need</span>
+<span style="color: #5B6268;">    a way to represent invalid ipv4, so use long long 8</span>
+<span style="color: #5B6268;">    bytes to hold ipv4 bin</span>
+<span style="color: #5B6268;"> */</span>
+<span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #c678dd;">parse_ipv4</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span> &amp;<span style="color: #dcaeea;">ipv4</span>)
+{
+  <span style="color: #ECBE7B;">vector</span>&lt;<span style="color: #ECBE7B;">string</span>&gt; <span style="color: #dcaeea;">octets</span> = split(ipv4, <span style="color: #98be65;">"."</span>);
+  <span style="color: #51afef;">if</span>(octets.size() != <span style="color: #da8548; font-weight: bold;">4</span>) <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">ipv4_byte</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">string</span> &amp;<span style="color: #dcaeea;">s</span> : octets) {
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">octet_byte</span> = octet_to_byte(s);
+    <span style="color: #51afef;">if</span>(octet_byte == -<span style="color: #da8548; font-weight: bold;">1</span>) <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+    ipv4_byte &lt;&lt;= OCTET_LEN;
+    ipv4_byte |= octet_byte;
+  }
+
+  <span style="color: #51afef;">return</span> ipv4_byte;
+}
+
+<span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">  @brief: ipv4 mask where the first mask bits are 1 and others are 0</span>
+<span style="color: #5B6268;">  @return:</span>
+<span style="color: #5B6268;">    the mask in binary byte format</span>
+<span style="color: #5B6268;">    -1 if mask out of range</span>
+<span style="color: #5B6268;">*/</span>
+<span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #c678dd;">mask_byte</span>(<span style="color: #51afef;">const</span> <span style="color: #ECBE7B;">string</span> &amp;<span style="color: #dcaeea;">str_mask</span>) {
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">mask</span> = to_int(str_mask);
+
+  <span style="color: #51afef;">if</span>(<span style="color: #ECBE7B;">mask</span> &lt; <span style="color: #da8548; font-weight: bold;">0</span> || mask &gt; <span style="color: #da8548; font-weight: bold;">32</span>) <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">ans</span> = <span style="color: #da8548; font-weight: bold;">0</span>;
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">probe</span> = <span style="color: #da8548; font-weight: bold;">1LL</span> &lt;&lt; <span style="color: #da8548; font-weight: bold;">31</span>;
+
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>=<span style="color: #da8548; font-weight: bold;">0</span>; i&lt;mask; i++) {
+    ans |= probe;
+    probe &gt;&gt;= <span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">ex: 0x00 00 00 00 FF FF FF 00 for str_maks = "24"</span>
+  <span style="color: #51afef;">return</span> ans;
+}
+
+<span style="color: #5B6268;">/*</span>
+<span style="color: #5B6268;">user input:</span>
+<span style="color: #5B6268;">./subnet subnet_ip mask ip_address</span>
+<span style="color: #5B6268;">@param1[string]: subnet_ip ipv4 address of current subnet in the dot decimal format</span>
+<span style="color: #5B6268;">@param2[string]: can be transfer to number in the range [0,32]</span>
+<span style="color: #5B6268;">@param3[string]: ipv4 in the dot decimal format like 192.168.0.2</span>
+<span style="color: #5B6268;">*/</span>
+
+<span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">main</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">argc</span>, <span style="color: #ECBE7B;">char</span>* <span style="color: #dcaeea;">argv</span>[])
+{
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">parsing input</span>
+  <span style="color: #51afef;">if</span>(argc != <span style="color: #da8548; font-weight: bold;">4</span>) {
+    cerr &lt;&lt; <span style="color: #98be65;">"usage: ./subnet subnet_ip mask ip_address"</span> &lt;&lt; endl;
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+
+  <span style="color: #ECBE7B;">string</span> <span style="color: #dcaeea;">str_subnet_ip</span> = argv[<span style="color: #da8548; font-weight: bold;">1</span>];
+  <span style="color: #ECBE7B;">string</span> <span style="color: #dcaeea;">str_mask</span> = argv[<span style="color: #da8548; font-weight: bold;">2</span>];
+  <span style="color: #ECBE7B;">string</span> <span style="color: #dcaeea;">str_ip</span> = argv[<span style="color: #da8548; font-weight: bold;">3</span>];
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">subnet_ip</span> = parse_ipv4(str_subnet_ip);
+  <span style="color: #51afef;">if</span>(subnet_ip == -<span style="color: #da8548; font-weight: bold;">1</span>) {
+    cerr &lt;&lt; <span style="color: #98be65;">"invalid subnet ip: "</span> &lt;&lt; subnet_ip;
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">mask</span> = mask_byte(str_mask);
+  <span style="color: #51afef;">if</span>(mask == -<span style="color: #da8548; font-weight: bold;">1</span>) {
+    cerr &lt;&lt; <span style="color: #98be65;">"invalid mask: "</span> &lt;&lt; str_mask &lt;&lt; endl;
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+
+  <span style="color: #ECBE7B;">long</span> <span style="color: #ECBE7B;">long</span> <span style="color: #dcaeea;">ip</span> = parse_ipv4(str_ip);
+  <span style="color: #51afef;">if</span>(mask == -<span style="color: #da8548; font-weight: bold;">1</span>) {
+    cerr &lt;&lt; <span style="color: #98be65;">"invalid ip: "</span> &lt;&lt; str_ip;
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">1</span>;
+  }
+
+  <span style="color: #ECBE7B;">bool</span> <span style="color: #dcaeea;">same_subnet</span> = ((subnet_ip &amp; mask) == (ip &amp; mask));
+
+  <span style="color: #51afef;">if</span>(same_subnet) {
+    cout &lt;&lt; <span style="color: #98be65;">"ip: "</span> &lt;&lt; str_ip &lt;&lt; <span style="color: #98be65;">" is in the same subnet as "</span> &lt;&lt; str_subnet_ip &lt;&lt; <span style="color: #98be65;">"/"</span> &lt;&lt; str_mask &lt;&lt; endl;
+  }
+  <span style="color: #51afef;">else</span> {
+    cout &lt;&lt; <span style="color: #98be65;">"ip: "</span> &lt;&lt; str_ip &lt;&lt; <span style="color: #98be65;">" is not in the same subnet as "</span> &lt;&lt; str_subnet_ip &lt;&lt; <span style="color: #98be65;">"/"</span> &lt;&lt; str_mask &lt;&lt; endl;
+  }
+
+  <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">0</span>;
+
+
+}
+</pre>
+</div>
+</div>
+</div>

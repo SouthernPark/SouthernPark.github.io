@@ -73,6 +73,7 @@ causes:
 ARP is needed when a Layer 3 (IP) packet needs to be sent over a Layer 2.
 The senario is given the dest IP on Layer 3 packet, how to fill the dest MAC address on Layer 2 packets.
 
+*** when ARP is used
 There are 2 main use cases:
 1. end host to find MAC for an IP on the same subnet
 2. L3 switch / router needs to forward IP packets and must resolve next-hot MAC
@@ -82,6 +83,18 @@ A pure Layer 2 switch never looks at IP header, but just fowarding based on DEST
 ARP happends before IP packet is sent on the wire.
 
 In the above two cases, if the ARP can not be resolved in host or layer 3 router / switch, it can not build the ethernet frame and the packet can not be sent out.
+
+*** how is ARP learned
+
+When A wants to know the dest MAC associated with an IP (simply which device has the IP).
+A sends an ARP packet (A_SRC_IP + A_SRC_MAC + Target IP)
+Assume D has the target IP and the ARP goes throught A -> B -> C -> D. (usually through broad cast)
+Then B, C, D will firstly learn the map (A_SRC_IP : A_SRC_MAC)
+
+D will reply with(D_SRC_IP, D_SRC_MAC, A_SRC_IP (Target IP), A_SRC_MAC(Target MAC)) which will be unicast to A
+A and the devices under the hood will learn the mapping (D_SRC_IP, D_SRC_MAC)
+
+in the ARP packet, there is a specific field called the Operation (Opcode) field, indicates whether the ARP packet is a request or a reply.
 
 * Layer 3 (Network IP)
 ** IP address

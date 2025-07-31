@@ -21,9 +21,15 @@ nav_exclude: true
 * Operating System
 ** [[file:pages/os/xv6/xv6.org][MIT 6.S081 xv6 OS with RISCV CPU]]
 ** [[file:pages/os/questions.org][八股]]
+
+* Embedded System
+** [[file:pages/embedded_system/uart.org][Uart]]
+
 * Computer Network
 ** [[file:pages/computer_network/foundations.org][Foundations]]
 ** [[file:pages/computer_network/questions.org][八股]]
+** [[file:~/org_private_repo/chips/chips.org][Chips]]
+
 * [[file:pages/compiler/compiler.org][Compiler]]
 
 * Programming Language

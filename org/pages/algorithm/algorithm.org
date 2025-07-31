@@ -124,10 +124,14 @@ nav_exclude: true
 
 ** [[file:dp/state_machine_dp.org][State Machine + DP]]
 
-
-
 * string
 ** [[file:string/trie.org][Trie]]
+
+* Computer Network
+| Question                                | Time              |
+|-----------------------------------------+-------------------|
+| [[file:network/subnet.org][Check if two ips are in the same subnet]] | <2025-07-12 周六> |
+
 
 * Company Tag
 ** Google
