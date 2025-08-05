@@ -24,4 +24,6 @@ Course Website: [[https://pdos.csail.mit.edu/6.S081/2024/][MIT 6.S081 Operating 
 
 * [[file:3_page_table.org][Page Table]]
 
+* [[file:4_traps_and_system_calls.org][Traps and System Calls]]
+
 * [[file:5_interrupts_and_drivers.org][Interrupt and Driver]]

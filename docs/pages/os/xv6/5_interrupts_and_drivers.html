@@ -1,0 +1,1311 @@
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org79666fb">1. Intro</a></li>
+<li><a href="#org6af5b5b">2. Code: Console Input</a>
+<ul>
+<li><a href="#org71a1166">2.1. console.c and uart.c</a>
+<ul>
+<li><a href="#org0fa4462">2.1.1. uart.c (Top half)</a></li>
+<li><a href="#orge76136b">2.1.2. console.c (Bottom half)</a></li>
+<li><a href="#org0c8d5ba">2.1.3. Example: Flow of read</a></li>
+</ul>
+</li>
+<li><a href="#orgd46f910">2.2. top part and bottom part for console</a></li>
+<li><a href="#org89bcf54">2.3. uart init</a></li>
+<li><a href="#orge091dd8">2.4. Console Input: read -&gt; sys<sub>read</sub> -&gt; fileread -&gt; consoleread -&gt; waiting for interrupt</a></li>
+</ul>
+</li>
+<li><a href="#org0c989d9">3. Code: Console Output</a>
+<ul>
+<li><a href="#org9a8128b">3.1. Console Output: write -&gt; sys<sub>write</sub> -&gt; filewrite -&gt; consolewrite -&gt; uartputc</a></li>
+</ul>
+</li>
+<li><a href="#orgba49451">4. Concurrency consider in driver</a>
+<ul>
+<li><a href="#org9e37b07">4.1. xv6 does not support multiplexing I/O</a></li>
+</ul>
+</li>
+<li><a href="#org83a9aae">5. Timer Interrupt</a>
+<ul>
+<li><a href="#org05c0f5e">5.1. Why need to handle interrupt differently</a>
+<ul>
+<li><a href="#org86ea7ca">5.1.1. Timer Interrupt Delegation</a></li>
+</ul>
+</li>
+<li><a href="#org6ac633f">5.2. Timer Interrupt in user mode</a></li>
+<li><a href="#orgbe63019">5.3. Timer Interrupt in kernel mode</a></li>
+<li><a href="#org3a05cba">5.4. yield mechanism</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org79666fb" class="outline-2">
+<h2 id="org79666fb"><span class="section-number-2">1.</span> Intro</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+A driver is the code in an operating system that manages a particular device:
+it configures the device hardware, tells the device to perform operations,
+handles the resulting interrupts, and
+interacts with processes that may be waiting for I/O from the device.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Part</td>
+<td class="org-left">Triggered by</td>
+<td class="org-left">Runs in</td>
+<td class="org-left">Key characteristics</td>
+</tr>
+
+<tr>
+<td class="org-left">---------------</td>
+<td class="org-left">---------------------------------------------------</td>
+<td class="org-left">------------------------------------</td>
+<td class="org-left">-------------------------------------------------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>Top half</b></b></td>
+<td class="org-left"><b><b>Hardware interrupt</b></b></td>
+<td class="org-left"><b><b>Interrupt context</b></b></td>
+<td class="org-left">🟠 Runs <b><b>immediately</b></b>, must be <b><b>fast</b></b>, <b><b>non-blocking</b></b></td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>Bottom half</b></b></td>
+<td class="org-left">Deferred work (e.g., via syscall wakeup or tasklet)</td>
+<td class="org-left"><b><b>Process or kernel thread context</b></b></td>
+<td class="org-left">🟢 Can do <b><b>slower</b></b>, more complex work, may <b><b>block</b></b> or <b><b>sleep</b></b></td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+Why is the top half faster?
+Interrupt context is very sensitive:
+        Cannot sleep
+        Interrupts may be disabled
+        Must acknowledge the hardware fast
+The top half often:
+        Reads from a hardware register
+        Buffers a value
+        Wakes up a process waiting for data
+Example: In uartintr() (xv6), the interrupt handler reads a char and calls wakeup() — that’s all.
+</p>
+
+<p>
+Why is the bottom half allowed to be slower?
+    It runs in normal thread/process context
+    It has full kernel privileges
+    It can:
+        Copy data to/from user space
+        Sleep/wait for resources
+        Do file I/O, scheduling, etc.
+Example: In consoleread() in xv6, the process sleeps waiting for input. When the interrupt (top half) wakes it, it finishes reading.
+</p>
+
+<p>
+The following sections will give a driver code example using console. Console is implemented using uart.
+When the user types characters (e.g., via terminal in QEMU), they come in through the UART hardware.
+The UART raises an interrupt for each character.
+</p>
+
+<p>
+When the kernel or user process calls write(1, &ldquo;hello&rdquo;, 5), it writes to standard output — the console.
+kernel sends the chars one by one to the UART transmit register
+</p>
+</div>
+</div>
+<div id="outline-container-org6af5b5b" class="outline-2">
+<h2 id="org6af5b5b"><span class="section-number-2">2.</span> Code: Console Input</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-org71a1166" class="outline-3">
+<h3 id="org71a1166"><span class="section-number-3">2.1.</span> console.c and uart.c</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Top Half: uart.c are driver code directly interacting with the hardware
+</p>
+
+<p>
+Bottom Half: console.c is a higher-level abstraction built on top of the UART.
+</p>
+
+<p>
+The bottom half interacts with OS and can be blocked, while the TOP half interact with the hardware,
+should be non-blocking.
+</p>
+</div>
+<div id="outline-container-org0fa4462" class="outline-4">
+<h4 id="org0fa4462"><span class="section-number-4">2.1.1.</span> uart.c (Top half)</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+UART (Universal Asynchronous Receiver-Transmitter):
+    This is a hardware device (serial port) that sends/receives bytes serially.
+    xv6 has a UART driver in uart.c, which talks directly to the UART hardware using memory-mapped I/O or port-mapped I/O.
+    It has functions like uartinit(), uartgetc() (read a byte), uartputc() (write a byte), and uartintr() (interrupt handler).
+</p>
+
+<p>
+uart.c → Low-level UART driver
+    Talks directly to the UART hardware
+    Handles:
+        UART register setup
+        Sending/receiving bytes via MMIO
+        Handling UART interrupts (uartintr())
+    Device-specific — tied to the 16550 UART
+    Think of uart.c as the device driver for a specific hardware peripheral.
+</p>
+</div>
+</div>
+<div id="outline-container-orge76136b" class="outline-4">
+<h4 id="orge76136b"><span class="section-number-4">2.1.2.</span> console.c (Bottom half)</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<p>
+console.c → Higher-level console abstraction
+Implements the OS-facing &ldquo;console device&rdquo;
+    User read() and write() go through here
+Uses uart.c as the backend
+Handles:
+    Input buffering (input.buf[])
+    Echoing characters
+    Handling special keys (like backspace or control chars)
+    Connecting read(0,&#x2026;) and write(1,&#x2026;) syscalls to UART
+Also supports kernel printf() output
+</p>
+</div>
+</div>
+<div id="outline-container-org0c8d5ba" class="outline-4">
+<h4 id="org0c8d5ba"><span class="section-number-4">2.1.3.</span> Example: Flow of read</h4>
+<div class="outline-text-4" id="text-2-1-3">
+<p>
+You may wondering how is I/O blocked handled here.
+How does one process block there when read, and how does it resume
+when there is something ready to read.
+</p>
+
+<p>
+The following is the flow:
+</p>
+<ol class="org-ol">
+<li>A user space process calls read</li>
+<li>read calls the bottom half and will block there when route to consoleread</li>
+<li>Because the process is in kernel context, kernel stack and Program Counter will be saved</li>
+<li>Interrupt occurs, which will trigger uartintr() code routine in interrupt context</li>
+<li>Interrupt wakeup process and mark them as runnable</li>
+<li>Interrupt exit and sheduler runs the processes later</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="outline-container-orgd46f910" class="outline-3">
+<h3 id="orgd46f910"><span class="section-number-3">2.2.</span> top part and bottom part for console</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+The console uses UART the following is Top half and bottom half involved in the console input process.
+</p>
+
+<p>
+Bottom half: User process calls read() → enters kernel
+read(0, buf, n) → syscall → sys<sub>read</sub> → consoleread().
+This runs in process context. If no data is available in the input buffer, the process sleeps
+</p>
+
+<p>
+Upper half: User types a key → UART raises interrupt
+The UART hardware generates an interrupt:
+CPU jumps to trap handler → calls devintr() → calls uartintr()
+This is interrupt context.
+Reads the incoming character from the UART hardware register
+Pushes it into the input buffer
+Calls wakeup(&amp;input) to resume any process sleeping on input
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nil">User process
+   |
+   | read(0, buf, n)
+   |→ consoleread()      ← (bottom half)
+   |     |
+   |     | sleep(&amp;input); ← if buffer empty
+   ↓
+UART input event (interrupt)
+   → trap → devintr() → uartintr() ← (top half)
+         |  read char from UART
+         |  store in input.buf
+         |  wakeup(&amp;input)
+
+User process resumes
+   |
+   | consoleread() returns data
+   | read() → back to user space
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org89bcf54" class="outline-3">
+<h3 id="org89bcf54"><span class="section-number-3">2.3.</span> uart init</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv//kernel/console.c#L182">consoleinit</a>
+</p>
+
+<p>
+after boot up kernel calls main to do console init, then uart init
+from high level abstraction code to low level specific hw level code
+main -&gt; consoleinit -&gt; uartinit
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">consoleinit</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  initlock(&amp;cons.lock, <span style="color: #98be65;">"cons"</span>);
+
+  uartinit();
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">connect read and write system calls</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">to consoleread and consolewrite.</span>
+  devsw[CONSOLE].read = consoleread;
+  devsw[CONSOLE].write = consolewrite;
+}
+</pre>
+</div>
+
+<p>
+console init does high level staff, like tell the os where is the routine
+for console read and write.
+</p>
+
+<p>
+The hw detailed init will be pointed to uartinit
+hw init are mained to write the hw register to program the hw.
+The UART hardware appears to software as a set of memory-mapped control registers.
+</p>
+
+<p>
+The memory-mapped addresses for the UART start at 0x10000000, or <a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv//kernel/memlayout.h#L21">UART0</a>
+</p>
+
+<p>
+There are a handful of UART control registers, each the width of a byte.
+Their offsets from UART0 are defined in <a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv//kernel/uart.c#L22">uart.c</a> (hw device specific code).
+</p>
+
+<p>
+The following is the table of control registers used by xv6 for UART programming.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Name</td>
+<td class="org-right">Offset</td>
+<td class="org-left">Access</td>
+<td class="org-left">Purpose / Description</td>
+<td class="org-left">Used in xv6?</td>
+</tr>
+
+<tr>
+<td class="org-left">-------</td>
+<td class="org-right">------</td>
+<td class="org-left">------</td>
+<td class="org-left">---------------------------------------------------------------</td>
+<td class="org-left">------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>RHR</b></b></td>
+<td class="org-right">0x00</td>
+<td class="org-left">Read</td>
+<td class="org-left"><b><b>Receiver Holding Register</b></b> — read incoming byte</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>THR</b></b></td>
+<td class="org-right">0x00</td>
+<td class="org-left">Write</td>
+<td class="org-left"><b><b>Transmitter Holding Register</b></b> — write byte to send</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>IER</b></b></td>
+<td class="org-right">0x01</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Interrupt Enable Register</b></b> — enables interrupt types</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>FCR</b></b></td>
+<td class="org-right">0x02</td>
+<td class="org-left">Write</td>
+<td class="org-left"><b><b>FIFO Control Register</b></b> — enables/clears FIFOs</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>LCR</b></b></td>
+<td class="org-right">0x03</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Line Control Register</b></b> — sets word length, stop bits, parity</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>MCR</b></b></td>
+<td class="org-right">0x04</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Modem Control Register</b></b> — controls OUT2, RTS, DTR</td>
+<td class="org-left">✅ Yes (for enabling IRQ)</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>LSR</b></b></td>
+<td class="org-right">0x05</td>
+<td class="org-left">Read</td>
+<td class="org-left"><b><b>Line Status Register</b></b> — RX ready, TX ready, errors</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>DLL</b></b></td>
+<td class="org-right">0x00</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Divisor Latch LSB</b></b> — set baud rate (if DLAB=1)</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>DLM</b></b></td>
+<td class="org-right">0x01</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Divisor Latch MSB</b></b> — set baud rate (if DLAB=1)</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/uart.c#L53">uart<sub>init</sub></a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">uartinit</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">disable interrupts.</span>
+  WriteReg(IER, <span style="color: #da8548; font-weight: bold;">0x00</span>);
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">special mode to set baud rate.</span>
+  WriteReg(LCR, LCR_BAUD_LATCH);
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">LSB for baud rate of 38.4K.</span>
+  WriteReg(<span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #da8548; font-weight: bold;">0x03</span>);
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">MSB for baud rate of 38.4K.</span>
+  WriteReg(<span style="color: #da8548; font-weight: bold;">1</span>, <span style="color: #da8548; font-weight: bold;">0x00</span>);
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">leave set-baud mode,</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">and set word length to 8 bits, no parity.</span>
+  WriteReg(LCR, LCR_EIGHT_BITS);
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">reset and enable FIFOs.</span>
+  WriteReg(FCR, FCR_FIFO_ENABLE | FCR_FIFO_CLEAR);
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">enable transmit and receive interrupts.</span>
+  WriteReg(IER, IER_TX_ENABLE | IER_RX_ENABLE);
+
+  initlock(&amp;uart_tx_lock, <span style="color: #98be65;">"uart"</span>);
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orge091dd8" class="outline-3">
+<h3 id="orge091dd8"><span class="section-number-3">2.4.</span> Console Input: read -&gt; sys<sub>read</sub> -&gt; fileread -&gt; consoleread -&gt; waiting for interrupt</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+The following code path is from system call read to read from console.
+The kernel process thread will enter into sleep if no input is given.
+This part of code belongs to the bottom half of driver.
+</p>
+
+<p>
+fd opened when the first init process started
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv//user/init.c#L19">init.c</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">main</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #51afef;">if</span>(open(<span style="color: #98be65;">"console"</span>, O_RDWR) &lt; <span style="color: #da8548; font-weight: bold;">0</span>){
+    mknod(<span style="color: #98be65;">"console"</span>, CONSOLE, <span style="color: #da8548; font-weight: bold;">0</span>);
+    open(<span style="color: #98be65;">"console"</span>, O_RDWR);
+  }
+  dup(<span style="color: #da8548; font-weight: bold;">0</span>);  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">stdout</span>
+  dup(<span style="color: #da8548; font-weight: bold;">0</span>);  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">stderr</span>
+}
+</pre>
+</div>
+
+<p>
+One thing to note is mknod here:
+It creates a special file named &ldquo;console&rdquo; in the root directory / with:
+    Major number: 1 (i.e., CONSOLE)
+    Minor number: 0
+</p>
+
+<p>
+This tells the OS: Whenever a user reads/writes to this file,
+dispatch the I/O to the driver registered as major number 1 — which is the console driver.
+</p>
+
+<p>
+The mapping between major number to console driver funciton is defined in the device switch table:
+</p>
+
+<p>
+devsw[] maps major device numbers to their driver functions.
+Each entry has a read and write function pointer.
+This belongs to the file system concept.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">File type</td>
+<td class="org-left">Where handled</td>
+<td class="org-left">Example syscall path</td>
+</tr>
+
+<tr>
+<td class="org-left">-----------</td>
+<td class="org-left">-------------------------</td>
+<td class="org-left">-----------------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left">`FD<sub>INODE</sub>`</td>
+<td class="org-left">File system code (`fs.c`)</td>
+<td class="org-left">`read()` → `fileread()` → `readi()`</td>
+</tr>
+
+<tr>
+<td class="org-left">`FD<sub>DEVICE</sub>`</td>
+<td class="org-left">Device driver (`devsw[]`)</td>
+<td class="org-left">`read()` → `devsw[major].read()`</td>
+</tr>
+
+<tr>
+<td class="org-left">`FD<sub>PIPE</sub>`</td>
+<td class="org-left">Pipe code (`pipe.c`)</td>
+<td class="org-left">`read()` → `piperead()`</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Normal files created with touch or mkdir belongs to FD<sub>INODE</sub>, which is handled by file system layer.
+Not through the device switch table.
+</p>
+
+<p>
+The following gives a summary of their differences:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Operation</td>
+<td class="org-left">File Type</td>
+<td class="org-left">Handled By</td>
+<td class="org-left">Code Path</td>
+</tr>
+
+<tr>
+<td class="org-left">-----------------</td>
+<td class="org-left">------------</td>
+<td class="org-left">-------------------------</td>
+<td class="org-left">------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left">`read(&ldquo;myfile&rdquo;)`</td>
+<td class="org-left">Regular file</td>
+<td class="org-left">File system layer</td>
+<td class="org-left">`fileread()` → `readi()`</td>
+</tr>
+
+<tr>
+<td class="org-left">`read(&ldquo;console&rdquo;)`</td>
+<td class="org-left">Device file</td>
+<td class="org-left">Device driver (`devsw[]`)</td>
+<td class="org-left">`devsw[CONSOLE].read()`</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/file.h#L33">file.c</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #51afef;">struct</span> <span style="color: #ECBE7B;">devsw</span> {
+  <span style="color: #ECBE7B;">int</span> (*<span style="color: #c678dd;">read</span>)(<span style="color: #ECBE7B;">int</span>, uint64, <span style="color: #ECBE7B;">int</span>);
+  <span style="color: #ECBE7B;">int</span> (*<span style="color: #c678dd;">write</span>)(<span style="color: #ECBE7B;">int</span>, uint64, <span style="color: #ECBE7B;">int</span>);
+};
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #dcaeea;">CONSOLE</span> <span style="color: #da8548; font-weight: bold;">1</span>
+
+<span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">consoleinit</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">connect read and write system calls</span>
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">to consoleread and consolewrite.</span>
+  devsw[CONSOLE].read = consoleread;         <span style="color: #5B6268;">// </span><span style="color: #5B6268;">dispatch the read to driver consoleread</span>
+  devsw[CONSOLE].write = consolewrite;       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">dispatch the write to driver consolewrite</span>
+}
+</pre>
+</div>
+
+
+<p>
+The following shows how to read data from file with DEVICE type.
+Note that the OS needs to place the things read from the device to
+somewhere in the user space of the process so that the process can
+access it.
+</p>
+
+<p>
+So the addr in the fileread function means the address in process&rsquo;s
+virtual address space. And is used by the kernel to place what it reads.
+The addr is usually a argument input given by <code>int read(int fd, void *buf, int n)</code>
+system call.
+</p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/file.c#L117">file.c</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">Read from file f.</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">addr is a user virtual address.</span>
+<span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">fileread</span>(<span style="color: #51afef;">struct</span> <span style="color: #ECBE7B;">file</span> *<span style="color: #dcaeea;">f</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">addr</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>)
+{
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">...</span>
+  <span style="color: #51afef;">else</span> <span style="color: #51afef;">if</span>(f-&gt;type == FD_DEVICE){
+    <span style="color: #51afef;">if</span>(f-&gt;major &lt; <span style="color: #da8548; font-weight: bold;">0</span> || f-&gt;major &gt;= NDEV || <span style="color: #51afef; font-weight: bold;">!</span>devsw[f-&gt;major].read)
+      <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+    r = devsw[f-&gt;major].read(<span style="color: #da8548; font-weight: bold;">1</span>, addr, n);
+  <span style="color: #5B6268;">//</span><span style="color: #5B6268;">...</span>
+}
+</pre>
+</div>
+
+<p>
+The following is the sys<sub>read</sub> which will be triggered when
+system call read is made.
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/sysfile.c#L79">sysfile.c</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">uint64</span>
+<span style="color: #c678dd;">sys_read</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #51afef;">struct</span> <span style="color: #ECBE7B;">file</span> *<span style="color: #dcaeea;">f</span>;
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">p</span>;
+
+  argaddr(<span style="color: #da8548; font-weight: bold;">1</span>, &amp;p);      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">get buffer address argument</span>
+  argint(<span style="color: #da8548; font-weight: bold;">2</span>, &amp;n);       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">get number of bytes arg</span>
+  <span style="color: #51afef;">if</span>(argfd(<span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #da8548; font-weight: bold;">0</span>, &amp;f) &lt; <span style="color: #da8548; font-weight: bold;">0</span>)       <span style="color: #5B6268;">// </span><span style="color: #5B6268;">get fd arg</span>
+    <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+  <span style="color: #51afef;">return</span> fileread(f, p, n);
+}
+</pre>
+</div>
+
+<p>
+So currently the code trace is: read -&gt; sys<sub>read</sub> -&gt; fileread -&gt; console<sub>read</sub>
+</p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/c4de4b0285e1c8e5348bdd31f597fe958f37b912/kernel/console.c#L53">console buffer</a> is used for console read.
+console write will write to UART directly and will not be buffered
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">struct {
+  struct spinlock lock;
+
+  // input
+#define INPUT_BUF_SIZE 128
+  char buf[INPUT_BUF_SIZE];
+  uint r;  // Read index
+  uint w;  // Write index
+  uint e;  // Edit index
+} cons;
+
+cons.r – Read Index
+
+    Points to the next character to be read by a process (e.g., the shell or read() syscall).
+
+    Advanced by consoleread() after it consumes a character.
+
+    Sleeps if cons.r == cons.w (i.e., nothing to read).
+
+cons.w – Write Index
+
+    Points to the next position where a new character will be written.
+
+    Advanced by consoleintr() when a character is received (typically from UART via interrupt).
+
+</pre>
+</div>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/c4de4b0285e1c8e5348bdd31f597fe958f37b912/kernel/console.c#L80">consoleread</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">consoleread</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">user_dst</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">dst</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>)
+{
+  target = n;
+  acquire(&amp;cons.lock);
+  <span style="color: #51afef;">while</span>(n &gt; <span style="color: #da8548; font-weight: bold;">0</span>){
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">cons.r == cons.w means the input buffer is empty (nothing typed yet).</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">It goes to sleep waiting for new input.</span>
+    <span style="color: #51afef;">while</span>(cons.r == cons.w){
+      <span style="color: #51afef;">if</span>(killed(myproc())){
+        release(&amp;cons.lock);
+        <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+      }
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">sleeps on the address &amp;cons.r and releases the lock while sleeping</span>
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">When an interrupt occurs (user types something), the UART interrupt</span>
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">handler will wake it up via wakeup(&amp;cons.r) (done in consoleintr()).</span>
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">process context will be changed to another process and resumed back</span>
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">once interrupt is hit</span>
+      sleep(&amp;cons.r, &amp;cons.lock);
+
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now we resumed and will re-check the while loop condition</span>
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">now we have cons.r != cons.w, we read something from uart</span>
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">copy the input byte to the user-space buffer.</span>
+    cbuf = c;
+    <span style="color: #51afef;">if</span>(either_copyout(user_dst, dst, &amp;cbuf, <span style="color: #da8548; font-weight: bold;">1</span>) == -<span style="color: #da8548; font-weight: bold;">1</span>)
+      <span style="color: #51afef;">break</span>;
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">the rest of the code is processing char by char</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">break if we hit EOF, \n, or read n chars.</span>
+  }
+
+  release(&amp;cons.lock);
+
+}
+</pre>
+</div>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/console.c#L136">consoleintr</a>
+uartintr() calls this for input character.
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">consoleintr</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">c</span>)
+{
+    <span style="color: #51afef;">switch</span>(c){
+    <span style="color: #51afef;">case</span> C(<span style="color: #98be65;">'P'</span>):  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Print process list. Ctrl-P</span>
+      procdump();
+      <span style="color: #51afef;">break</span>;
+    <span style="color: #51afef;">default</span>:
+      <span style="color: #51afef;">if</span>(c == <span style="color: #98be65;">'\n'</span> || c == C(<span style="color: #98be65;">'D'</span>) || cons.e-cons.r == INPUT_BUF_SIZE){
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">wake up consoleread() if a whole line (or end-of-file)</span>
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">has arrived. or the input buffer is full</span>
+        cons.w = cons.e;
+        wakeup(&amp;cons.r);
+      }
+}
+</pre>
+</div>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/c4de4b0285e1c8e5348bdd31f597fe958f37b912/kernel/uart.c#L176">uartintr</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">uartintr</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  ReadReg(ISR); <span style="color: #5B6268;">// </span><span style="color: #5B6268;">acknowledge the interrupt</span>
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">for input: read and process incoming characters.</span>
+  <span style="color: #51afef;">while</span>(<span style="color: #da8548; font-weight: bold;">1</span>){
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">c</span> = uartgetc();
+    <span style="color: #51afef;">if</span>(c == -<span style="color: #da8548; font-weight: bold;">1</span>)
+      <span style="color: #51afef;">break</span>;
+    consoleintr(c);
+  }
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">for output send buffered characters.</span>
+  acquire(&amp;uart_tx_lock);
+  uartstart();
+  release(&amp;uart_tx_lock);
+}
+</pre>
+</div>
+
+
+<p>
+*
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org0c989d9" class="outline-2">
+<h2 id="org0c989d9"><span class="section-number-2">3.</span> Code: Console Output</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-org9a8128b" class="outline-3">
+<h3 id="org9a8128b"><span class="section-number-3">3.1.</span> Console Output: write -&gt; sys<sub>write</sub> -&gt; filewrite -&gt; consolewrite -&gt; uartputc</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+A write system call on a file descriptor connected to the console eventually arrives at uartputc.
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/c4de4b0285e1c8e5348bdd31f597fe958f37b912/kernel/console.c#L59">consolewrite</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">consolewrite</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">user_src</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">src</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>)
+{
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>;
+
+  <span style="color: #51afef;">for</span>(i = <span style="color: #da8548; font-weight: bold;">0</span>; i &lt; n; i++){
+    <span style="color: #ECBE7B;">char</span> <span style="color: #dcaeea;">c</span>;
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">copy one byte from user virtual address space to kernel virtual address space</span>
+    <span style="color: #51afef;">if</span>(either_copyin(&amp;c, user_src, src+i, <span style="color: #da8548; font-weight: bold;">1</span>) == -<span style="color: #da8548; font-weight: bold;">1</span>)
+      <span style="color: #51afef;">break</span>;
+    uartputc(c);
+  }
+  <span style="color: #51afef;">return</span> i;
+}
+</pre>
+</div>
+
+<p>
+first byte is triggered by write -&gt; uartputc
+</p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/uart.c#L87">uartputc</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">add a character to the output buffer and tell the</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">UART to start sending if it isn't already.</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">blocks if the output buffer is full.</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">because it may block, it can't be called</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">from interrupts; it's only suitable for use</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">by write().</span>
+
+<span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">uartputc</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">c</span>)
+{
+  acquire(&amp;uart_tx_lock);
+
+  <span style="color: #51afef;">if</span>(panicked){
+    <span style="color: #51afef;">for</span>(;;)
+      ;
+  }
+  <span style="color: #51afef;">while</span>(uart_tx_w == uart_tx_r + UART_TX_BUF_SIZE){
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">buffer is full.</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">wait for uartstart() to open up space in the buffer.</span>
+    sleep(&amp;uart_tx_r, &amp;uart_tx_lock);
+  }
+  uart_tx_buf[uart_tx_w % UART_TX_BUF_SIZE] = c;
+  uart_tx_w += <span style="color: #da8548; font-weight: bold;">1</span>;
+  uartstart();
+  release(&amp;uart_tx_lock);
+}
+</pre>
+</div>
+
+<p>
+Each time the UART finishes sending a byte, it generates an interrupt. uartintr calls uartstart
+Thus if a process writes multiple bytes to the console, typically the first byte will
+be sent by uartputc’s call to uartstart, and the remaining buffered bytes will be sent by
+uartstart calls from uartintr as transmit complete interrupts arrive.
+</p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/uart.c#L134">uartstart</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">if the UART is idle, and a character is waiting</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">in the transmit buffer, send it.</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">caller must hold uart_tx_lock.</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">called from both the top- and bottom-half.</span>
+<span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">uartstart</span>()
+{
+  <span style="color: #51afef;">while</span>(<span style="color: #da8548; font-weight: bold;">1</span>){
+    <span style="color: #51afef;">if</span>(uart_tx_w == uart_tx_r){
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">transmit buffer is empty.</span>
+      <span style="color: #51afef;">return</span>;
+    }
+
+    <span style="color: #51afef;">if</span>((ReadReg(LSR) &amp; LSR_TX_IDLE) == <span style="color: #da8548; font-weight: bold;">0</span>){
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">the UART transmit holding register is full,</span>
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">so we cannot give it another byte.</span>
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">it will interrupt when it's ready for a new byte.</span>
+      <span style="color: #51afef;">return</span>;
+    }
+
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">c</span> = uart_tx_buf[uart_tx_r % UART_TX_BUF_SIZE];
+    uart_tx_r += <span style="color: #da8548; font-weight: bold;">1</span>;
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">maybe uartputc() is waiting for space in the buffer.</span>
+    wakeup(&amp;uart_tx_r);
+
+    WriteReg(THR, c);
+  }
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-orgba49451" class="outline-2">
+<h2 id="orgba49451"><span class="section-number-2">4.</span> Concurrency consider in driver</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Context: consoleread() and consoleintr() (UART interrupt handler)
+These two kernel functions interact via:
+</p>
+
+<p>
+A shared buffer: cons.buf[]
+</p>
+
+<p>
+Shared indexes: cons.r, cons.w, cons.e
+</p>
+
+<p>
+And shared synchronization: cons.lock
+</p>
+
+
+<p>
+We need to keep concurrency well when interacting with the above resources
+You may have noticed calls to acquire in consoleread and in consoleintr.
+These calls acquire a lock, which protects the console driver’s data structures from concurrent access.
+There are three concurrency dangers here:
+</p>
+<ol class="org-ol">
+<li>two processes on different CPUs might call consoleread at the same time;</li>
+<li>the hardware might ask a CPU to deliver a console (really UART) interrupt
+while that CPU is already executing inside consoleread;</li>
+<li>and the hardware might deliver a console interrupt on a different CPU
+while consoleread is executing. These dangers may result in race conditions or deadlocks.</li>
+</ol>
+
+<p>
+Chapter 6 explores these problems and how locks can address them.
+</p>
+
+<p>
+Another way in which concurrency requires care in drivers is that one process may be waiting
+for input from a device, but the interrupt signaling arrival of the input may arrive when a different
+process (or no process at all) is running.
+Thus interrupt handlers are not allowed to think about the process or code that they have interrupted.
+For example, an interrupt handler cannot safely call copyout with the current process’s page table.
+Interrupt handlers typically do relatively little work (e.g., just copy the input data to a buffer), and wake up top-half code to do the rest.
+</p>
+</div>
+<div id="outline-container-org9e37b07" class="outline-3">
+<h3 id="org9e37b07"><span class="section-number-3">4.1.</span> xv6 does not support multiplexing I/O</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+The console is used globally as one terminal.
+xv6 supports background process which may leads to shell process and background process read from the same console I/O.
+If this happens, Input/output may become interleaved, confusing, or broken.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org83a9aae" class="outline-2">
+<h2 id="org83a9aae"><span class="section-number-2">5.</span> Timer Interrupt</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Xv6 uses timer interrupts to maintain its clock and to enable it to switch among compute-bound processes;
+xv6 sets up the RISC-V timer interrupt to fire regularly (e.g., every 100 Hz).
+</p>
+
+<p>
+xv6 handles timer interrupts completely different from the <a href="4_traps_and_system_calls.html">trap</a> mechanism we discussed before.
+</p>
+
+<p>
+timer interrupt triggers yield which triggers user interrupt or kernel interrupt to give up CPU.
+</p>
+
+<p>
+Timer interrupt can happen in user mode or kernel mode. But no matter what they will trigger yield.
+And during yield (context switch) it is always in the kernel mode/context.
+</p>
+
+<p>
+The yield will trigger context switch to sheduler context, which involves store current context regsiters
+and load new context registers.
+</p>
+</div>
+<div id="outline-container-org05c0f5e" class="outline-3">
+<h3 id="org05c0f5e"><span class="section-number-3">5.1.</span> Why need to handle interrupt differently</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+RISC-V requires that timer interrupts be taken in machine mode, not supervisor mode.
+For other interrupts we take them under supervisor mode.
+</p>
+
+<p>
+RISCV machine mode executes without paging, and with a separate set of control registers, so it’s not
+practical to run ordinary xv6 kernel code in machine mode.
+</p>
+
+<p>
+As a result, xv6 handles timer interrupts completely separately from the trap mechanism laid out above.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Level</td>
+<td class="org-left">Name</td>
+<td class="org-left">Used For</td>
+</tr>
+
+<tr>
+<td class="org-left">------</td>
+<td class="org-left">-------------------</td>
+<td class="org-left">---------------------------------------------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left">M-mode</td>
+<td class="org-left"><b><b>Machine mode</b></b></td>
+<td class="org-left">Highest privilege, handles low-level traps and timer interrupts</td>
+</tr>
+
+<tr>
+<td class="org-left">S-mode</td>
+<td class="org-left"><b><b>Supervisor mode</b></b></td>
+<td class="org-left">Kernel code (e.g., xv6 kernel)</td>
+</tr>
+
+<tr>
+<td class="org-left">U-mode</td>
+<td class="org-left"><b><b>User mode</b></b></td>
+<td class="org-left">User applications</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="outline-container-org86ea7ca" class="outline-4">
+<h4 id="org86ea7ca"><span class="section-number-4">5.1.1.</span> Timer Interrupt Delegation</h4>
+<div class="outline-text-4" id="text-5-1-1">
+<p>
+xv6 &ldquo;gets away&rdquo; with handling timer interrupts in S-mode by delegating them via mideleg.
+It&rsquo;s a valid RISC-V feature.
+</p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/79b579a0928ae0e2a3fdb4fca3caed238d2312cb/kernel/start.c#L30">start.c</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">entry.S jumps here in machine mode on stack0.</span>
+<span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">start</span>()
+{
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">delegate all interrupts and exceptions to supervisor mode.</span>
+  w_medeleg(<span style="color: #da8548; font-weight: bold;">0xffff</span>);
+  w_mideleg(<span style="color: #da8548; font-weight: bold;">0xffff</span>);
+}
+</pre>
+</div>
+
+<p>
+devintr() identifies the cause as a timer interrupt and returns 2
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">devintr</span>()
+{
+  <span style="color: #51afef;">if</span>(){
+
+  } <span style="color: #51afef;">else</span> <span style="color: #51afef;">if</span>(scause == <span style="color: #da8548; font-weight: bold;">0x8000000000000005L</span>){
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">timer interrupt.</span>
+    clockintr();
+    <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">2</span>;
+  }
+}
+</pre>
+</div>
+
+
+<p>
+Question: RSIC-V supports delegating Timer Interrupt to Supervisor Mode, then why does it also supports delegate to Machine mode?
+</p>
+
+<p>
+It must support both embedded (no OS) and full OS environments. For some embeded systems, we don&rsquo;t even have OS, everything runs under machine mode.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org6ac633f" class="outline-3">
+<h3 id="org6ac633f"><span class="section-number-3">5.2.</span> Timer Interrupt in user mode</h3>
+<div class="outline-text-3" id="text-5-2">
+<p>
+When a timer interrupt occurs while in user mode, control is transferred to the trap handler.
+usertrap() in kernel/trap.c
+This causes the current process to yield the CPU, allowing the scheduler to pick another process.
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">//</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">handle an interrupt, exception, or system call from user space.</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">called from trampoline.S</span>
+<span style="color: #5B6268;">//</span>
+<span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">usertrap</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">give up the CPU if this is a timer interrupt.</span>
+  <span style="color: #51afef;">if</span>(which_dev == <span style="color: #da8548; font-weight: bold;">2</span>)
+    yield();
+
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgbe63019" class="outline-3">
+<h3 id="orgbe63019"><span class="section-number-3">5.3.</span> Timer Interrupt in kernel mode</h3>
+<div class="outline-text-3" id="text-5-3">
+<p>
+This is rare but necessary to handle preemption even during kernel code execution,
+such as when doing a long computation or stuck in a system call.
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">interrupts and exceptions from kernel code go here via kernelvec,</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">on whatever the current kernel stack is.</span>
+<span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">kerneltrap</span>()
+{
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">give up the CPU if this is a timer interrupt.</span>
+  <span style="color: #51afef;">if</span>(which_dev == <span style="color: #da8548; font-weight: bold;">2</span> &amp;&amp; myproc() != <span style="color: #da8548; font-weight: bold;">0</span>)
+    yield();
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org3a05cba" class="outline-3">
+<h3 id="org3a05cba"><span class="section-number-3">5.4.</span> yield mechanism</h3>
+<div class="outline-text-3" id="text-5-4">
+<p>
+Called when the process wants to voluntarily give up the CPU.
+</p>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/79b579a0928ae0e2a3fdb4fca3caed238d2312cb/kernel/proc.c#L514">yield</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">Give up the CPU for one scheduling round.</span>
+<span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">yield</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #51afef;">struct</span> <span style="color: #ECBE7B;">proc</span> *<span style="color: #dcaeea;">p</span> = myproc();
+  acquire(&amp;p-&gt;lock);
+  p-&gt;state = RUNNABLE;         <span style="color: #5B6268;">// </span><span style="color: #5B6268;">usually from running to runnable</span>
+  sched();                     <span style="color: #5B6268;">// </span><span style="color: #5B6268;">will switch to scheduler context</span>
+  release(&amp;p-&gt;lock);
+}
+</pre>
+</div>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/79b579a0928ae0e2a3fdb4fca3caed238d2312cb/kernel/proc.c#L493">sched</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">Switch to scheduler.  Must hold only p-&gt;lock</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">and have changed proc-&gt;state. Saves and restores</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">intena because intena is a property of this</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">kernel thread, not this CPU. It should</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">be proc-&gt;intena and proc-&gt;noff, but that would</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">break in the few places where a lock is held but</span>
+<span style="color: #5B6268;">// </span><span style="color: #5B6268;">there's no process.</span>
+<span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">sched</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">intena</span>;
+  <span style="color: #51afef;">struct</span> <span style="color: #ECBE7B;">proc</span> *<span style="color: #dcaeea;">p</span> = myproc();
+
+  <span style="color: #51afef;">if</span>(<span style="color: #51afef; font-weight: bold;">!</span>holding(&amp;p-&gt;lock))
+    panic(<span style="color: #98be65;">"sched p-&gt;lock"</span>);
+  <span style="color: #51afef;">if</span>(mycpu()-&gt;noff != <span style="color: #da8548; font-weight: bold;">1</span>)
+    panic(<span style="color: #98be65;">"sched locks"</span>);
+  <span style="color: #51afef;">if</span>(p-&gt;state == RUNNING)
+    panic(<span style="color: #98be65;">"sched RUNNING"</span>);
+  <span style="color: #51afef;">if</span>(intr_get())
+    panic(<span style="color: #98be65;">"sched interruptible"</span>);
+
+  intena = mycpu()-&gt;intena;
+  swtch(&amp;p-&gt;context, &amp;mycpu()-&gt;context); <span style="color: #5B6268;">// </span><span style="color: #5B6268;">switch from process context to cpu sheduler context</span>
+  mycpu()-&gt;intena = intena;
+}
+</pre>
+</div>
+
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/79b579a0928ae0e2a3fdb4fca3caed238d2312cb/kernel/proc.h#L2">context</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">Saved registers for kernel context switches.</span>
+<span style="color: #51afef;">struct</span> <span style="color: #ECBE7B;">context</span> {
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">ra</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">sp</span>;
+
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">callee-saved</span>
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s0</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s1</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s2</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s3</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s4</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s5</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s6</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s7</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s8</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s9</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s10</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">s11</span>;
+};
+</pre>
+</div>
+
+
+<p>
+Comparing with trap, swtch saves less registers:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Context Save</td>
+<td class="org-left">Who Saves It</td>
+<td class="org-left">When</td>
+<td class="org-left">What For</td>
+</tr>
+
+<tr>
+<td class="org-left">---------------</td>
+<td class="org-left">---------------------</td>
+<td class="org-left">---------------------------------</td>
+<td class="org-left">----------------------------------------------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left">`trap` frame</td>
+<td class="org-left">Hardware + `usertrap`</td>
+<td class="org-left">On trap/interrupt from user mode</td>
+<td class="org-left">Save full CPU state so user process can resume after kernel code</td>
+</tr>
+
+<tr>
+<td class="org-left">`swtch` context</td>
+<td class="org-left">`swtch()` (assembly)</td>
+<td class="org-left">During `sched()` / context switch</td>
+<td class="org-left">Save minimal state needed to resume kernel thread execution</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+Remember that context switches only happens in the kernel mode.
+</p>
+</div>
+</div>
+</div>

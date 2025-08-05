@@ -1,0 +1,445 @@
+---
+layout: default
+title: Page Table
+nav_exclude: true
+---
+<div id="outline-container-orgc2b5b5b" class="outline-2">
+<h2 id="orgc2b5b5b"><span class="section-number-2">1.</span> Intro</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+xv6 3 level page table and the walking process from VA to PA is showing below:
+<img src="address_translation.png" alt="address_translation.png" />
+</p>
+
+
+<p>
+Virtual adress (VA) to Physical address (PA) translation can happen both in hardware and software
+</p>
+</div>
+<div id="outline-container-org8eb372a" class="outline-3">
+<h3 id="org8eb372a"><span class="section-number-3">1.1.</span> hardware translation</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+In RISC-V, the hardware responsible for paging address translation is the Memory Management Unit (MMU), which includes:
+</p>
+<ol class="org-ol">
+<li>Page Table Walker (PTW)
+walks the page table in memory when a TLB miss occurs</li>
+<li>Translation Lookaside Buffer (TLB)
+A small, fast cache that stores recent virtual-to-physical address mappings.</li>
+<li>SATP Register
+for the MMU to locate the root page table.</li>
+</ol>
+
+<p>
+When is hardware
+User or kernel code accesses memory through a virtual address (load/store/fetch)
+The addresses in the user-space assembly code mostly uses the translation hardware like MMU to do VA to PA
+atomatically, without the help of software translation.
+</p>
+
+<p>
+User programs always use Virtual Addresses (VA).
+All translations (for loads, stores, jumps) are done automatically by hardware (MMU + TLB + PTW).
+The user code never needs to know about physical addresses.
+</p>
+</div>
+</div>
+<div id="outline-container-orgd9e4cac" class="outline-3">
+<h3 id="orgd9e4cac"><span class="section-number-3">1.2.</span> software translation</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Kernel address space is different from user address space
+</p>
+
+<p>
+In xv6 kernel address space is mapped directly to Physical Address space, the RAM.
+</p>
+
+<p>
+The kernel <a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/vm.c#L109">walkaddr</a> fucntion in vm.c also provide a software simulation to get PA from VA.
+In xv6 , Each process or even the kernel has a pagetable. The process in the kernel has its own page table.
+</p>
+
+<p>
+The kernel uses software translation for situations where it:
+    Needs to inspect or access user memory safely.
+    Needs to build or update page tables.
+    Needs to verify that a user pointer is valid and mapped.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgd3a401f" class="outline-2">
+<h2 id="orgd3a401f"><span class="section-number-2">2.</span> some calculation</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Xv6 runs on RSIC-V 39 bits (Sv-39), the bottom 39 bits of the 64 bits virtual address are used.
+Also givne that memo is byte addressable, so we can have 2 ^ 39 bytes = 512 MB virtual address space.
+</p>
+
+<p>
+In xv6-riscv (which uses the Sv39 virtual memory scheme), the physical address size is 56 bits,
+but xv6 typically uses only 32 or 36 bits of it depending on the hardware simulation.
+Note that physical address space incldues: RAM and IO
+The following disgram shows the kernel virtual address space and physical address space:
+<img src="kernel_va_and_physical_space.png" alt="kernel_va_and_physical_space.png" />
+</p>
+
+
+<p>
+One page is usually 4KB = 2 ^ 12 bytes, so there will be 2 ^ (39 - 12) = 2 ^ 27 pages.
+Each page needs one Page Table Entry. So we needs 2 ^ 27 PTEs
+The first 44 bits in PTE will be PPN (Physical Page Number), the last 12 bits will be offset to a byte in that page.
+Note that the physical address is 56 bits.
+The following shows how VA is translated into PA from PTE:
+<img src="va_to_pa_from_pte.png" alt="va_to_pa_from_pte.png" />
+</p>
+
+
+
+<p>
+We can either hold the 2 ^ 27 PTEs in one table, or multi-level page table.
+</p>
+</div>
+<div id="outline-container-orge575466" class="outline-3">
+<h3 id="orge575466"><span class="section-number-3">2.1.</span> One page table</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Even if the physical address us 56 bits, each PTE is 64bits = 2 ^ 3 bytes.
+So to hold 2 ^ 27 PTEs in one table , the table size has to be 2 ^ (27 + 3) = 2 ^ 30 bytes = 1 GB
+</p>
+</div>
+</div>
+<div id="outline-container-org066ec80" class="outline-3">
+<h3 id="org066ec80"><span class="section-number-3">2.2.</span> Multi level page table</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+xv6 uses 3 level page table: the 2 ^ 27 bits for PTE is split equally into 3 ports, each with 9 bits.
+As shown in the following:
+<img src="3_level_paging.png" alt="3_level_paging.png" />
+</p>
+
+<p>
+There will be:
+1 root level page table with 2 ^ 9 = 512 PTEs
+2 ^ 9 second level page tables, each with 2 ^ 9 PTEs
+2 ^ 18 third level page tables, each with 2 ^ 9 PTEs
+</p>
+
+<p>
+Total 1 + 2 ^ 9 + 2 ^ 18 page tables, each with 2 ^ 9 PTEs
+Each page table size will be 2 ^ 9 * 8 bytes = 2 ^ 12 bytes
+</p>
+
+<p>
+(1 + 2 ^ 9 + 2 ^ 18) * 2 * 12 ~&gt; 1 GB
+</p>
+</div>
+</div>
+<div id="outline-container-orgf2a811a" class="outline-3">
+<h3 id="orgf2a811a"><span class="section-number-3">2.3.</span> why mutil level page table</h3>
+<div class="outline-text-3" id="text-2-3">
+<ol class="org-ol">
+<li>One page table requires 1GB continuous to be allocated at once for each process</li>
+<li>Multi level keeps each page table as 4MB and can be allocated when needed discontiously</li>
+<li>For processes need small memo, just need one root, one second level and one leaf level page table</li>
+</ol>
+
+<p>
+Downside: MMU walks 3 times to the real PTE
+</p>
+
+<p>
+TLB is used to store those PTEs that are recently used.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgdcd6a4a" class="outline-2">
+<h2 id="orgdcd6a4a"><span class="section-number-2">3.</span> Kerbel Address Space</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+kernel address space is mapped Physical Address space directly. The following diagram shows the mapping:
+<img src="kernel_address_space.png" alt="kernel_address_space.png" />
+</p>
+
+<p>
+kernel maintains its own page tables
+</p>
+</div>
+</div>
+<div id="outline-container-orgabbb18d" class="outline-2">
+<h2 id="orgabbb18d"><span class="section-number-2">4.</span> User Address Space</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+The following shows the address space for user space process:
+<img src="user_space_page_table.png" alt="user_space_page_table.png" />
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nil">test segment: used to store code
+data segment: used to store intialuzed global variable / static variable
+There is also an rodata segment not showing in the above graph
+BSS: unitialized global / static variable
+heap: for dynamic allocated memo
+stack: in xv6 stage size 1 page by default
+</pre>
+</div>
+
+
+<p>
+Something to note from the layout of vx6 user address space:
+</p>
+<ol class="org-ol">
+<li>stack is fixed size, does not grow</li>
+<li>The heap (at the high position) starts just after the loaded program segments and grows upward.</li>
+<li>so looks like heap is the only one in user process that will ask kernel to dynamically allocate memo</li>
+</ol>
+
+<p>
+So the heap top is tracked using proc-&gt;sz (size of process memory).
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #51afef;">struct</span> <span style="color: #ECBE7B;">proc</span> {
+  ...
+  uint64 sz;  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Size of process memory (bytes)</span>
+};
+</pre>
+</div>
+<p>
+This sz value reflects the end of the heap. It is updated by functions like uvmalloc() and growproc()
+</p>
+
+
+<p>
+In modern OS, stack memory is pre-allocated, and the kernel only gets involved if the stack grows
+beyond its current allocation, which usually triggers a page fault.
+This is some kind of page fault driven memo allocation.
+</p>
+
+<p>
+Refer the following code section for how the heap memo allocation sbrk is implemented
+</p>
+</div>
+</div>
+<div id="outline-container-orgfebde06" class="outline-2">
+<h2 id="orgfebde06"><span class="section-number-2">5.</span> Code</h2>
+<div class="outline-text-2" id="text-5">
+</div>
+<div id="outline-container-org33a08ad" class="outline-3">
+<h3 id="org33a08ad"><span class="section-number-3">5.1.</span> basic</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+There are some basic funcitons when halding page table.
+Like walk through the page table to get the leaf PTE, extract the PPN from PTE,
+and combine leaf PPN and VA to get PA.
+</p>
+</div>
+<div id="outline-container-orgd96b95b" class="outline-4">
+<h4 id="orgd96b95b"><span class="section-number-4">5.1.1.</span> <a href="https://github.com/mit-pdos/xv6-riscv/blob/2a39c5af63906b3dbd0db58b9f6846ad70f4315d/kernel/riscv.h#L367">PTE2PA PA2PTE</a></h4>
+<div class="outline-text-4" id="text-5-1-1">
+<p>
+The following shows the layout of PTE and physical address layout for page that aligned well
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">| PPN | flag 10 bits |
+
+| PPN | offset 12 bits|
+</pre>
+</div>
+
+
+<p>
+That&rsquo;s why the following code shift 12 bits or 10 bits to get PA -&gt; PTE or PTE -&gt; PA
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">shift a physical address to the right place for a PTE.</span>
+<span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #c678dd;">PA2PTE</span>(<span style="color: #dcaeea;">pa</span>) ((((<span style="color: #ECBE7B;">uint64</span>)pa) &gt;&gt; <span style="color: #da8548; font-weight: bold;">12</span>) &lt;&lt; <span style="color: #da8548; font-weight: bold;">10</span>)
+<span style="color: #51afef; font-weight: bold;">#define</span> <span style="color: #c678dd;">PTE2PA</span>(<span style="color: #dcaeea;">pte</span>) (((pte) &gt;&gt; <span style="color: #da8548; font-weight: bold;">10</span>) &lt;&lt; <span style="color: #da8548; font-weight: bold;">12</span>)
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgf1e1abb" class="outline-4">
+<h4 id="orgf1e1abb"><span class="section-number-4">5.1.2.</span> <a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/vm.c#L86">walk</a></h4>
+<div class="outline-text-4" id="text-5-1-2">
+<p>
+Return the address of the PTE in page table pagetable
+that corresponds to virtual address va.
+</p>
+
+<p>
+Page tables may not be created ahead, Create any required page-table pages.
+If alloc!=0, create any required page-table pages.
+</p>
+
+<p>
+The following code implements the actions in the following diagram:
+<img src="page_table_walk.png" alt="page_table_walk.png" />
+</p>
+
+<p>
+The for iteration loop twice to get the address of leaf level page table.
+return uses the L0 index to get the leaf PTE address.
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">pte_t</span> *
+<span style="color: #c678dd;">walk</span>(<span style="color: #ECBE7B;">pagetable_t</span> <span style="color: #dcaeea;">pagetable</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">va</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">alloc</span>)
+{
+  <span style="color: #51afef;">if</span>(va &gt;= MAXVA)
+    panic(<span style="color: #98be65;">"walk"</span>);
+
+  <span style="color: #51afef;">for</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">level</span> = <span style="color: #da8548; font-weight: bold;">2</span>; level &gt; <span style="color: #da8548; font-weight: bold;">0</span>; level--) {
+    <span style="color: #ECBE7B;">pte_t</span> *<span style="color: #dcaeea;">pte</span> = &amp;pagetable[PX(level, va)];
+    <span style="color: #51afef;">if</span>(*pte &amp; PTE_V) {
+      pagetable = (<span style="color: #ECBE7B;">pagetable_t</span>)PTE2PA(*pte);
+    } <span style="color: #51afef;">else</span> {
+      <span style="color: #51afef;">if</span>(<span style="color: #51afef; font-weight: bold;">!</span>alloc || (pagetable = (<span style="color: #ECBE7B;">pde_t</span>*)kalloc()) == <span style="color: #da8548; font-weight: bold;">0</span>)
+        <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">0</span>;
+      memset(pagetable, <span style="color: #da8548; font-weight: bold;">0</span>, PGSIZE);
+      *pte = PA2PTE(pagetable) | PTE_V;
+    }
+  }
+  <span style="color: #51afef;">return</span> &amp;pagetable[PX(<span style="color: #da8548; font-weight: bold;">0</span>, va)];
+}
+</pre>
+</div>
+
+<p>
+In xv6 (and RISC-V in general), the PTE<sub>V</sub> bit (bit 0) in a page table entry (PTE)
+tells you whether the PTE is valid, i.e., whether it maps something — either:
+</p>
+<ol class="org-ol">
+<li>A leaf mapping (points to a physical page), or</li>
+<li>A pointer to the next level of the page table (for multi-level walks)</li>
+</ol>
+
+<p>
+Another to note is:
+xv6 does not provide a machanizm to mechanizm to delete page tables,
+when all the PTEs are invalid. Once a page table is created, it will remain there
+no matter what.
+But xv6 does provide a way to free page tables memo, when the process exit.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org28aea0a" class="outline-3">
+<h3 id="org28aea0a"><span class="section-number-3">5.2.</span> sbrk heap grow/shrink</h3>
+<div class="outline-text-3" id="text-5-2">
+</div>
+<div id="outline-container-org1a08487" class="outline-4">
+<h4 id="org1a08487"><span class="section-number-4">5.2.1.</span> <a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/vm.c#L233">uvmalloc</a></h4>
+<div class="outline-text-4" id="text-5-2-1">
+<p>
+Allocate PTEs and physical memory to grow process from oldsz to
+newsz, which need not be page aligned.  Returns new size or 0 on error.
+</p>
+
+<p>
+return the size of current virtual address space
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">uint64</span>
+<span style="color: #c678dd;">uvmalloc</span>(<span style="color: #ECBE7B;">pagetable_t</span> <span style="color: #dcaeea;">pagetable</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">oldsz</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">newsz</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">xperm</span>)
+{
+  <span style="color: #ECBE7B;">char</span> *<span style="color: #dcaeea;">mem</span>;
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">a</span>;
+
+  <span style="color: #51afef;">if</span>(newsz &lt; oldsz)
+    <span style="color: #51afef;">return</span> oldsz;
+
+  oldsz = PGROUNDUP(oldsz);
+  <span style="color: #51afef;">for</span>(a = oldsz; a &lt; newsz; a += PGSIZE){
+    mem = kalloc();
+    <span style="color: #51afef;">if</span>(mem == <span style="color: #da8548; font-weight: bold;">0</span>){
+      uvmdealloc(pagetable, a, oldsz);
+      <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">0</span>;
+    }
+    memset(mem, <span style="color: #da8548; font-weight: bold;">0</span>, PGSIZE);
+    <span style="color: #51afef;">if</span>(mappages(pagetable, a, PGSIZE, (<span style="color: #ECBE7B;">uint64</span>)mem, PTE_R|PTE_U|xperm) != <span style="color: #da8548; font-weight: bold;">0</span>){
+      kfree(mem);
+      uvmdealloc(pagetable, a, oldsz);
+      <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">0</span>;
+    }
+  }
+  <span style="color: #51afef;">return</span> newsz;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org433e5ea" class="outline-4">
+<h4 id="org433e5ea"><span class="section-number-4">5.2.2.</span> <a href="https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/vm.c#L263">uvmdealloc</a></h4>
+<div class="outline-text-4" id="text-5-2-2">
+<p>
+Deallocate user pages to bring the process size from oldsz to oldsz and newsz need not be page-aligned,
+nor does newsz eed to be less than oldsz.  oldsz can be larger than the actual
+process size.  Returns the new process size.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">uint64</span>
+<span style="color: #c678dd;">uvmdealloc</span>(<span style="color: #ECBE7B;">pagetable_t</span> <span style="color: #dcaeea;">pagetable</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">oldsz</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">newsz</span>)
+{
+  <span style="color: #51afef;">if</span>(newsz &gt;= oldsz)
+    <span style="color: #51afef;">return</span> oldsz;
+
+  <span style="color: #51afef;">if</span>(PGROUNDUP(newsz) &lt; PGROUNDUP(oldsz)){
+    <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">npages</span> = (PGROUNDUP(oldsz) - PGROUNDUP(newsz)) / PGSIZE;
+    uvmunmap(pagetable, PGROUNDUP(newsz), npages, <span style="color: #da8548; font-weight: bold;">1</span>);
+  }
+
+  <span style="color: #51afef;">return</span> newsz;
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgc1cb78c" class="outline-4">
+<h4 id="orgc1cb78c"><span class="section-number-4">5.2.3.</span> <a href="https://github.com/mit-pdos/xv6-riscv/blob/de247db5e6384b138f270e0a7c745989b5a9c23b/kernel/sysproc.c#L39">sys<sub>sbrk</sub></a></h4>
+<div class="outline-text-4" id="text-5-2-3">
+<p>
+sbrk uses uvmalloc and uvmdealloc to increase or decrease vm space
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">uint64</span>
+<span style="color: #c678dd;">sys_sbrk</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">addr</span>;
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>;
+
+  argint(<span style="color: #da8548; font-weight: bold;">0</span>, &amp;n);
+  addr = myproc()-&gt;sz;
+  <span style="color: #51afef;">if</span>(growproc(n) &lt; <span style="color: #da8548; font-weight: bold;">0</span>)
+    <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+  <span style="color: #51afef;">return</span> addr;
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">growproc</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>)
+{
+  <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">sz</span>;
+  <span style="color: #51afef;">struct</span> <span style="color: #ECBE7B;">proc</span> *<span style="color: #dcaeea;">p</span> = myproc();
+
+  sz = p-&gt;sz;
+  <span style="color: #51afef;">if</span>(n &gt; <span style="color: #da8548; font-weight: bold;">0</span>){
+    <span style="color: #51afef;">if</span>((sz = uvmalloc(p-&gt;pagetable, sz, sz + n, PTE_W)) == <span style="color: #da8548; font-weight: bold;">0</span>) {
+      <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+    }
+  } <span style="color: #51afef;">else</span> <span style="color: #51afef;">if</span>(n &lt; <span style="color: #da8548; font-weight: bold;">0</span>){
+    sz = uvmdealloc(p-&gt;pagetable, sz, sz + n);
+  }
+  p-&gt;sz = sz;
+  <span style="color: #51afef;">return</span> <span style="color: #da8548; font-weight: bold;">0</span>;
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>

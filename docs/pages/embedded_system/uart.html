@@ -1,0 +1,371 @@
+---
+layout: default
+title: Uart
+nav_exclude: true
+---
+<div id="outline-container-org99e4b21" class="outline-2">
+<h2 id="org99e4b21"><span class="section-number-2">1.</span> intro</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+A typical UART uses 2 main signal lanes (wires) to bridge two endpoints:
+    TX (Transmit)
+    RX (Receive)
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nil">Device A TX ───────────────► Device B RX
+Device A RX ◄────────────── Device B TX
+</pre>
+</div>
+
+<p>
+The receiver (RX) and transmitter (TX) are independent.
+You can read and write UART at the same time without conflict.
+Internally, UART has separate buffers/FIFOs for RX and TX.
+The buffer is FIFO based and in the UART module and seperate for TX and RX
+</p>
+
+
+<p>
+Some UART implementations use additional lanes for hardware flow control:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Signal</td>
+<td class="org-left">Name</td>
+<td class="org-left">Direction</td>
+<td class="org-left">Purpose</td>
+</tr>
+
+<tr>
+<td class="org-left">------</td>
+<td class="org-left">-------------------</td>
+<td class="org-left">----------------</td>
+<td class="org-left">--------------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left">RTS</td>
+<td class="org-left">Request To Send</td>
+<td class="org-left">Output from host</td>
+<td class="org-left">Used to signal readiness</td>
+</tr>
+
+<tr>
+<td class="org-left">CTS</td>
+<td class="org-left">Clear To Send</td>
+<td class="org-left">Input to host</td>
+<td class="org-left">Used to grant permission</td>
+</tr>
+
+<tr>
+<td class="org-left">DSR</td>
+<td class="org-left">Data Set Ready</td>
+<td class="org-left">Optional</td>
+<td class="org-left">Used in modem control</td>
+</tr>
+
+<tr>
+<td class="org-left">DTR</td>
+<td class="org-left">Data Terminal Ready</td>
+<td class="org-left">Optional</td>
+<td class="org-left">Legacy modem signals</td>
+</tr>
+
+<tr>
+<td class="org-left">RI</td>
+<td class="org-left">Ring Indicator</td>
+<td class="org-left">Optional</td>
+<td class="org-left">Indicates incoming call (modems)</td>
+</tr>
+</tbody>
+</table>
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Configuration</td>
+<td class="org-left">Lanes Used</td>
+<td class="org-left">Description</td>
+</tr>
+
+<tr>
+<td class="org-left">-------------------------</td>
+<td class="org-left">--------------------</td>
+<td class="org-left">-----------------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>Minimal UART</b></b></td>
+<td class="org-left">2 (TX, RX)</td>
+<td class="org-left">Used in xv6, embedded systems, etc.</td>
+</tr>
+
+<tr>
+<td class="org-left">UART + hardware flow ctrl</td>
+<td class="org-left">4 (TX, RX, RTS, CTS)</td>
+<td class="org-left">Adds robustness for fast links</td>
+</tr>
+
+<tr>
+<td class="org-left">RS-232 full modem</td>
+<td class="org-left">6–8+</td>
+<td class="org-left">Legacy setups, rarely needed today</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="outline-container-org43681ce" class="outline-2">
+<h2 id="org43681ce"><span class="section-number-2">2.</span> Uart in xv6</h2>
+<div class="outline-text-2" id="text-2">
+<div class="org-src-container">
+<pre class="src src-nil">  [CPU / SoC] ------------------&gt; [External Device]
+  [CPU / SoC] &lt;----------------- [External Device]
+                         ↑
+                      UART module
+                    Serial protocol
+                   (TX/RX over wires)
+                    with FIFO buffer
+
+</pre>
+</div>
+
+<p>
+The external device could be a host with a terminal emulator consists of:
+   A keyboard (for input)
+   A display (CRT or screen — for output)
+</p>
+
+<p>
+So the uart TX connects to the display, while the RX connects to the keyboard.
+</p>
+</div>
+</div>
+<div id="outline-container-orgd86c2dc" class="outline-2">
+<h2 id="orgd86c2dc"><span class="section-number-2">3.</span> control registers in uart</h2>
+<div class="outline-text-2" id="text-3">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Name</td>
+<td class="org-right">Offset</td>
+<td class="org-left">Access</td>
+<td class="org-left">Purpose / Description</td>
+<td class="org-left">Used in xv6?</td>
+</tr>
+
+<tr>
+<td class="org-left">-------</td>
+<td class="org-right">------</td>
+<td class="org-left">------</td>
+<td class="org-left">---------------------------------------------------------------</td>
+<td class="org-left">------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>RHR</b></b></td>
+<td class="org-right">0x00</td>
+<td class="org-left">Read</td>
+<td class="org-left"><b><b>Receiver Holding Register</b></b> — read incoming byte</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>THR</b></b></td>
+<td class="org-right">0x00</td>
+<td class="org-left">Write</td>
+<td class="org-left"><b><b>Transmitter Holding Register</b></b> — write byte to send</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>IER</b></b></td>
+<td class="org-right">0x01</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Interrupt Enable Register</b></b> — enables interrupt types</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>IIR</b></b></td>
+<td class="org-right">0x02</td>
+<td class="org-left">Read</td>
+<td class="org-left"><b><b>Interrupt Identification Register</b></b> — why interrupt fired</td>
+<td class="org-left">(Not used)</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>FCR</b></b></td>
+<td class="org-right">0x02</td>
+<td class="org-left">Write</td>
+<td class="org-left"><b><b>FIFO Control Register</b></b> — enables/clears FIFOs</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>LCR</b></b></td>
+<td class="org-right">0x03</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Line Control Register</b></b> — sets word length, stop bits, parity</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>MCR</b></b></td>
+<td class="org-right">0x04</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Modem Control Register</b></b> — controls OUT2, RTS, DTR</td>
+<td class="org-left">✅ Yes (for enabling IRQ)</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>LSR</b></b></td>
+<td class="org-right">0x05</td>
+<td class="org-left">Read</td>
+<td class="org-left"><b><b>Line Status Register</b></b> — RX ready, TX ready, errors</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>MSR</b></b></td>
+<td class="org-right">0x06</td>
+<td class="org-left">Read</td>
+<td class="org-left"><b><b>Modem Status Register</b></b> — modem control lines</td>
+<td class="org-left">❌ Not used</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>SCR</b></b></td>
+<td class="org-right">0x07</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Scratch Register</b></b> — test register (general-purpose)</td>
+<td class="org-left">❌ Not used</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>DLL</b></b></td>
+<td class="org-right">0x00</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Divisor Latch LSB</b></b> — set baud rate (if DLAB=1)</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+
+<tr>
+<td class="org-left"><b><b>DLM</b></b></td>
+<td class="org-right">0x01</td>
+<td class="org-left">R/W</td>
+<td class="org-left"><b><b>Divisor Latch MSB</b></b> — set baud rate (if DLAB=1)</td>
+<td class="org-left">✅ Yes</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="outline-container-orgf21dc95" class="outline-2">
+<h2 id="orgf21dc95"><span class="section-number-2">4.</span> UART Frame</h2>
+<div class="outline-text-2" id="text-4">
+<div class="org-src-container">
+<pre class="src src-nil">[ Start Bit ] [ Data Bits (5–8) ] [ Optional Parity ] [ Stop Bit(s) ]
+
+Start bit: Always 1 bit, value = 0
+Data bits (word length): Usually 5 to 8 bits
+Optional parity: For error detection
+Stop bit(s): Usually 1 or 2, value = 1
+</pre>
+</div>
+
+<p>
+Word length = number of data bits.
+The LCR (Line Control Register) is used to set word length, stop bits and parity
+</p>
+
+<p>
+LCR[1:0] bits 0 and 1 of the LCR (Line Control Register) set the word length:
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">LCR\[1:0]</td>
+<td class="org-left">Word Length (data bits)</td>
+</tr>
+
+<tr>
+<td class="org-left">---------</td>
+<td class="org-left">--------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left">`00`</td>
+<td class="org-left">5 bits</td>
+</tr>
+
+<tr>
+<td class="org-left">`01`</td>
+<td class="org-left">6 bits</td>
+</tr>
+
+<tr>
+<td class="org-left">`10`</td>
+<td class="org-left">7 bits</td>
+</tr>
+
+<tr>
+<td class="org-left">`11`</td>
+<td class="org-left"><b><b>8 bits</b></b> (standard)    ✅</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+One example is following:
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">*reg_lcr = 0x03;  // 0b00000011 → 8 data bits, 1 stop bit, no parity
+</pre>
+</div>
+</div>
+</div>

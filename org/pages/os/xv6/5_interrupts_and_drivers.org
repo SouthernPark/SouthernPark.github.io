@@ -42,10 +42,21 @@ kernel sends the chars one by one to the UART transmit register
 * Code: Console Input
 
 ** console.c and uart.c
-xv6 separates console.c and uart.c to abstract the device-specific UART implementation (uart.c)
-from the higher-level console I/O interface (console.c).
 
-1. uart.c → Low-level UART driver
+Top Half: uart.c are driver code directly interacting with the hardware
+
+Bottom Half: console.c is a higher-level abstraction built on top of the UART.
+
+The bottom half interacts with OS and can be blocked, while the TOP half interact with the hardware,
+should be non-blocking.
+
+*** uart.c (Top half)
+UART (Universal Asynchronous Receiver-Transmitter):
+    This is a hardware device (serial port) that sends/receives bytes serially.
+    xv6 has a UART driver in uart.c, which talks directly to the UART hardware using memory-mapped I/O or port-mapped I/O.
+    It has functions like uartinit(), uartgetc() (read a byte), uartputc() (write a byte), and uartintr() (interrupt handler).
+
+uart.c → Low-level UART driver
     Talks directly to the UART hardware
     Handles:
         UART register setup
@@ -54,7 +65,8 @@ from the higher-level console I/O interface (console.c).
     Device-specific — tied to the 16550 UART
     Think of uart.c as the device driver for a specific hardware peripheral.
 
-2. console.c → Higher-level console abstraction
+*** console.c (Bottom half)
+console.c → Higher-level console abstraction
 Implements the OS-facing "console device"
     User read() and write() go through here
 Uses uart.c as the backend
@@ -66,8 +78,18 @@ Handles:
 Also supports kernel printf() output
 
 
-uart.c contains the top half of the driver, and
-console.c contains the bottom half of the UART driver logic.
+*** Example: Flow of read
+You may wondering how is I/O blocked handled here.
+How does one process block there when read, and how does it resume
+when there is something ready to read.
+
+The following is the flow:
+1. A user space process calls read
+2. read calls the bottom half and will block there when route to consoleread
+3. Because the process is in kernel context, kernel stack and Program Counter will be saved
+4. Interrupt occurs, which will trigger uartintr() code routine in interrupt context
+5. Interrupt wakeup process and mark them as runnable
+6. Interrupt exit and sheduler runs the processes later
 
 ** top part and bottom part for console
 The console uses UART the following is Top half and bottom half involved in the console input process.
@@ -182,7 +204,7 @@ uartinit(void)
 }
 #+end_src
 
-** read -> sys_read -> fileread -> consoleread -> waiting
+** Console Input: read -> sys_read -> fileread -> consoleread -> waiting for interrupt
 The following code path is from system call read to read from console.
 The kernel process thread will enter into sleep if no input is given.
 This part of code belongs to the bottom half of driver.
@@ -359,14 +381,371 @@ consoleread(int user_dst, uint64 dst, int n)
 
     // now we have cons.r != cons.w, we read something from uart
 
+    // copy the input byte to the user-space buffer.
+    cbuf = c;
+    if(either_copyout(user_dst, dst, &cbuf, 1) == -1)
+      break;
+
     // the rest of the code is processing char by char
     // break if we hit EOF, \n, or read n chars.
   }
 
-
   release(&cons.lock);
-
-
 
 }
 #+end_src
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/console.c#L136][consoleintr]]
+uartintr() calls this for input character.
+#+begin_src c
+void
+consoleintr(int c)
+{
+    switch(c){
+    case C('P'):  // Print process list. Ctrl-P
+      procdump();
+      break;
+    default:
+      if(c == '\n' || c == C('D') || cons.e-cons.r == INPUT_BUF_SIZE){
+        // wake up consoleread() if a whole line (or end-of-file)
+        // has arrived. or the input buffer is full
+        cons.w = cons.e;
+        wakeup(&cons.r);
+      }
+}
+#+end_src
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/c4de4b0285e1c8e5348bdd31f597fe958f37b912/kernel/uart.c#L176][uartintr]]
+#+begin_src c
+void
+uartintr(void)
+{
+  ReadReg(ISR); // acknowledge the interrupt
+
+  // for input: read and process incoming characters.
+  while(1){
+    int c = uartgetc();
+    if(c == -1)
+      break;
+    consoleintr(c);
+  }
+
+  // for output send buffered characters.
+  acquire(&uart_tx_lock);
+  uartstart();
+  release(&uart_tx_lock);
+}
+#+end_src
+
+
+*
+* Code: Console Output
+** Console Output: write -> sys_write -> filewrite -> consolewrite -> uartputc
+A write system call on a file descriptor connected to the console eventually arrives at uartputc.
+[[https://github.com/mit-pdos/xv6-riscv/blob/c4de4b0285e1c8e5348bdd31f597fe958f37b912/kernel/console.c#L59][consolewrite]]
+#+begin_src c
+int
+consolewrite(int user_src, uint64 src, int n)
+{
+  int i;
+
+  for(i = 0; i < n; i++){
+    char c;
+    // copy one byte from user virtual address space to kernel virtual address space
+    if(either_copyin(&c, user_src, src+i, 1) == -1)
+      break;
+    uartputc(c);
+  }
+  return i;
+}
+#+end_src
+
+first byte is triggered by write -> uartputc
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/uart.c#L87][uartputc]]
+#+begin_src c
+// add a character to the output buffer and tell the
+// UART to start sending if it isn't already.
+// blocks if the output buffer is full.
+// because it may block, it can't be called
+// from interrupts; it's only suitable for use
+// by write().
+
+void
+uartputc(int c)
+{
+  acquire(&uart_tx_lock);
+
+  if(panicked){
+    for(;;)
+      ;
+  }
+  while(uart_tx_w == uart_tx_r + UART_TX_BUF_SIZE){
+    // buffer is full.
+    // wait for uartstart() to open up space in the buffer.
+    sleep(&uart_tx_r, &uart_tx_lock);
+  }
+  uart_tx_buf[uart_tx_w % UART_TX_BUF_SIZE] = c;
+  uart_tx_w += 1;
+  uartstart();
+  release(&uart_tx_lock);
+}
+#+end_src
+
+Each time the UART finishes sending a byte, it generates an interrupt. uartintr calls uartstart
+Thus if a process writes multiple bytes to the console, typically the first byte will
+be sent by uartputc’s call to uartstart, and the remaining buffered bytes will be sent by
+uartstart calls from uartintr as transmit complete interrupts arrive.
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/uart.c#L134][uartstart]]
+#+begin_src c
+// if the UART is idle, and a character is waiting
+// in the transmit buffer, send it.
+// caller must hold uart_tx_lock.
+// called from both the top- and bottom-half.
+void
+uartstart()
+{
+  while(1){
+    if(uart_tx_w == uart_tx_r){
+      // transmit buffer is empty.
+      return;
+    }
+
+    if((ReadReg(LSR) & LSR_TX_IDLE) == 0){
+      // the UART transmit holding register is full,
+      // so we cannot give it another byte.
+      // it will interrupt when it's ready for a new byte.
+      return;
+    }
+
+    int c = uart_tx_buf[uart_tx_r % UART_TX_BUF_SIZE];
+    uart_tx_r += 1;
+
+    // maybe uartputc() is waiting for space in the buffer.
+    wakeup(&uart_tx_r);
+
+    WriteReg(THR, c);
+  }
+}
+#+end_src
+
+#+begin_src
+
+#+end_src
+* Concurrency consider in driver
+
+Context: consoleread() and consoleintr() (UART interrupt handler)
+These two kernel functions interact via:
+
+    A shared buffer: cons.buf[]
+
+    Shared indexes: cons.r, cons.w, cons.e
+
+    And shared synchronization: cons.lock
+
+
+We need to keep concurrency well when interacting with the above resources
+You may have noticed calls to acquire in consoleread and in consoleintr.
+These calls acquire a lock, which protects the console driver’s data structures from concurrent access.
+There are three concurrency dangers here:
+    1. two processes on different CPUs might call consoleread at the same time;
+    2. the hardware might ask a CPU to deliver a console (really UART) interrupt
+       while that CPU is already executing inside consoleread;
+    3. and the hardware might deliver a console interrupt on a different CPU
+       while consoleread is executing. These dangers may result in race conditions or deadlocks.
+
+Chapter 6 explores these problems and how locks can address them.
+
+Another way in which concurrency requires care in drivers is that one process may be waiting
+for input from a device, but the interrupt signaling arrival of the input may arrive when a different
+process (or no process at all) is running.
+Thus interrupt handlers are not allowed to think about the process or code that they have interrupted.
+For example, an interrupt handler cannot safely call copyout with the current process’s page table.
+Interrupt handlers typically do relatively little work (e.g., just copy the input data to a buffer), and wake up top-half code to do the rest.
+
+** xv6 does not support multiplexing I/O
+The console is used globally as one terminal.
+xv6 supports background process which may leads to shell process and background process read from the same console I/O.
+If this happens, Input/output may become interleaved, confusing, or broken.
+
+* Timer Interrupt
+Xv6 uses timer interrupts to maintain its clock and to enable it to switch among compute-bound processes;
+xv6 sets up the RISC-V timer interrupt to fire regularly (e.g., every 100 Hz).
+
+xv6 handles timer interrupts completely different from the [[file:4_traps_and_system_calls.org][trap]] mechanism we discussed before.
+
+timer interrupt triggers yield which triggers user interrupt or kernel interrupt to give up CPU.
+
+Timer interrupt can happen in user mode or kernel mode. But no matter what they will trigger yield.
+And during yield (context switch) it is always in the kernel mode/context.
+
+The yield will trigger context switch to sheduler context, which involves store current context regsiters
+and load new context registers.
+
+** Why need to handle interrupt differently
+RISC-V requires that timer interrupts be taken in machine mode, not supervisor mode.
+For other interrupts we take them under supervisor mode.
+
+RISCV machine mode executes without paging, and with a separate set of control registers, so it’s not
+practical to run ordinary xv6 kernel code in machine mode.
+
+As a result, xv6 handles timer interrupts completely separately from the trap mechanism laid out above.
+
+| Level  | Name                | Used For                                                        |
+| ------ | ------------------- | --------------------------------------------------------------- |
+| M-mode | **Machine mode**    | Highest privilege, handles low-level traps and timer interrupts |
+| S-mode | **Supervisor mode** | Kernel code (e.g., xv6 kernel)                                  |
+| U-mode | **User mode**       | User applications                                               |
+
+
+*** Timer Interrupt Delegation
+xv6 "gets away" with handling timer interrupts in S-mode by delegating them via mideleg.
+It's a valid RISC-V feature.
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/79b579a0928ae0e2a3fdb4fca3caed238d2312cb/kernel/start.c#L30][start.c]]
+#+begin_src c
+// entry.S jumps here in machine mode on stack0.
+void
+start()
+{
+  // delegate all interrupts and exceptions to supervisor mode.
+  w_medeleg(0xffff);
+  w_mideleg(0xffff);
+}
+#+end_src
+
+devintr() identifies the cause as a timer interrupt and returns 2
+#+begin_src c
+int
+devintr()
+{
+  if(){
+
+  } else if(scause == 0x8000000000000005L){
+    // timer interrupt.
+    clockintr();
+    return 2;
+  }
+}
+#+end_src
+
+
+Question: RSIC-V supports delegating Timer Interrupt to Supervisor Mode, then why does it also supports delegate to Machine mode?
+
+It must support both embedded (no OS) and full OS environments. For some embeded systems, we don't even have OS, everything runs under machine mode.
+
+** Timer Interrupt in user mode
+When a timer interrupt occurs while in user mode, control is transferred to the trap handler.
+usertrap() in kernel/trap.c
+This causes the current process to yield the CPU, allowing the scheduler to pick another process.
+#+begin_src c
+//
+// handle an interrupt, exception, or system call from user space.
+// called from trampoline.S
+//
+void
+usertrap(void)
+{
+  // give up the CPU if this is a timer interrupt.
+  if(which_dev == 2)
+    yield();
+
+}
+#+end_src
+
+** Timer Interrupt in kernel mode
+This is rare but necessary to handle preemption even during kernel code execution,
+such as when doing a long computation or stuck in a system call.
+#+begin_src c
+// interrupts and exceptions from kernel code go here via kernelvec,
+// on whatever the current kernel stack is.
+void
+kerneltrap()
+{
+  // give up the CPU if this is a timer interrupt.
+  if(which_dev == 2 && myproc() != 0)
+    yield();
+}
+#+end_src
+
+** yield mechanism
+
+Called when the process wants to voluntarily give up the CPU.
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/79b579a0928ae0e2a3fdb4fca3caed238d2312cb/kernel/proc.c#L514][yield]]
+#+begin_src c
+// Give up the CPU for one scheduling round.
+void
+yield(void)
+{
+  struct proc *p = myproc();
+  acquire(&p->lock);
+  p->state = RUNNABLE;         // usually from running to runnable
+  sched();                     // will switch to scheduler context
+  release(&p->lock);
+}
+#+end_src
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/79b579a0928ae0e2a3fdb4fca3caed238d2312cb/kernel/proc.c#L493][sched]]
+#+begin_src c
+// Switch to scheduler.  Must hold only p->lock
+// and have changed proc->state. Saves and restores
+// intena because intena is a property of this
+// kernel thread, not this CPU. It should
+// be proc->intena and proc->noff, but that would
+// break in the few places where a lock is held but
+// there's no process.
+void
+sched(void)
+{
+  int intena;
+  struct proc *p = myproc();
+
+  if(!holding(&p->lock))
+    panic("sched p->lock");
+  if(mycpu()->noff != 1)
+    panic("sched locks");
+  if(p->state == RUNNING)
+    panic("sched RUNNING");
+  if(intr_get())
+    panic("sched interruptible");
+
+  intena = mycpu()->intena;
+  swtch(&p->context, &mycpu()->context); // switch from process context to cpu sheduler context
+  mycpu()->intena = intena;
+}
+#+end_src
+
+[[https://github.com/mit-pdos/xv6-riscv/blob/79b579a0928ae0e2a3fdb4fca3caed238d2312cb/kernel/proc.h#L2][context]]
+#+begin_src c
+// Saved registers for kernel context switches.
+struct context {
+  uint64 ra;
+  uint64 sp;
+
+  // callee-saved
+  uint64 s0;
+  uint64 s1;
+  uint64 s2;
+  uint64 s3;
+  uint64 s4;
+  uint64 s5;
+  uint64 s6;
+  uint64 s7;
+  uint64 s8;
+  uint64 s9;
+  uint64 s10;
+  uint64 s11;
+};
+#+end_src
+
+
+Comparing with trap, swtch saves less registers:
+| Context Save    | Who Saves It          | When                              | What For                                                         |
+| --------------- | --------------------- | --------------------------------- | ---------------------------------------------------------------- |
+| `trap` frame    | Hardware + `usertrap` | On trap/interrupt from user mode  | Save full CPU state so user process can resume after kernel code |
+| `swtch` context | `swtch()` (assembly)  | During `sched()` / context switch | Save minimal state needed to resume kernel thread execution      |
+
+
+Remember that context switches only happens in the kernel mode.

@@ -170,7 +170,10 @@ causes:
 ARP is needed when a Layer 3 (IP) packet needs to be sent over a Layer 2.
 The senario is given the dest IP on Layer 3 packet, how to fill the dest MAC address on Layer 2 packets.
 </p>
-
+</div>
+<div id="outline-container-orgd75754d" class="outline-4">
+<h4 id="orgd75754d"><span class="section-number-4">2.2.1.</span> when ARP is used</h4>
+<div class="outline-text-4" id="text-2-2-1">
 <p>
 There are 2 main use cases:
 </p>
@@ -190,6 +193,27 @@ ARP happends before IP packet is sent on the wire.
 <p>
 In the above two cases, if the ARP can not be resolved in host or layer 3 router / switch, it can not build the ethernet frame and the packet can not be sent out.
 </p>
+</div>
+</div>
+<div id="outline-container-org16dfa93" class="outline-4">
+<h4 id="org16dfa93"><span class="section-number-4">2.2.2.</span> how is ARP learned</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+When A wants to know the dest MAC associated with an IP (simply which device has the IP).
+A sends an ARP packet (A<sub>SRC</sub><sub>IP</sub> + A<sub>SRC</sub><sub>MAC</sub> + Target IP)
+Assume D has the target IP and the ARP goes throught A -&gt; B -&gt; C -&gt; D. (usually through broad cast)
+Then B, C, D will firstly learn the map (A<sub>SRC</sub><sub>IP</sub> : A<sub>SRC</sub><sub>MAC</sub>)
+</p>
+
+<p>
+D will reply with(D<sub>SRC</sub><sub>IP</sub>, D<sub>SRC</sub><sub>MAC</sub>, A<sub>SRC</sub><sub>IP</sub> (Target IP), A<sub>SRC</sub><sub>MAC</sub>(Target MAC)) which will be unicast to A
+A and the devices under the hood will learn the mapping (D<sub>SRC</sub><sub>IP</sub>, D<sub>SRC</sub><sub>MAC</sub>)
+</p>
+
+<p>
+in the ARP packet, there is a specific field called the Operation (Opcode) field, indicates whether the ARP packet is a request or a reply.
+</p>
+</div>
 </div>
 </div>
 </div>
