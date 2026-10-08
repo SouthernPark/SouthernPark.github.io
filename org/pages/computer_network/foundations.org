@@ -147,3 +147,105 @@ So this class A IP is divided into 2 ^ (24 - 8) = 2 ^ 16 subnets, with each subn
 
 In this way, one class A IP network ID can be divided into different subnets with smaller hosts. So that can be given to smaller companies.
 #+end_src
+
+* DNS
+** Domain name 解析流程
+#+begin_src
++----------------------------------+
+| Client (192.168.1.100)           |
+|                                  |
+| Application                      |
+|     |                            |
+|     | getaddrinfo()              |
+|     v                            |
+| Stub Resolver                    |
+|     |                            |
++-----|----------------------------+
+      |
+      | DNS Query: www.google.com
+      | Destination: 8.8.8.8:53
+      v
++----------------------------------+
+| DNS Server (8.8.8.8)             |
+|                                  |
+| Recursive Resolver               |
+|     |                            |
+|     | 1. Query Root DNS          |
+|     | 2. Query .com TLD DNS      |
+|     | 3. Query Authoritative DNS |
+|     | 4. Cache result            |
+|     |                            |
++-----|----------------------------+
+      |
+      | DNS Response: IP Address
+      v
+    Client
+#+end_src
+
+#+begin_src
+ Client              Recursive            Root DNS
+192.168.1.100         Resolver             Server
+                     8.8.8.8
+   |                     |                    |
+   | 1. DNS Query        |                    |
+   | www.example.com A?  |                    |
+   |-------------------->|                    |
+   |                     |                    |
+   |                     | 2. Query           |
+   |                     | www.example.com A? |
+   |                     |------------------->|
+   |                     |                    |
+   |                     | 3. Referral        |
+   |                     | .com TLD NS        |
+   |                     |<-------------------|
+   |                     |                    |
+   |                     |
+   |                     |          .com TLD DNS
+   |                     |               |
+   |                     | 4. Query      |
+   |                     | www.example.com A?
+   |                     |-------------->|
+   |                     |               |
+   |                     | 5. Referral   |
+   |                     | example.com NS|
+   |                     |<--------------|
+   |                     |
+   |                     |       Authoritative DNS
+   |                     |               |
+   |                     | 6. Query      |
+   |                     | www.example.com A?
+   |                     |-------------->|
+   |                     |               |
+   |                     | 7. Answer     |
+   |                     | A = <IP>      |
+   |                     |<--------------|
+   |                     |
+   |                     | 8. Cache result
+   |                     |
+   | 9. DNS Response     |
+   | A = <IP>            |
+   |<--------------------|
+   |                     |
+   v                     v
+ Client now knows the destination IP
+#+end_src
+** server client 是如何知道 DNS 地址的
+Client 通常通过 DHCP 获取 DNS Server 的 IP 地址，也可以通过手动配置获得。
+#+begin_src
+Client                          DHCP Server
+  |                                  |
+  | -------- DHCP Discover --------> |
+  | <-------- DHCP Offer ----------- |
+  | -------- DHCP Request ---------> |
+  | <-------- DHCP ACK ------------- |
+  |                                  |
+
+DHCP 信息	示例
+Client IP	192.168.1.100
+Subnet Mask	255.255.255.0
+Default Gateway	192.168.1.1
+DNS Server	8.8.8.8
+Domain Search List	example.com
+
+传统 Linux 系统通常通过 /etc/resolv.conf 查看 DNS 配置
+#+end_src

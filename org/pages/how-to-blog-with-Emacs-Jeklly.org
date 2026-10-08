@@ -185,6 +185,11 @@ SouthernPark.github.io/
 
 ))
 #+end_src
+
+#+begin_src
+M-x org-publish-project
+#+end_src
+
 * TODO Org File Format to Fit Jeklly
 Jekyll requires the YAML --- to be at the top of the generated HTML
 The current solution is diable the TOC exporting. Need to find a way to customize the location of TOC

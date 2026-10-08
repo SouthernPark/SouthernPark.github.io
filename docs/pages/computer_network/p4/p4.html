@@ -1,0 +1,178 @@
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org91755ae">1. 什么是 P4</a></li>
+<li><a href="#orgc0976ce">2. parser</a></li>
+<li><a href="#orgbe7dc19">3. table</a></li>
+<li><a href="#org958daa9">4. Control</a></li>
+<li><a href="#org1c99232">5. Architecture</a></li>
+<li><a href="#org9fdd9f1">6. Compiler</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org91755ae" class="outline-2">
+<h2 id="org91755ae"><span class="section-number-2">1.</span> 什么是 P4</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+P4 是一门描述数据平面&ldquo;包怎么被处理&rdquo;的语言，核心思想是把一个交换 pipeline 拆成三类东西：解析（parser）、控制流（control）、表（table），再由一个 architecture 把它们串起来。
+P4 describes how a pipeline handles the packets. The pipe line is divided into parser, control and table. Then use an architecture to builds them up
+</p>
+</div>
+</div>
+<div id="outline-container-orgc0976ce" class="outline-2">
+<h2 id="orgc0976ce"><span class="section-number-2">2.</span> parser</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Parser 是一个状态机。输入是原始比特流，每个 state 用 extract() 提取一个 header（如 ethernet、ipv4），再根据字段值 transition 到下一个 state，最后 accept 或 reject。输出是一组 header 结构体 hdr，以及每个 header 的 valid 位。它只做&ldquo;认包&rdquo;，不做任何决策。
+</p>
+</div>
+</div>
+<div id="outline-container-orgbe7dc19" class="outline-2">
+<h2 id="orgbe7dc19"><span class="section-number-2">3.</span> table</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+查找 + 动作，是决策的基本单元
+</p>
+
+<p>
+一张 table 定义三件事：
+</p>
+
+<p>
+key：用哪些字段匹配，以及匹配类型（exact / lpm / ternary），这直接对应到硬件里的 hash 表 / LPM / TCAM
+actions：匹配后可执行哪些动作（action 是一段修改 header 或 metadata 的小函数，比如 set<sub>nexthop</sub>、drop）
+default<sub>action</sub>：miss 时做什么
+</p>
+
+<p>
+关键点：P4 程序只定义表的结构，不定义表项内容。表项由控制平面（P4Runtime、或 SONiC 里对应的 SAI 层）在运行时下发。这就是 P4 把&ldquo;数据平面逻辑&rdquo;和&ldquo;控制平面策略&rdquo;分开的地方。
+</p>
+</div>
+</div>
+<div id="outline-container-org958daa9" class="outline-2">
+<h2 id="org958daa9"><span class="section-number-2">4.</span> Control</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+按顺序组织表的流程
+</p>
+
+<p>
+Control 块是命令式代码，里面用 apply 调用表，用 if 根据 header valid 位或上一张表的结果决定走哪条分支。例如：
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadata_t std) {
+    table ipv4_lpm {
+        key = { hdr.ipv4.dstAddr : lpm; }
+        actions = { ipv4_forward; drop; }
+        default_action = drop();
+    }
+    apply {
+        if (hdr.ipv4.isValid()) {
+            ipv4_lpm.apply();
+        }
+    }
+}
+</pre>
+</div>
+
+<p>
+Table 必须定义在某个 control 内部，由该 control 的 apply 块决定调用顺序。一张表的动作结果写进 metadata，后面的表可以拿它当 key，这就是硬件里&ldquo;多级 match-action pipeline&rdquo;的软件表达。
+</p>
+</div>
+</div>
+<div id="outline-container-org1c99232" class="outline-2">
+<h2 id="org1c99232"><span class="section-number-2">5.</span> Architecture</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+把这几块拼起来
+</p>
+
+<p>
+V1Model、PSA、TNA 这类 architecture 是目标平台给出的&ldquo;插槽模板&rdquo;，规定了有哪几个 parser / control 以及它们的先后顺序。最常见的 V1Model 顺序是：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nil">Parser → Ingress control → Traffic Manager（队列，不可编程） → Egress control → Deparser
+</pre>
+</div>
+
+<p>
+最后用一个 main 实例化：V1Switch(MyParser(), MyVerify(), MyIngress(), MyEgress(), MyCompute(), MyDeparser()) main;
+</p>
+
+<p>
+Deparser 是 parser 的逆操作：按顺序把 valid 的 header 重新 emit() 成字节流。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nil">                    V1Switch
+                       │
+       ┌───────────────┼────────────────┐
+       │               │                │
+       ▼               ▼                ▼
+  MyParser()       MyIngress()      MyEgress()
+       │               │
+       │               │
+extract headers    tables/actions
+       │               │
+       ▼               ▼
+ Ethernet          ipv4_lpm
+ IPv4                  │
+                       ▼
+                 ipv4_forward
+                       │
+                       ▼
+                  MyDeparser()
+                       │
+                       ▼
+                    packet
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org9fdd9f1" class="outline-2">
+<h2 id="org9fdd9f1"><span class="section-number-2">6.</span> Compiler</h2>
+<div class="outline-text-2" id="text-6">
+<div class="org-src-container">
+<pre class="src src-nil">你的 Tiger Compiler
+
+Tiger source
+    ↓
+Lexer / Parser
+    ↓
+AST
+    ↓
+Semantic Analysis
+    ↓
+IR
+    ↓
+Instruction Selection
+    ↓
+Register Allocation
+    ↓
+MIPS
+
+
+P4 Compiler（概念上）
+
+P4 source
+    ↓
+Parser / Front End
+    ↓
+AST / IR
+    ↓
+Semantic / type checking
+    ↓
+Intermediate Representation
+    ↓
+Target-specific lowering
+    ↓
+Hardware resources / tables / stages
+    ↓
+Silicon One target
+</pre>
+</div>
+</div>
+</div>

@@ -331,3 +331,121 @@ In this way, one class A IP network ID can be divided into different subnets wit
 </div>
 </div>
 </div>
+<div id="outline-container-org80ecf08" class="outline-2">
+<h2 id="org80ecf08"><span class="section-number-2">4.</span> DNS</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-orge9ca6ef" class="outline-3">
+<h3 id="orge9ca6ef"><span class="section-number-3">4.1.</span> Domain name 解析流程</h3>
+<div class="outline-text-3" id="text-4-1">
+<div class="org-src-container">
+<pre class="src src-nil">+----------------------------------+
+| Client (192.168.1.100)           |
+|                                  |
+| Application                      |
+|     |                            |
+|     | getaddrinfo()              |
+|     v                            |
+| Stub Resolver                    |
+|     |                            |
++-----|----------------------------+
+      |
+      | DNS Query: www.google.com
+      | Destination: 8.8.8.8:53
+      v
++----------------------------------+
+| DNS Server (8.8.8.8)             |
+|                                  |
+| Recursive Resolver               |
+|     |                            |
+|     | 1. Query Root DNS          |
+|     | 2. Query .com TLD DNS      |
+|     | 3. Query Authoritative DNS |
+|     | 4. Cache result            |
+|     |                            |
++-----|----------------------------+
+      |
+      | DNS Response: IP Address
+      v
+    Client
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil"> Client              Recursive            Root DNS
+192.168.1.100         Resolver             Server
+                     8.8.8.8
+   |                     |                    |
+   | 1. DNS Query        |                    |
+   | www.example.com A?  |                    |
+   |--------------------&gt;|                    |
+   |                     |                    |
+   |                     | 2. Query           |
+   |                     | www.example.com A? |
+   |                     |-------------------&gt;|
+   |                     |                    |
+   |                     | 3. Referral        |
+   |                     | .com TLD NS        |
+   |                     |&lt;-------------------|
+   |                     |                    |
+   |                     |
+   |                     |          .com TLD DNS
+   |                     |               |
+   |                     | 4. Query      |
+   |                     | www.example.com A?
+   |                     |--------------&gt;|
+   |                     |               |
+   |                     | 5. Referral   |
+   |                     | example.com NS|
+   |                     |&lt;--------------|
+   |                     |
+   |                     |       Authoritative DNS
+   |                     |               |
+   |                     | 6. Query      |
+   |                     | www.example.com A?
+   |                     |--------------&gt;|
+   |                     |               |
+   |                     | 7. Answer     |
+   |                     | A = &lt;IP&gt;      |
+   |                     |&lt;--------------|
+   |                     |
+   |                     | 8. Cache result
+   |                     |
+   | 9. DNS Response     |
+   | A = &lt;IP&gt;            |
+   |&lt;--------------------|
+   |                     |
+   v                     v
+ Client now knows the destination IP
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgeed734f" class="outline-3">
+<h3 id="orgeed734f"><span class="section-number-3">4.2.</span> server client 是如何知道 DNS 地址的</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+Client 通常通过 DHCP 获取 DNS Server 的 IP 地址，也可以通过手动配置获得。
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">Client                          DHCP Server
+  |                                  |
+  | -------- DHCP Discover --------&gt; |
+  | &lt;-------- DHCP Offer ----------- |
+  | -------- DHCP Request ---------&gt; |
+  | &lt;-------- DHCP ACK ------------- |
+  |                                  |
+
+DHCP 信息	示例
+Client IP	192.168.1.100
+Subnet Mask	255.255.255.0
+Default Gateway	192.168.1.1
+DNS Server	8.8.8.8
+Domain Search List	example.com
+
+传统 Linux 系统通常通过 /etc/resolv.conf 查看 DNS 配置
+</pre>
+</div>
+</div>
+</div>
+</div>

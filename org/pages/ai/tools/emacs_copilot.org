@@ -1,0 +1,28 @@
+#+title: Emacs Copilot
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Emacs Copilot
+nav_exclude: true
+---
+#+END_EXPORT
+
+* copilot el
+[[https://github.com/copilot-emacs/copilot.el][copilot.el]]
+
+
+** Node js >= 20.x
+** need to tell Emacs where Node is
+#+begin_src emacs-lisp :tangle yes
+;; node js location
+(when (eq system-type 'windows-nt)
+  (let ((node-path "D:\\program\\nodejs"))
+    (setenv "PATH" (concat node-path ";" (getenv "PATH")))
+    (add-to-list 'exec-path node-path)))
+
+#+end_src

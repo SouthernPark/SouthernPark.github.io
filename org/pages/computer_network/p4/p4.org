@@ -1,0 +1,121 @@
+#+title: P4
+
+* 什么是 P4
+P4 是一门描述数据平面"包怎么被处理"的语言，核心思想是把一个交换 pipeline 拆成三类东西：解析（parser）、控制流（control）、表（table），再由一个 architecture 把它们串起来。
+P4 describes how a pipeline handles the packets. The pipe line is divided into parser, control and table. Then use an architecture to builds them up
+
+
+
+* parser
+Parser 是一个状态机。输入是原始比特流，每个 state 用 extract() 提取一个 header（如 ethernet、ipv4），再根据字段值 transition 到下一个 state，最后 accept 或 reject。输出是一组 header 结构体 hdr，以及每个 header 的 valid 位。它只做"认包"，不做任何决策。
+
+* table
+查找 + 动作，是决策的基本单元
+
+一张 table 定义三件事：
+
+key：用哪些字段匹配，以及匹配类型（exact / lpm / ternary），这直接对应到硬件里的 hash 表 / LPM / TCAM
+actions：匹配后可执行哪些动作（action 是一段修改 header 或 metadata 的小函数，比如 set_nexthop、drop）
+default_action：miss 时做什么
+
+关键点：P4 程序只定义表的结构，不定义表项内容。表项由控制平面（P4Runtime、或 SONiC 里对应的 SAI 层）在运行时下发。这就是 P4 把"数据平面逻辑"和"控制平面策略"分开的地方。
+
+
+* Control
+按顺序组织表的流程
+
+Control 块是命令式代码，里面用 apply 调用表，用 if 根据 header valid 位或上一张表的结果决定走哪条分支。例如：
+#+begin_src
+control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadata_t std) {
+    table ipv4_lpm {
+        key = { hdr.ipv4.dstAddr : lpm; }
+        actions = { ipv4_forward; drop; }
+        default_action = drop();
+    }
+    apply {
+        if (hdr.ipv4.isValid()) {
+            ipv4_lpm.apply();
+        }
+    }
+}
+#+end_src
+
+Table 必须定义在某个 control 内部，由该 control 的 apply 块决定调用顺序。一张表的动作结果写进 metadata，后面的表可以拿它当 key，这就是硬件里"多级 match-action pipeline"的软件表达。
+
+* Architecture
+把这几块拼起来
+
+V1Model、PSA、TNA 这类 architecture 是目标平台给出的"插槽模板"，规定了有哪几个 parser / control 以及它们的先后顺序。最常见的 V1Model 顺序是：
+
+#+begin_src
+Parser → Ingress control → Traffic Manager（队列，不可编程） → Egress control → Deparser
+#+end_src
+
+最后用一个 main 实例化：V1Switch(MyParser(), MyVerify(), MyIngress(), MyEgress(), MyCompute(), MyDeparser()) main;
+
+Deparser 是 parser 的逆操作：按顺序把 valid 的 header 重新 emit() 成字节流。
+
+#+begin_src
+                    V1Switch
+                       │
+       ┌───────────────┼────────────────┐
+       │               │                │
+       ▼               ▼                ▼
+  MyParser()       MyIngress()      MyEgress()
+       │               │
+       │               │
+extract headers    tables/actions
+       │               │
+       ▼               ▼
+ Ethernet          ipv4_lpm
+ IPv4                  │
+                       ▼
+                 ipv4_forward
+                       │
+                       ▼
+                  MyDeparser()
+                       │
+                       ▼
+                    packet
+
+#+end_src
+
+* Compiler
+#+begin_src
+你的 Tiger Compiler
+
+Tiger source
+    ↓
+Lexer / Parser
+    ↓
+AST
+    ↓
+Semantic Analysis
+    ↓
+IR
+    ↓
+Instruction Selection
+    ↓
+Register Allocation
+    ↓
+MIPS
+
+
+P4 Compiler（概念上）
+
+P4 source
+    ↓
+Parser / Front End
+    ↓
+AST / IR
+    ↓
+Semantic / type checking
+    ↓
+Intermediate Representation
+    ↓
+Target-specific lowering
+    ↓
+Hardware resources / tables / stages
+    ↓
+Silicon One target
+#+end_src

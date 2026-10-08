@@ -127,6 +127,8 @@ nav_exclude: true
 * string
 ** [[file:string/trie.org][Trie]]
 
+* HashMap
+
 * Computer Network
 | Question                                | Time              |
 |-----------------------------------------+-------------------|
@@ -142,3 +144,7 @@ nav_exclude: true
 | [[https://leetcode.com/problems/best-time-to-buy-and-sell-stock/description/?envType=company&envId=google&favoriteSlug=google-thirty-days][121. Best Time to Buy and Sell Stock]]    | <2025-06-13 周五> |                    |
 | [[https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/description/][122. Best Time to Buy and Sell Stock II]] | <2025-06-14 周六> | [[file:dp/state_machine_dp.org][State Machine + DP]] |
 | [[https://leetcode.com/problems/maximize-subarray-gcd-score/description/][3574. Maximize Subarray GCD Score]]       | <2025-06-15 周日> |                    |
+| [[https://leetcode.com/problems/two-sum/submissions/1890656119/?envType=company&envId=google&favoriteSlug=google-thirty-days][1. Two Sum]]                              | <2026-01-19 周一> | HashMap            |
+| [[https://leetcode.com/problems/binary-search/description/][704. Binary Search]]                      | <2026-01-20 周二> | binary search      |
+| [[https://leetcode.com/problems/search-in-rotated-sorted-array/description/?envType=problem-list-v2&envId=binary-search][33. Search in Rotated Sorted Array]]      | <2026-01-20 周二> | binary search      |
+|                                         |                   |                    |

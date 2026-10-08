@@ -1,0 +1,22 @@
+#+title: Emacs + Windows Linux Subsystem
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Emacs + Windows Linux Subsystem
+nav_exclude: true
+---
+#+END_EXPORT
+
+* requirements
+Emacs >= 29.1
+
+* intro
+You can open (C-x C-f) files in Wls system directly with the following path：
+#+begin_src
+//wsl$$/Ubuntu-24.04
+#+end_src

@@ -1,5 +1,19 @@
 #+title: Interrupts And Drivers
 
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Interrupts And Drivers
+nav_exclude: true
+---
+#+END_EXPORT
+
+
 * Intro
 A driver is the code in an operating system that manages a particular device:
 it configures the device hardware, tells the device to perform operations,
@@ -337,21 +351,24 @@ struct {
   uint e;  // Edit index
 } cons;
 
-cons.r – Read Index
-
-    Points to the next character to be read by a process (e.g., the shell or read() syscall).
-
-    Advanced by consoleread() after it consumes a character.
-
-    Sleeps if cons.r == cons.w (i.e., nothing to read).
-
-cons.w – Write Index
-
-    Points to the next position where a new character will be written.
-
-    Advanced by consoleintr() when a character is received (typically from UART via interrupt).
-
 #+end_src
+
+| Index | Meaning                         | Who changes it                                   |
+| ----- | ------------------------------- | ------------------------------------------------ |
+| `r`   | Next unread character in buffer | `consoleread()` after consuming                  |
+| `w`   | End of **committed** input      | `consoleintr()` when a full line or EOF is ready |
+| `e`   | End of **typed so far** input   | `consoleintr()` on every character typed         |
+
+🔍 Why this separation matters
+
+This allows:
+
+    Line editing: Backspace can do cons.e-- to erase a char that hasn’t been committed yet.
+
+    Canonical input mode: Only complete lines (or EOF) are passed to the reading process.
+
+    Echoed chars don’t automatically become visible to readers.
+
 
 [[https://github.com/mit-pdos/xv6-riscv/blob/c4de4b0285e1c8e5348bdd31f597fe958f37b912/kernel/console.c#L80][consoleread]]
 #+begin_src c
@@ -437,8 +454,6 @@ uartintr(void)
 }
 #+end_src
 
-
-*
 * Code: Console Output
 ** Console Output: write -> sys_write -> filewrite -> consolewrite -> uartputc
 A write system call on a file descriptor connected to the console eventually arrives at uartputc.
@@ -749,3 +764,5 @@ Comparing with trap, swtch saves less registers:
 
 
 Remember that context switches only happens in the kernel mode.
+
+* [[file:lab_driver.org][Lab Driver]]

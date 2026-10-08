@@ -29,7 +29,7 @@ nav_exclude: true
 ** [[file:pages/computer_network/foundations.org][Foundations]]
 ** [[file:pages/computer_network/questions.org][八股]]
 ** [[file:~/org_private_repo/chips/chips.org][Chips]]
-
+** [[file:pages/computer_network/p4/p4.org][P4]]
 * [[file:pages/compiler/compiler.org][Compiler]]
 
 * Programming Language
@@ -40,4 +40,9 @@ nav_exclude: true
 * TODO [[file:~/org_private_repo/applications.org][Application]]
 * other
 ** [[file:pages/how-to-blog-with-Emacs-Jeklly.org][Blogs with Emacs org mode, Jeklly and Github Pages]]
+** [[file:pages/other/emacs_wsl.org][Emacs + Windows Linux Subsystem]]
+* AI
+** tools
+*** [[file:pages/ai/tools/emacs_chatgpt.org][Emacs + ChatGPT]]
+*** [[file:pages/ai/tools/emacs_copilot.org][Emacs + Copilot]]
 * [[file:pages/mock/mock.org][mock]]

@@ -1,0 +1,286 @@
+---
+layout: default
+title: Lab Driver
+nav_exclude: true
+---
+<div id="outline-container-orgb989226" class="outline-2">
+<h2 id="orgb989226"><span class="section-number-2">1.</span> Modify Uart so that do not need interrupt</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Use poll, the CPU will periordically check the UART registers.
+</p>
+
+<p>
+But we need to disable the interrupt first:
+</p>
+</div>
+<div id="outline-container-org69abfbd" class="outline-3">
+<h3 id="org69abfbd"><span class="section-number-3">1.1.</span> disable uart interrupt</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/2e5f272f8208fc11c26ea999ba706fcd6e86f51d/kernel/uart.c#L54">uartinit</a> has the code to enable and disable interrupts.
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">uartinit</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Don't do this anymore:</span>
+  <span style="color: #5B6268;">//</span><span style="color: #5B6268;">WriteReg(IER, IER_TX_ENABLE | IER_RX_ENABLE);</span>
+}
+</pre>
+</div>
+
+<p>
+Also would be better to remove the interrupt handler for uart.
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/2e5f272f8208fc11c26ea999ba706fcd6e86f51d/kernel/uart.c#L181">uartintr</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">void</span>
+<span style="color: #c678dd;">uartintr</span>(<span style="color: #ECBE7B;">void</span>)
+{
+  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">comment these code</span>
+}
+</pre>
+</div>
+
+
+<p>
+Also we could comment the following trap and report panic if uart interrupt is still there
+<a href="https://github.com/mit-pdos/xv6-riscv/blob/2e5f272f8208fc11c26ea999ba706fcd6e86f51d/kernel/trap.c#L197">devintr</a>
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">devintr</span>()
+{
+  <span style="color: #51afef;">if</span>(irq == UART0_IRQ){
+    panic(<span style="color: #98be65;">"Uart interrupt should be disabled already"</span>);
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">comment code</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">uartintr();</span>
+  }
+}
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org082b4f5" class="outline-3">
+<h3 id="org082b4f5"><span class="section-number-3">1.2.</span> polling</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Polling should happens on the bottom half because it may cause blocking
+</p>
+
+<p>
+So we for pulling we need to modify console part.
+</p>
+</div>
+<div id="outline-container-org43b2cf7" class="outline-4">
+<h4 id="org43b2cf7"><span class="section-number-4">1.2.1.</span> consoleread</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<p>
+With interrupt we have: uartintr (read one byte) -&gt; consoleintr (triger console read when \n is hit) -&gt; consoleread
+</p>
+
+<p>
+But now we do not have interrupt, the logs chanegs to
+consoleread continuously reading char directly from uart and yield while spin on uart.
+ xv6 already has uartgetc() that returns -1 if no byte is available.
+</p>
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #5B6268;">// </span><span style="color: #5B6268;">kernel/console.c</span>
+<span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">consoleread</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">user_dst</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">dst</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>)
+{
+  <span style="color: #ECBE7B;">uint</span> <span style="color: #dcaeea;">target</span> = n;
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">c</span>;
+  <span style="color: #ECBE7B;">char</span> <span style="color: #dcaeea;">cbuf</span>;
+
+  acquire(&amp;cons.lock);
+  <span style="color: #51afef;">while</span> (n &gt; <span style="color: #da8548; font-weight: bold;">0</span>) {
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">If buffer empty, drop the lock and poll UART for more bytes.</span>
+    <span style="color: #51afef;">while</span> (cons.r == cons.w) {
+      <span style="color: #51afef;">if</span> (killed(myproc())) {
+        release(&amp;cons.lock);
+        <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+      }
+
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Release lock before touching UART or calling consoleintr().</span>
+      release(&amp;cons.lock);
+
+      <span style="color: #51afef;">while</span> ((c = uartgetc()) != -<span style="color: #da8548; font-weight: bold;">1</span>) {
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Reuse existing input processing path.</span>
+
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">------------ UNCHANGED: consoleintr(c) -------------</span>
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Keep your existing consoleintr(c) exactly as in xv6.</span>
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">It implements ^U, backspace, ^P, ^D, normal chars, echoing, etc.</span>
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">It acquires &amp;cons.lock internally and appends to cons.buf.</span>
+        <span style="color: #5B6268;">//</span>
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">void consoleintr(int c) { ... }  // same as stock</span>
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">-----------------------------------------------------</span>
+
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Small helper to harvest all currently-available UART bytes</span>
+        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">and feed them through the standard console line discipline.</span>
+        consoleintr(c);
+      }
+
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Optional: be a little nice to the scheduler to avoid</span>
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">a hot spin if there's truly no input.</span>
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">You can use either a tiny pause or yield():</span>
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">for (volatile int i = 0; i &lt; 1000; i++) ;</span>
+      yield();
+
+      acquire(&amp;cons.lock);
+      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Loop back and check cons.r vs cons.w again.</span>
+    }
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">There is at least one byte available.</span>
+    c = cons.buf[cons.r++ % INPUT_BUF_SIZE];
+
+    <span style="color: #51afef;">if</span> (c == C(<span style="color: #98be65;">'D'</span>)) { <span style="color: #5B6268;">// </span><span style="color: #5B6268;">EOF</span>
+      <span style="color: #51afef;">if</span> (n &lt; target) {
+        cons.r--; <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Leave ^D in the buffer for next time if we've read some bytes.</span>
+      }
+      <span style="color: #51afef;">break</span>;
+    }
+
+    cbuf = c;
+    <span style="color: #51afef;">if</span> (either_copyout(user_dst, dst, &amp;cbuf, <span style="color: #da8548; font-weight: bold;">1</span>) == -<span style="color: #da8548; font-weight: bold;">1</span>)
+      <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+
+    dst++;
+    n--;
+    <span style="color: #51afef;">if</span> (c == <span style="color: #98be65;">'\n'</span>)
+      <span style="color: #51afef;">break</span>;
+  }
+  release(&amp;cons.lock);
+  <span style="color: #51afef;">return</span> target - n;
+}
+
+<span style="color: #ECBE7B;">int</span>
+<span style="color: #c678dd;">consolewrite</span>(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">user_src</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">src</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>)
+{
+  <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">i</span>;
+  <span style="color: #ECBE7B;">char</span> <span style="color: #dcaeea;">c</span>;
+
+
+  <span style="color: #51afef;">for</span> (i = <span style="color: #da8548; font-weight: bold;">0</span>; i &lt; n; i++) {
+    <span style="color: #51afef;">if</span> (either_copyin(&amp;c, user_src, src + i, <span style="color: #da8548; font-weight: bold;">1</span>) == -<span style="color: #da8548; font-weight: bold;">1</span>)
+      <span style="color: #51afef;">break</span>;
+
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">uartputc(c);</span>
+    uartputc_sync(c);
+  }
+
+  <span style="color: #51afef;">return</span> i;
+}
+
+</pre>
+</div>
+
+
+<p>
+The consolewrite uses uartputc<sub>sync</sub> which will busy spin on uart, but it&rsquo;s ok
+writes are short — mostly interactive output — so the wait is tiny.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org26bccbc" class="outline-2">
+<h2 id="org26bccbc"><span class="section-number-2">2.</span> diff</h2>
+<div class="outline-text-2" id="text-2">
+<div class="org-src-container">
+<pre class="src src-c">diff --git a/driver_uart_poll/kernel/console.c b/driver_uart_poll/kernel/console.c
+index 05dc526..<span style="color: #da8548; font-weight: bold;">9213891</span> <span style="color: #da8548; font-weight: bold;">100644</span>
+--- a/driver_uart_poll/kernel/console.c
++++ b/driver_uart_poll/kernel/console.c
+@@ -<span style="color: #da8548; font-weight: bold;">64</span>,<span style="color: #da8548; font-weight: bold;">7</span> +<span style="color: #da8548; font-weight: bold;">64</span>,<span style="color: #da8548; font-weight: bold;">8</span> @@ consolewrite(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">user_src</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">src</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>)
+     <span style="color: #ECBE7B;">char</span> <span style="color: #dcaeea;">c</span>;
+     <span style="color: #51afef;">if</span>(either_copyin(&amp;c, user_src, src+i, <span style="color: #da8548; font-weight: bold;">1</span>) == -<span style="color: #da8548; font-weight: bold;">1</span>)
+       <span style="color: #51afef;">break</span>;
+-    uartputc(c);
++    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">uartputc(c);</span>
++    uartputc_sync(c);
+   }
+
+   <span style="color: #51afef;">return</span> i;
+@@ -<span style="color: #da8548; font-weight: bold;">93</span>,<span style="color: #da8548; font-weight: bold;">7</span> +<span style="color: #da8548; font-weight: bold;">94</span>,<span style="color: #da8548; font-weight: bold;">21</span> @@ consoleread(<span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">user_dst</span>, <span style="color: #ECBE7B;">uint64</span> <span style="color: #dcaeea;">dst</span>, <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">n</span>)
+         release(&amp;cons.lock);
+         <span style="color: #51afef;">return</span> -<span style="color: #da8548; font-weight: bold;">1</span>;
+       }
+-      sleep(&amp;cons.r, &amp;cons.lock);
++      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">sleep(&amp;cons.r, &amp;cons.lock);</span>
++
++      release(&amp;cons.lock); <span style="color: #5B6268;">// </span><span style="color: #5B6268;">need to release lock before calling consoleintr</span>
++      <span style="color: #51afef;">while</span> ((c = uartgetc()) != -<span style="color: #da8548; font-weight: bold;">1</span>) {
++        <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Reuse existing input processing path.</span>
++        consoleintr(c);
++      }
++
++      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">Optional: be a little nice to the scheduler to avoid</span>
++      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">a hot spin if there's truly no input.</span>
++      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">You can use either a tiny pause or yield():</span>
++      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">for (volatile int i = 0; i &lt; 1000; i++) ;</span>
++      yield();
++
++      acquire(&amp;cons.lock);
+     }
+
+     c = cons.buf[cons.r++ % INPUT_BUF_SIZE];
+diff --git a/driver_uart_poll/kernel/trap.c b/driver_uart_poll/kernel/trap.c
+index d454a7d..0e7943e <span style="color: #da8548; font-weight: bold;">100644</span>
+--- a/driver_uart_poll/kernel/trap.c
++++ b/driver_uart_poll/kernel/trap.c
+@@ -<span style="color: #da8548; font-weight: bold;">193</span>,<span style="color: #da8548; font-weight: bold;">7</span> +<span style="color: #da8548; font-weight: bold;">193</span>,<span style="color: #da8548; font-weight: bold;">8</span> @@ devintr()
+     <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">irq</span> = plic_claim();
+
+     <span style="color: #51afef;">if</span>(irq == UART0_IRQ){
+-      uartintr();
++      panic(<span style="color: #98be65;">"Uart interrupt should be disabled already"</span>);
++      <span style="color: #5B6268;">// </span><span style="color: #5B6268;">uartintr();</span>
+     } <span style="color: #51afef;">else</span> <span style="color: #51afef;">if</span>(irq == VIRTIO0_IRQ){
+       virtio_disk_intr();
+     } <span style="color: #51afef;">else</span> <span style="color: #51afef;">if</span>(irq){
+diff --git a/driver_uart_poll/kernel/uart.c b/driver_uart_poll/kernel/uart.c
+index 83846ad..d4c94ad <span style="color: #da8548; font-weight: bold;">100644</span>
+--- a/driver_uart_poll/kernel/uart.c
++++ b/driver_uart_poll/kernel/uart.c
+@@ -<span style="color: #da8548; font-weight: bold;">72</span>,<span style="color: #da8548; font-weight: bold;">7</span> +<span style="color: #da8548; font-weight: bold;">72</span>,<span style="color: #da8548; font-weight: bold;">7</span> @@ uartinit(<span style="color: #ECBE7B;">void</span>)
+   WriteReg(FCR, FCR_FIFO_ENABLE | FCR_FIFO_CLEAR);
+
+   <span style="color: #5B6268;">// </span><span style="color: #5B6268;">enable transmit and receive interrupts.</span>
+-  WriteReg(IER, IER_TX_ENABLE | IER_RX_ENABLE);
++  <span style="color: #5B6268;">// </span><span style="color: #5B6268;">WriteReg(IER, IER_TX_ENABLE | IER_RX_ENABLE);</span>
+
+   initlock(&amp;uart_tx_lock, <span style="color: #98be65;">"uart"</span>);
+ }
+@@ -<span style="color: #da8548; font-weight: bold;">176</span>,<span style="color: #da8548; font-weight: bold;">16</span> +<span style="color: #da8548; font-weight: bold;">176</span>,<span style="color: #da8548; font-weight: bold;">17</span> @@ uartgetc(<span style="color: #ECBE7B;">void</span>)
+ <span style="color: #ECBE7B;">void</span>
+ <span style="color: #c678dd;">uartintr</span>(<span style="color: #ECBE7B;">void</span>)
+ {
++
+   <span style="color: #5B6268;">// </span><span style="color: #5B6268;">read and process incoming characters.</span>
+-  <span style="color: #51afef;">while</span>(<span style="color: #da8548; font-weight: bold;">1</span>){
+-    <span style="color: #ECBE7B;">int</span> c = uartgetc();
+-    <span style="color: #51afef;">if</span>(c == -<span style="color: #da8548; font-weight: bold;">1</span>)
+-      <span style="color: #51afef;">break</span>;
+-    consoleintr(c);
+-  }
++  <span style="color: #5B6268;">/* </span><span style="color: #5B6268;">while(1){</span><span style="color: #5B6268;"> */</span>
++  <span style="color: #5B6268;">/*   </span><span style="color: #5B6268;">int c = uartgetc();</span><span style="color: #5B6268;"> */</span>
++  <span style="color: #5B6268;">/*   </span><span style="color: #5B6268;">if(c == -1)</span><span style="color: #5B6268;"> */</span>
++  <span style="color: #5B6268;">/*     </span><span style="color: #5B6268;">break;</span><span style="color: #5B6268;"> */</span>
++  <span style="color: #5B6268;">/*   </span><span style="color: #5B6268;">consoleintr(c);</span><span style="color: #5B6268;"> */</span>
++  <span style="color: #5B6268;">/* </span><span style="color: #5B6268;">}</span><span style="color: #5B6268;"> */</span>
+
+   <span style="color: #5B6268;">// </span><span style="color: #5B6268;">send buffered characters.</span>
+-  acquire(&amp;uart_tx_lock);
+-  uartstart();
+-  release(&amp;uart_tx_lock);
++  <span style="color: #5B6268;">/* </span><span style="color: #5B6268;">acquire(&amp;uart_tx_lock);</span><span style="color: #5B6268;"> */</span>
++  <span style="color: #5B6268;">/* </span><span style="color: #5B6268;">uartstart();</span><span style="color: #5B6268;"> */</span>
++  <span style="color: #5B6268;">/* </span><span style="color: #5B6268;">release(&amp;uart_tx_lock);</span><span style="color: #5B6268;"> */</span>
+ }
+</pre>
+</div>
+</div>
+</div>

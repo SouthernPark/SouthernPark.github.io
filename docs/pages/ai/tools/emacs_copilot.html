@@ -1,0 +1,30 @@
+---
+layout: default
+title: Emacs Copilot
+nav_exclude: true
+---
+<div id="outline-container-org17a83ae" class="outline-2">
+<h2 id="org17a83ae"><span class="section-number-2">1.</span> copilot el</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<a href="https://github.com/copilot-emacs/copilot.el">copilot.el</a>
+</p>
+</div>
+<div id="outline-container-org6a40aaf" class="outline-3">
+<h3 id="org6a40aaf"><span class="section-number-3">1.1.</span> Node js &gt;= 20.x</h3>
+</div>
+<div id="outline-container-orgf2facab" class="outline-3">
+<h3 id="orgf2facab"><span class="section-number-3">1.2.</span> need to tell Emacs where Node is</h3>
+<div class="outline-text-3" id="text-1-2">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #5B6268;">;; </span><span style="color: #5B6268;">node js location</span>
+<span style="color: #51afef;">(</span><span style="color: #51afef;">when</span> <span style="color: #c678dd;">(</span><span style="color: #a9a1e1;">eq</span> <span style="color: #dcaeea;">system-type</span> <span style="color: #51afef;">'</span><span style="color: #ECBE7B;">windows-nt</span><span style="color: #c678dd;">)</span>
+  <span style="color: #c678dd;">(</span><span style="color: #51afef;">let</span> <span style="color: #98be65;">(</span><span style="color: #a9a1e1;">(</span>node-path <span style="color: #98be65;">"D:\\program\\nodejs"</span><span style="color: #a9a1e1;">)</span><span style="color: #98be65;">)</span>
+    <span style="color: #98be65;">(</span><span style="color: #a9a1e1;">setenv</span> <span style="color: #98be65;">"PATH"</span> <span style="color: #a9a1e1;">(</span><span style="color: #a9a1e1;">concat</span> node-path <span style="color: #98be65;">";"</span> <span style="color: #51afef;">(</span><span style="color: #a9a1e1;">getenv</span> <span style="color: #98be65;">"PATH"</span><span style="color: #51afef;">)</span><span style="color: #a9a1e1;">)</span><span style="color: #98be65;">)</span>
+    <span style="color: #98be65;">(</span><span style="color: #a9a1e1;">add-to-list</span> <span style="color: #51afef;">'</span><span style="color: #dcaeea;">exec-path</span> node-path<span style="color: #98be65;">)</span><span style="color: #c678dd;">)</span><span style="color: #51afef;">)</span>
+
+</pre>
+</div>
+</div>
+</div>
+</div>

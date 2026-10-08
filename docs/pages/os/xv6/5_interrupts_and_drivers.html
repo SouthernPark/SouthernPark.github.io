@@ -1,47 +1,8 @@
-<div id="table-of-contents" role="doc-toc">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents" role="doc-toc">
-<ul>
-<li><a href="#org79666fb">1. Intro</a></li>
-<li><a href="#org6af5b5b">2. Code: Console Input</a>
-<ul>
-<li><a href="#org71a1166">2.1. console.c and uart.c</a>
-<ul>
-<li><a href="#org0fa4462">2.1.1. uart.c (Top half)</a></li>
-<li><a href="#orge76136b">2.1.2. console.c (Bottom half)</a></li>
-<li><a href="#org0c8d5ba">2.1.3. Example: Flow of read</a></li>
-</ul>
-</li>
-<li><a href="#orgd46f910">2.2. top part and bottom part for console</a></li>
-<li><a href="#org89bcf54">2.3. uart init</a></li>
-<li><a href="#orge091dd8">2.4. Console Input: read -&gt; sys<sub>read</sub> -&gt; fileread -&gt; consoleread -&gt; waiting for interrupt</a></li>
-</ul>
-</li>
-<li><a href="#org0c989d9">3. Code: Console Output</a>
-<ul>
-<li><a href="#org9a8128b">3.1. Console Output: write -&gt; sys<sub>write</sub> -&gt; filewrite -&gt; consolewrite -&gt; uartputc</a></li>
-</ul>
-</li>
-<li><a href="#orgba49451">4. Concurrency consider in driver</a>
-<ul>
-<li><a href="#org9e37b07">4.1. xv6 does not support multiplexing I/O</a></li>
-</ul>
-</li>
-<li><a href="#org83a9aae">5. Timer Interrupt</a>
-<ul>
-<li><a href="#org05c0f5e">5.1. Why need to handle interrupt differently</a>
-<ul>
-<li><a href="#org86ea7ca">5.1.1. Timer Interrupt Delegation</a></li>
-</ul>
-</li>
-<li><a href="#org6ac633f">5.2. Timer Interrupt in user mode</a></li>
-<li><a href="#orgbe63019">5.3. Timer Interrupt in kernel mode</a></li>
-<li><a href="#org3a05cba">5.4. yield mechanism</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
+---
+layout: default
+title: Interrupts And Drivers
+nav_exclude: true
+---
 <div id="outline-container-org79666fb" class="outline-2">
 <h2 id="org79666fb"><span class="section-number-2">1.</span> Intro</h2>
 <div class="outline-text-2" id="text-1">
@@ -696,22 +657,72 @@ console write will write to UART directly and will not be buffered
   uint e;  // Edit index
 } cons;
 
-cons.r – Read Index
-
-    Points to the next character to be read by a process (e.g., the shell or read() syscall).
-
-    Advanced by consoleread() after it consumes a character.
-
-    Sleeps if cons.r == cons.w (i.e., nothing to read).
-
-cons.w – Write Index
-
-    Points to the next position where a new character will be written.
-
-    Advanced by consoleintr() when a character is received (typically from UART via interrupt).
-
 </pre>
 </div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Index</td>
+<td class="org-left">Meaning</td>
+<td class="org-left">Who changes it</td>
+</tr>
+
+<tr>
+<td class="org-left">-----</td>
+<td class="org-left">-------------------------------</td>
+<td class="org-left">------------------------------------------------</td>
+</tr>
+
+<tr>
+<td class="org-left">`r`</td>
+<td class="org-left">Next unread character in buffer</td>
+<td class="org-left">`consoleread()` after consuming</td>
+</tr>
+
+<tr>
+<td class="org-left">`w`</td>
+<td class="org-left">End of <b><b>committed</b></b> input</td>
+<td class="org-left">`consoleintr()` when a full line or EOF is ready</td>
+</tr>
+
+<tr>
+<td class="org-left">`e`</td>
+<td class="org-left">End of <b><b>typed so far</b></b> input</td>
+<td class="org-left">`consoleintr()` on every character typed</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+🔍 Why this separation matters
+</p>
+
+<p>
+This allows:
+</p>
+
+<p>
+Line editing: Backspace can do cons.e&#x2013; to erase a char that hasn’t been committed yet.
+</p>
+
+<p>
+Canonical input mode: Only complete lines (or EOF) are passed to the reading process.
+</p>
+
+<p>
+Echoed chars don’t automatically become visible to readers.
+</p>
+
 
 <p>
 <a href="https://github.com/mit-pdos/xv6-riscv/blob/c4de4b0285e1c8e5348bdd31f597fe958f37b912/kernel/console.c#L80">consoleread</a>
@@ -805,11 +816,6 @@ uartintr() calls this for input character.
 }
 </pre>
 </div>
-
-
-<p>
-*
-</p>
 </div>
 </div>
 </div>
@@ -1308,4 +1314,7 @@ Remember that context switches only happens in the kernel mode.
 </p>
 </div>
 </div>
+</div>
+<div id="outline-container-orgbc61b7b" class="outline-2">
+<h2 id="orgbc61b7b"><span class="section-number-2">6.</span> <a href="lab_driver.html">Lab Driver</a></h2>
 </div>

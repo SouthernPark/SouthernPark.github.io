@@ -1,0 +1,13 @@
+#+title: Emacs + ChatGPT
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Emacs + ChatGPT
+nav_exclude: true
+---
+#+END_EXPORT

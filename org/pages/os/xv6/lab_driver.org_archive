@@ -1,0 +1,55 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file e:/Emacs/ql143/SouthernPark.github.io/org/pages/os/xv6/lab_driver.org
+
+
+* consoleread
+:PROPERTIES:
+:ARCHIVE_TIME: 2025-08-08 周五 22:47
+:ARCHIVE_FILE: ~/SouthernPark.github.io/org/pages/os/xv6/lab_driver.org
+:ARCHIVE_OLPATH: Modify Uart so that do not need interrupt/polling
+:ARCHIVE_CATEGORY: lab_driver
+:END:
+With interrupt we have: uartintr (read one byte) -> consoleintr (triger console read when \n is hit) -> consoleread
+
+But now we do not have interrupt, the logs chanegs to
+consoleread continuously reading char directly from uart and yield while spin on uart.
+ xv6 already has uartgetc() that returns -1 if no byte is available.
+#+begin_src c
+acquire(&cons.lock);
+while (n > 0) {
+  for (;;) {
+    // Drop the lock before polling + feeding consoleintr()
+    release(&cons.lock);
+
+    int c;
+    while ((c = uartgetc()) != -1) {
+      consoleintr(c);         // consoleintr() takes cons.lock itself
+    }
+
+    acquire(&cons.lock);
+    if (cons.r != cons.w)     // data arrived
+      break;
+
+    if (killed(myproc())) {
+      release(&cons.lock);
+      return -1;
+    }
+
+    // Cooperative: don’t spin forever
+    release(&cons.lock);
+    yield();
+    acquire(&cons.lock);
+  }
+
+  // …consume from cons.buf as usual…
+}
+release(&cons.lock);
+
+#+end_src
+
+
+#+begin_src
+
+#+end_src
