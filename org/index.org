@@ -47,3 +47,5 @@ nav_exclude: true
 *** [[file:pages/ai/tools/emacs_chatgpt.org][Emacs + ChatGPT]]
 *** [[file:pages/ai/tools/emacs_copilot.org][Emacs + Copilot]]
 * [[file:pages/mock/mock.org][mock]]
+* company
+** [[file:pages/company/google.org][Google]]

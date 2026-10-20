@@ -1,0 +1,258 @@
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orgc9c2083">1. How to prepare for Google’s technical interview questions</a>
+<ul>
+<li><a href="#org46f0982">1.1. coding</a>
+<ul>
+<li><a href="#orgde007cb">1.1.1. corner cases</a></li>
+<li><a href="#org843858e">1.1.2. data structure</a></li>
+</ul>
+</li>
+<li><a href="#org8ee8bc0">1.2. testing</a>
+<ul>
+<li><a href="#org3a377d4">1.2.1. how to unit test the code you write</a></li>
+<li><a href="#org84254ae">1.2.2. what interesting inputs or test cases can you think of</a></li>
+</ul>
+</li>
+<li><a href="#orgaa272cb">1.3. system desgin</a>
+<ul>
+<li><a href="#org1c511fe">1.3.1. interfaces</a></li>
+<li><a href="#orge2cb38f">1.3.2. Distributed Systems</a></li>
+<li><a href="#orgcdeb85e">1.3.3. Limitations</a></li>
+<li><a href="#orgc4e728a">1.3.4. Robustness</a></li>
+<li><a href="#orgda2af4f">1.3.5. Considering trade-offs</a></li>
+</ul>
+</li>
+<li><a href="#orgb48ddcb">1.4. Operating Systems</a>
+<ul>
+<li><a href="#org8dccbb9">1.4.1. process</a></li>
+<li><a href="#orga37fde1">1.4.2. threads</a></li>
+<li><a href="#org914c3ac">1.4.3. Concurrency issue</a></li>
+<li><a href="#orgfcbac42">1.4.4. Locks</a></li>
+<li><a href="#orgb9ee43f">1.4.5. Mutex</a></li>
+<li><a href="#org3c9f431">1.4.6. Semaphroes</a></li>
+<li><a href="#orgab1cbca">1.4.7. Monitors</a></li>
+<li><a href="#org52e08cd">1.4.8. Deadlock and livelock</a></li>
+<li><a href="#orgbcf68f3">1.4.9. resources</a></li>
+<li><a href="#orgd84e00e">1.4.10. context switching</a></li>
+</ul>
+</li>
+<li><a href="#org11ae25a">1.5. Data Structure and algorithm</a>
+<ul>
+<li><a href="#org6f0438f">1.5.1. <span class="todo TODO">TODO</span> NP-complete problem</a></li>
+<li><a href="#orgee9e5c8">1.5.2. Arrays</a></li>
+<li><a href="#org960783d">1.5.3. Hash Tables</a></li>
+<li><a href="#orga18624b">1.5.4. Linked List</a></li>
+<li><a href="#org9e55995">1.5.5. <span class="todo TODO">TODO</span> Graphs (important)</a>
+<ul>
+<li><a href="#orgb224003">1.5.5.1. represent the graph</a></li>
+<li><a href="#orgc3824a4">1.5.5.2. <span class="todo TODO">TODO</span> Distance</a></li>
+<li><a href="#orgbff9ffb">1.5.5.3. <span class="todo TODO">TODO</span> Search</a></li>
+<li><a href="#orgbc763a0">1.5.5.4. Connectivity</a></li>
+<li><a href="#orgcfb56f8">1.5.5.5. Cycle Detection</a></li>
+</ul>
+</li>
+<li><a href="#orgbaddc8e">1.5.6. Recursion</a></li>
+<li><a href="#org28433da">1.5.7. Trees</a></li>
+<li><a href="#org7226897">1.5.8. Stacks</a></li>
+<li><a href="#org372645c">1.5.9. Priority Queues</a></li>
+</ul>
+</li>
+<li><a href="#org3816a24">1.6. Quantative skills</a>
+<ul>
+<li><a href="#orgd599d9e">1.6.1. elementary probability theory</a></li>
+<li><a href="#orgf3dc56b">1.6.2. Combinatorics (组合)</a></li>
+<li><a href="#org3d23a48">1.6.3. N choose K</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgc9c2083" class="outline-2">
+<h2 id="orgc9c2083"><span class="section-number-2">1.</span> <a href="https://www.youtube.com/watch?v=we7ba0slWrc&amp;list=PLllx_3tLoo4dJTidYzl1Ru_8PiANg6JzL&amp;index=4">How to prepare for Google’s technical interview questions</a></h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org46f0982" class="outline-3">
+<h3 id="org46f0982"><span class="section-number-3">1.1.</span> coding</h3>
+<div class="outline-text-3" id="text-1-1">
+<div class="org-src-container">
+<pre class="src src-nil">1. explain and clarify your answers
+2. Verbalize and check your assumptions (ask for clarifying questions or need more information)
+3. after providing a solution to an interview, think about ways to improve your proposed answers
+</pre>
+</div>
+</div>
+<div id="outline-container-orgde007cb" class="outline-4">
+<h4 id="orgde007cb"><span class="section-number-4">1.1.1.</span> corner cases</h4>
+</div>
+<div id="outline-container-org843858e" class="outline-4">
+<h4 id="org843858e"><span class="section-number-4">1.1.2.</span> data structure</h4>
+</div>
+</div>
+<div id="outline-container-org8ee8bc0" class="outline-3">
+<h3 id="org8ee8bc0"><span class="section-number-3">1.2.</span> testing</h3>
+<div class="outline-text-3" id="text-1-2">
+</div>
+<div id="outline-container-org3a377d4" class="outline-4">
+<h4 id="org3a377d4"><span class="section-number-4">1.2.1.</span> how to unit test the code you write</h4>
+</div>
+<div id="outline-container-org84254ae" class="outline-4">
+<h4 id="org84254ae"><span class="section-number-4">1.2.2.</span> what interesting inputs or test cases can you think of</h4>
+</div>
+</div>
+<div id="outline-container-orgaa272cb" class="outline-3">
+<h3 id="orgaa272cb"><span class="section-number-3">1.3.</span> system desgin</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Test your ability to combine knowledge, Theory, Experience and Judgment
+</p>
+</div>
+<div id="outline-container-org1c511fe" class="outline-4">
+<h4 id="org1c511fe"><span class="section-number-4">1.3.1.</span> interfaces</h4>
+</div>
+<div id="outline-container-orge2cb38f" class="outline-4">
+<h4 id="orge2cb38f"><span class="section-number-4">1.3.2.</span> Distributed Systems</h4>
+</div>
+<div id="outline-container-orgcdeb85e" class="outline-4">
+<h4 id="orgcdeb85e"><span class="section-number-4">1.3.3.</span> Limitations</h4>
+</div>
+<div id="outline-container-orgc4e728a" class="outline-4">
+<h4 id="orgc4e728a"><span class="section-number-4">1.3.4.</span> Robustness</h4>
+</div>
+<div id="outline-container-orgda2af4f" class="outline-4">
+<h4 id="orgda2af4f"><span class="section-number-4">1.3.5.</span> Considering trade-offs</h4>
+</div>
+</div>
+<div id="outline-container-orgb48ddcb" class="outline-3">
+<h3 id="orgb48ddcb"><span class="section-number-3">1.4.</span> Operating Systems</h3>
+<div class="outline-text-3" id="text-1-4">
+</div>
+<div id="outline-container-org8dccbb9" class="outline-4">
+<h4 id="org8dccbb9"><span class="section-number-4">1.4.1.</span> process</h4>
+</div>
+<div id="outline-container-orga37fde1" class="outline-4">
+<h4 id="orga37fde1"><span class="section-number-4">1.4.2.</span> threads</h4>
+</div>
+<div id="outline-container-org914c3ac" class="outline-4">
+<h4 id="org914c3ac"><span class="section-number-4">1.4.3.</span> Concurrency issue</h4>
+</div>
+<div id="outline-container-orgfcbac42" class="outline-4">
+<h4 id="orgfcbac42"><span class="section-number-4">1.4.4.</span> Locks</h4>
+</div>
+<div id="outline-container-orgb9ee43f" class="outline-4">
+<h4 id="orgb9ee43f"><span class="section-number-4">1.4.5.</span> Mutex</h4>
+</div>
+<div id="outline-container-org3c9f431" class="outline-4">
+<h4 id="org3c9f431"><span class="section-number-4">1.4.6.</span> Semaphroes</h4>
+</div>
+<div id="outline-container-orgab1cbca" class="outline-4">
+<h4 id="orgab1cbca"><span class="section-number-4">1.4.7.</span> Monitors</h4>
+</div>
+<div id="outline-container-org52e08cd" class="outline-4">
+<h4 id="org52e08cd"><span class="section-number-4">1.4.8.</span> Deadlock and livelock</h4>
+</div>
+<div id="outline-container-orgbcf68f3" class="outline-4">
+<h4 id="orgbcf68f3"><span class="section-number-4">1.4.9.</span> resources</h4>
+</div>
+<div id="outline-container-orgd84e00e" class="outline-4">
+<h4 id="orgd84e00e"><span class="section-number-4">1.4.10.</span> context switching</h4>
+</div>
+</div>
+<div id="outline-container-org11ae25a" class="outline-3">
+<h3 id="org11ae25a"><span class="section-number-3">1.5.</span> Data Structure and algorithm</h3>
+<div class="outline-text-3" id="text-1-5">
+</div>
+<div id="outline-container-org6f0438f" class="outline-4">
+<h4 id="org6f0438f"><span class="section-number-4">1.5.1.</span> <span class="todo TODO">TODO</span> NP-complete problem</h4>
+<div class="outline-text-4" id="text-1-5-1">
+<div class="org-src-container">
+<pre class="src src-nil">traveling salesman problem
+knapsack problem
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgee9e5c8" class="outline-4">
+<h4 id="orgee9e5c8"><span class="section-number-4">1.5.2.</span> Arrays</h4>
+</div>
+<div id="outline-container-org960783d" class="outline-4">
+<h4 id="org960783d"><span class="section-number-4">1.5.3.</span> Hash Tables</h4>
+</div>
+<div id="outline-container-orga18624b" class="outline-4">
+<h4 id="orga18624b"><span class="section-number-4">1.5.4.</span> Linked List</h4>
+</div>
+<div id="outline-container-org9e55995" class="outline-4">
+<h4 id="org9e55995"><span class="section-number-4">1.5.5.</span> <span class="todo TODO">TODO</span> Graphs (important)</h4>
+<div class="outline-text-4" id="text-1-5-5">
+</div>
+<div id="outline-container-orgb224003" class="outline-5">
+<h5 id="orgb224003"><span class="section-number-5">1.5.5.1.</span> represent the graph</h5>
+<div class="outline-text-5" id="text-1-5-5-1">
+<div class="org-src-container">
+<pre class="src src-nil">1. Objects and pointers
+2. Ajacent Matrix
+3. Ajacent list
+</pre>
+</div>
+
+<p>
+pros and cons for the above presentation
+</p>
+</div>
+</div>
+<div id="outline-container-orgc3824a4" class="outline-5">
+<h5 id="orgc3824a4"><span class="section-number-5">1.5.5.2.</span> <span class="todo TODO">TODO</span> Distance</h5>
+</div>
+<div id="outline-container-orgbff9ffb" class="outline-5">
+<h5 id="orgbff9ffb"><span class="section-number-5">1.5.5.3.</span> <span class="todo TODO">TODO</span> Search</h5>
+<div class="outline-text-5" id="text-1-5-5-3">
+<p>
+Computational complexity
+trade offs
+how to implement
+</p>
+</div>
+<ol class="org-ol">
+<li><a id="org1b7694b"></a>BFS<br /></li>
+<li><a id="orgfa264b9"></a>DFS<br /></li>
+</ol>
+</div>
+<div id="outline-container-orgbc763a0" class="outline-5">
+<h5 id="orgbc763a0"><span class="section-number-5">1.5.5.4.</span> Connectivity</h5>
+</div>
+<div id="outline-container-orgcfb56f8" class="outline-5">
+<h5 id="orgcfb56f8"><span class="section-number-5">1.5.5.5.</span> Cycle Detection</h5>
+</div>
+</div>
+<div id="outline-container-orgbaddc8e" class="outline-4">
+<h4 id="orgbaddc8e"><span class="section-number-4">1.5.6.</span> Recursion</h4>
+</div>
+<div id="outline-container-org28433da" class="outline-4">
+<h4 id="org28433da"><span class="section-number-4">1.5.7.</span> Trees</h4>
+</div>
+<div id="outline-container-org7226897" class="outline-4">
+<h4 id="org7226897"><span class="section-number-4">1.5.8.</span> Stacks</h4>
+</div>
+<div id="outline-container-org372645c" class="outline-4">
+<h4 id="org372645c"><span class="section-number-4">1.5.9.</span> Priority Queues</h4>
+</div>
+</div>
+<div id="outline-container-org3816a24" class="outline-3">
+<h3 id="org3816a24"><span class="section-number-3">1.6.</span> Quantative skills</h3>
+<div class="outline-text-3" id="text-1-6">
+</div>
+<div id="outline-container-orgd599d9e" class="outline-4">
+<h4 id="orgd599d9e"><span class="section-number-4">1.6.1.</span> elementary probability theory</h4>
+</div>
+<div id="outline-container-orgf3dc56b" class="outline-4">
+<h4 id="orgf3dc56b"><span class="section-number-4">1.6.2.</span> Combinatorics (组合)</h4>
+</div>
+<div id="outline-container-org3d23a48" class="outline-4">
+<h4 id="org3d23a48"><span class="section-number-4">1.6.3.</span> N choose K</h4>
+</div>
+</div>
+</div>

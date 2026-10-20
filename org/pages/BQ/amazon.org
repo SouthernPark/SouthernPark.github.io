@@ -526,8 +526,42 @@ I learned that taking a calculated risk isn't about acting without understanding
 ** TODO Frugality
 ** TODO Earn Trust
 ** TODO Dive Deep
-** TODO Have Backbone; Disagree and Commit
-** TODO Deliver Results
+** Have Backbone; Disagree and Commit
+Leaders are obligated to respectfully challenge decisions when they disagree, even when doing so is uncomfortable or exhausting. Leaders have conviction and are tenacious. They do not compromise for the sake of social cohesion. Once a decision is determined, they commit wholly.
+
+*** Tell me about a time you had to work with a difficult teammate.
+#+begin_src
+Situation:
+
+During the bring-up of a new network switch, we encountered an issue where the clear watermark operation wasn't working as expected.
+One of my teammates, who was responsible for the related NOS code, believed the problem was in the hardware layer. His reasoning was that the same NOS functionality worked correctly on other switch platforms.
+
+However, I wasn't fully convinced that we could rule out the NOS layer based on that observation alone.
+
+Task:
+
+We had different opinions about where the issue originated, and I needed to help identify the root cause without letting the disagreement slow down the debugging process.
+
+Action:
+
+Instead of arguing about which layer was responsible, I decided to investigate the issue using concrete evidence.
+I first dumped the hardware counters to check whether the ASIC was failing to clear them. However, I couldn't find clear evidence of a hardware issue.
+So I shifted my investigation to the NOS layer and traced what happened after the clear watermark operation.
+I discovered that the operation wasn't updating the corresponding counter state in Redis DB correctly.
+I also checked other development branches and found that a similar issue had already been addressed elsewhere, but the fix hadn't been picked into our branch.
+This gave us a much clearer direction for resolving the issue.
+
+Result:
+
+We were able to narrow down the issue to the NOS counter state update path and identify an existing fix in another branch that was relevant to the problem.
+
+Reflection:
+
+This experience taught me that technical disagreements are best resolved through evidence rather than assumptions.
+Even when someone has strong experience with a particular component, it's important to keep an open mind and investigate different possibilities before reaching a conclusion.
+#+end_src
+
+** Deliver Results
 
 #+begin_src
 Prioritization: 如何判断哪些任务最重要？
