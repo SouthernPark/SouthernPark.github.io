@@ -69,6 +69,27 @@
 </li>
 </ul>
 </li>
+<li><a href="#org12ee0f5">2. Googleyness &amp; Leadership</a>
+<ul>
+<li><a href="#org809a7cf">2.1. communication and leadership style</a></li>
+<li><a href="#org5de28f3">2.2. navigating complexity and ambiguity</a></li>
+<li><a href="#org70c8c1c">2.3. working with teams</a></li>
+<li><a href="#org2de3254">2.4. Vision</a></li>
+<li><a href="#org601394b">2.5. Delivering Results</a></li>
+</ul>
+</li>
+<li><a href="#orga78b6ff">3. BQ 题目</a>
+<ul>
+<li><a href="#orgf1b3a28">3.1. Tell me about a time you dealt with ambiguity</a>
+<ul>
+<li><a href="#org230abb1">3.1.1. How did you know you had clarified the requirements enough?</a></li>
+<li><a href="#orgd9736f2">3.1.2. Why didn&rsquo;t you just build Docker-VS first and extend it later?</a></li>
+<li><a href="#org54db1f9">3.1.3. What if the SDN team disagreed with your proposal?</a></li>
+</ul>
+</li>
+<li><a href="#orga277984">3.2. Tell me about a time you had a disagreement with a coworker. How did you handle it?</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -253,6 +274,155 @@ how to implement
 </div>
 <div id="outline-container-org3d23a48" class="outline-4">
 <h4 id="org3d23a48"><span class="section-number-4">1.6.3.</span> N choose K</h4>
+</div>
+</div>
+</div>
+<div id="outline-container-org12ee0f5" class="outline-2">
+<h2 id="org12ee0f5"><span class="section-number-2">2.</span> Googleyness &amp; Leadership</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-org809a7cf" class="outline-3">
+<h3 id="org809a7cf"><span class="section-number-3">2.1.</span> communication and leadership style</h3>
+</div>
+<div id="outline-container-org5de28f3" class="outline-3">
+<h3 id="org5de28f3"><span class="section-number-3">2.2.</span> navigating complexity and ambiguity</h3>
+</div>
+<div id="outline-container-org70c8c1c" class="outline-3">
+<h3 id="org70c8c1c"><span class="section-number-3">2.3.</span> working with teams</h3>
+</div>
+<div id="outline-container-org2de3254" class="outline-3">
+<h3 id="org2de3254"><span class="section-number-3">2.4.</span> Vision</h3>
+</div>
+<div id="outline-container-org601394b" class="outline-3">
+<h3 id="org601394b"><span class="section-number-3">2.5.</span> Delivering Results</h3>
+</div>
+</div>
+<div id="outline-container-orga78b6ff" class="outline-2">
+<h2 id="orga78b6ff"><span class="section-number-2">3.</span> BQ 题目</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-orgf1b3a28" class="outline-3">
+<h3 id="orgf1b3a28"><span class="section-number-3">3.1.</span> Tell me about a time you dealt with ambiguity</h3>
+<div class="outline-text-3" id="text-3-1">
+<ol class="org-ol">
+<li>问题: SDN team 一开始的需求很宽泛，想仿真到什么程度</li>
+<li>Action: identify use cases</li>
+<li>发现 Docker VS 轻量快，但是不能解决 全部问题，trade off</li>
+<li>反思: 需求清晰的时候，一定要与客户 确定 use cases, 从 use cases 上可以反映出他们的真实需求，以及我们的 系统架构 和 决策</li>
+</ol>
+<div class="org-src-container">
+<pre class="src src-nil">Situation — The initial ambiguity
+
+"One example that comes to mind is when I was working on our virtual switch project.
+Initially, our SDN team came to us with a pretty high-level request. They wanted a way to simulate our data center network.
+To be honest, at first, I wasn't entirely sure what they were looking for. There were several ways we could approach this, depending on their actual use cases."
+
+Action — Clarifying the real requirements
+
+"So instead of jumping straight into implementation, I reached out to the SDN team to better understand what they were trying to achieve.
+I started by asking whether they mainly wanted to test network protocols, like BGP and LLDP.
+If that was the case, I thought a Docker-based virtual switch would be a good fit. It would be relatively lightweight and easy to deploy, and we could run the necessary protocol daemons inside the containers."
+
+Discovery — Understanding the real problem
+
+"But after talking with them, I realized their needs were actually more complicated.
+Their main goal was to let network engineers validate configuration changes and software hotfixes in a simulated environment before deploying them to production.
+That changed how I thought about the problem."
+
+Technical decision — Evaluating the trade-offs
+
+"For configuration changes, a Docker-based solution could still work. We could extend it with Redis and the necessary CLI tools.
+But hotfix testing was a different story. Some hotfixes involved warm restarts, which required interactions with the ASIC layer.
+That's when I realized that a lightweight protocol simulation wouldn't be enough. We needed something that could simulate the behavior of the entire switch.
+So I proposed using KVM to run the full network OS, together with an ASIC simulator.
+It was a heavier solution, but it gave us a more realistic environment for testing both configuration changes and software upgrades."
+
+Reflection:
+This experience taught me that dealing with ambiguity isn't about having all the answers upfront. It's about asking the right questions, validating assumptions, and making progress as you learn more.
+</pre>
+</div>
+</div>
+<div id="outline-container-org230abb1" class="outline-4">
+<h4 id="org230abb1"><span class="section-number-4">3.1.1.</span> How did you know you had clarified the requirements enough?</h4>
+<div class="outline-text-4" id="text-3-1-1">
+<p>
+与 SDN 团队，确定了 他们的 核心使用案例，核心案例已经帮助我们 确定 整体 架构应该是 使用 KVM 而不是 docker vs。
+We had enough information to make the architectural decision
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">"I don't think we need to clarify every single detail before starting implementation.
+For me, the important thing is to understand the main use cases and the constraints that could affect the architecture.
+In this case, once I understood that they needed to test software hotfixes involving warm restarts, I knew that a lightweight Docker-based solution wouldn't be enough.
+There were still implementation details to figure out, but we had enough information to make the architectural decision."
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgd9736f2" class="outline-4">
+<h4 id="orgd9736f2"><span class="section-number-4">3.1.2.</span> Why didn&rsquo;t you just build Docker-VS first and extend it later?</h4>
+<div class="outline-text-4" id="text-3-1-2">
+<p>
+强调自己 considered 过了，但是由于 核心需求当中有 hotfix 长期方案 还是 KVM 为主，所以在 在时间 tight 的情况下，主要 focus 还是在 KVM 上
+</p>
+</div>
+</div>
+<div id="outline-container-org54db1f9" class="outline-4">
+<h4 id="org54db1f9"><span class="section-number-4">3.1.3.</span> What if the SDN team disagreed with your proposal?</h4>
+<div class="outline-text-4" id="text-3-1-3">
+<p>
+思考他们可能的 concern 是什么? development effort, maintain cost
+之后和他们 讨论 trade off 是什么
+My goal would be to help the team make an informed decision, rather than simply convince them that my approach was right.
+</p>
+<div class="org-src-container">
+<pre class="src src-nil">
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-orga277984" class="outline-3">
+<h3 id="orga277984"><span class="section-number-3">3.2.</span> Tell me about a time you had a disagreement with a coworker. How did you handle it?</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Respect: 能否尊重不同观点，而不是立即否定对方。
+Open-mindedness: 是否愿意承认自己的判断可能有误。
+Data-driven decision-making: 是否通过事实而不是争论解决问题。
+Collaboration: 能否让双方一起推动问题解决。
+Self-awareness: 是否能够反思自己的沟通方式。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nil">Situation — What was the disagreement?
+
+"One example that comes to mind is when I was debugging a watermark counter issue on our network switch.
+The issue was that after we cleared the watermark counters, the values were not reset as expected.
+One of my teammates believed it was a hardware issue, while I suspected it might be related to the software layer."
+
+Conflict — Understanding the other perspective
+
+"He had a reasonable argument. The same feature was working correctly on other platforms, so he believed the software implementation was fine.
+I could see where he was coming from, but I didn't think we had enough evidence to rule out the software layer."
+
+Action — How I handled the disagreement
+
+"Instead of going back and forth about whose assumption was correct, I decided to investigate the issue from both sides.
+I first checked the hardware counters, but I couldn't find anything that clearly pointed to a hardware problem.
+Then I looked into the software path and found that the clear operation wasn't triggering the expected state update in Redis.
+I also found a similar issue that had already been fixed in another branch.
+I shared my findings with my teammate and walked him through the evidence, rather than simply telling him that his assumption was wrong."
+
+Result — What happened?
+
+"That helped us narrow down the root cause and focus on the software state synchronization issue."
+
+Reflection — What I learned
+
+"Looking back, I learned that technical disagreements are often caused by different assumptions, not necessarily by people being difficult.
+If I were to handle it again, I would try to agree on a debugging plan earlier, so we could test both hypotheses systematically.
+This experience taught me to focus on evidence and shared goals rather than trying to prove my own point."
+</pre>
+</div>
 </div>
 </div>
 </div>

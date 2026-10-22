@@ -72,3 +72,106 @@ how to implement
 *** elementary probability theory
 *** Combinatorics (组合)
 *** N choose K
+
+* Googleyness & Leadership
+
+** communication and leadership style
+** navigating complexity and ambiguity
+** working with teams
+** Vision
+** Delivering Results
+
+* BQ 题目
+** Tell me about a time you dealt with ambiguity
+1. 问题: SDN team 一开始的需求很宽泛，想仿真到什么程度
+2. Action: identify use cases
+3. 发现 Docker VS 轻量快，但是不能解决 全部问题，trade off
+4. 反思: 需求清晰的时候，一定要与客户 确定 use cases, 从 use cases 上可以反映出他们的真实需求，以及我们的 系统架构 和 决策
+#+begin_src
+Situation — The initial ambiguity
+
+"One example that comes to mind is when I was working on our virtual switch project.
+Initially, our SDN team came to us with a pretty high-level request. They wanted a way to simulate our data center network.
+To be honest, at first, I wasn't entirely sure what they were looking for. There were several ways we could approach this, depending on their actual use cases."
+
+Action — Clarifying the real requirements
+
+"So instead of jumping straight into implementation, I reached out to the SDN team to better understand what they were trying to achieve.
+I started by asking whether they mainly wanted to test network protocols, like BGP and LLDP.
+If that was the case, I thought a Docker-based virtual switch would be a good fit. It would be relatively lightweight and easy to deploy, and we could run the necessary protocol daemons inside the containers."
+
+Discovery — Understanding the real problem
+
+"But after talking with them, I realized their needs were actually more complicated.
+Their main goal was to let network engineers validate configuration changes and software hotfixes in a simulated environment before deploying them to production.
+That changed how I thought about the problem."
+
+Technical decision — Evaluating the trade-offs
+
+"For configuration changes, a Docker-based solution could still work. We could extend it with Redis and the necessary CLI tools.
+But hotfix testing was a different story. Some hotfixes involved warm restarts, which required interactions with the ASIC layer.
+That's when I realized that a lightweight protocol simulation wouldn't be enough. We needed something that could simulate the behavior of the entire switch.
+So I proposed using KVM to run the full network OS, together with an ASIC simulator.
+It was a heavier solution, but it gave us a more realistic environment for testing both configuration changes and software upgrades."
+
+Reflection:
+This experience taught me that dealing with ambiguity isn't about having all the answers upfront. It's about asking the right questions, validating assumptions, and making progress as you learn more.
+#+end_src
+
+*** How did you know you had clarified the requirements enough?
+与 SDN 团队，确定了 他们的 核心使用案例，核心案例已经帮助我们 确定 整体 架构应该是 使用 KVM 而不是 docker vs。
+We had enough information to make the architectural decision
+#+begin_src
+"I don't think we need to clarify every single detail before starting implementation.
+For me, the important thing is to understand the main use cases and the constraints that could affect the architecture.
+In this case, once I understood that they needed to test software hotfixes involving warm restarts, I knew that a lightweight Docker-based solution wouldn't be enough.
+There were still implementation details to figure out, but we had enough information to make the architectural decision."
+#+end_src
+
+*** Why didn't you just build Docker-VS first and extend it later?
+强调自己 considered 过了，但是由于 核心需求当中有 hotfix 长期方案 还是 KVM 为主，所以在 在时间 tight 的情况下，主要 focus 还是在 KVM 上
+
+*** What if the SDN team disagreed with your proposal?
+思考他们可能的 concern 是什么? development effort, maintain cost
+之后和他们 讨论 trade off 是什么
+My goal would be to help the team make an informed decision, rather than simply convince them that my approach was right.
+#+begin_src
+
+#+end_src
+** Tell me about a time you had a disagreement with a coworker. How did you handle it?
+Respect: 能否尊重不同观点，而不是立即否定对方。
+Open-mindedness: 是否愿意承认自己的判断可能有误。
+Data-driven decision-making: 是否通过事实而不是争论解决问题。
+Collaboration: 能否让双方一起推动问题解决。
+Self-awareness: 是否能够反思自己的沟通方式。
+
+#+begin_src
+Situation — What was the disagreement?
+
+"One example that comes to mind is when I was debugging a watermark counter issue on our network switch.
+The issue was that after we cleared the watermark counters, the values were not reset as expected.
+One of my teammates believed it was a hardware issue, while I suspected it might be related to the software layer."
+
+Conflict — Understanding the other perspective
+
+"He had a reasonable argument. The same feature was working correctly on other platforms, so he believed the software implementation was fine.
+I could see where he was coming from, but I didn't think we had enough evidence to rule out the software layer."
+
+Action — How I handled the disagreement
+
+"Instead of going back and forth about whose assumption was correct, I decided to investigate the issue from both sides.
+I first checked the hardware counters, but I couldn't find anything that clearly pointed to a hardware problem.
+Then I looked into the software path and found that the clear operation wasn't triggering the expected state update in Redis.
+I also found a similar issue that had already been fixed in another branch.
+I shared my findings with my teammate and walked him through the evidence, rather than simply telling him that his assumption was wrong."
+
+Result — What happened?
+
+"That helped us narrow down the root cause and focus on the software state synchronization issue."
+
+Reflection — What I learned
+
+"Looking back, I learned that technical disagreements are often caused by different assumptions, not necessarily by people being difficult.
+If I were to handle it again, I would try to agree on a debugging plan earlier, so we could test both hypotheses systematically.
+This experience taught me to focus on evidence and shared goals rather than trying to prove my own point."
+#+end_src
