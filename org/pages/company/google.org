@@ -1,3 +1,15 @@
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+TOC: nil  ;; Disable table of contents by default
+#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
+
+#+BEGIN_EXPORT html
+---
+layout: default
+title: How To Blog With Emacs Jeklly
+---
+#+END_EXPORT
+
 #+title: Google
 
 * [[https://www.youtube.com/watch?v=we7ba0slWrc&list=PLllx_3tLoo4dJTidYzl1Ru_8PiANg6JzL&index=4][How to prepare for Google’s technical interview questions]]
@@ -73,20 +85,422 @@ how to implement
 *** Combinatorics (组合)
 *** N choose K
 
-* Googleyness & Leadership
-
-** communication and leadership style
-** navigating complexity and ambiguity
-** working with teams
-** Vision
-** Delivering Results
-
 * BQ 题目
+Google 和 Amazon 处理方式的 不同:
+   customer 不一定是对的，需要和 manager 沟通 priority 是什么, 怎么和 老板和 team mate 合作
+
+** 团队协作与冲突解决（Collaboration & Conflict Resolution）
+Google 非常看重 Inclusive（包容性）、Psychological Safety（心理安全感）以及如何建设性地处理分歧。
+
+*** 处理不同意见： Describe a situation where you had a fundamental disagreement with a teammate or TL. How did you resolve it?
+
+#+begin_src
+问题重点:
+面试官想考察你在面对技术分歧时，是否会感情用事或盲目妥协，而是看你如何通过客观事实（Evidence）、以产品大局为重（Product Requirements），
+以及如何与 TL 建设性地沟通并最终解决问题。
+这完美契合 G&L 的 Collaborate with others 和 Have a growth mindset / Do the right thing。
+#+end_src
+
+#+begin_src
+核心关键词（中英文对照记忆）：
+1. 根本分歧 (Fundamental Disagreement)： 供应商默认行为 vs. 产品硬性要求 (Gating Requirement)
+2. 日常站会 (Daily Stand-up)： 暴露问题与接受反馈的转折点
+3. 基于证据的讨论 (Evidence-based Discussion)： 拉通 Vendor 和 TL 共同寻找解法
+4. 软件变通方案 (Software Workaround)： 动态安装 Host Route 解决硬件限制
+
+叙述主线（中文简单复盘）：
+背景 (Situation)： 新交换机 Bring-up 时路由测试失败，Vendor 说是硬件默认行为，我最初盲目改了测试用例。
+任务与分歧 (Task & Disagreement)： 站会上向 Tech Lead 同步时产生分歧，TL 指出这违背了网络工程团队的 gating 核心要求。
+行动 (Action)： 我没有死守己见，而是主动揽责并组织多方（Vendor + TL）拉通。确认硬件无法直接改动后，共同探讨出了在软件层动态植入 Host Route 的折中方案。
+结果与反思 (Result & Reflection)： 成功通过测试并满足产品需求。体会到技术分歧要靠客观证据解决，且要以产品大局和需求为准，勇于承认错误。
+#+end_src
+
+#+begin_src
+Situation:
+During the bring-up of our new network switch, one of our routing test cases failed. The test was designed to verify that the switch would prioritize a directly connected neighbor over a BGP route to the same destination. When I checked with the ASIC vendor, they explained that the observed behavior was their hardware's default implementation. Initially, I assumed this platform-specific difference was acceptable and modified the test case to pass.
+
+Task:
+However, when I shared this change with my Tech Lead during our daily stand-up, a fundamental disagreement arose. My Tech Lead pointed out that maintaining consistent basic routing behavior across all switch platforms was actually a gating requirement from our network engineering team, meaning my approach was incorrect. We disagreed on whether we should adapt the test case to the hardware default or force the software to change.
+
+Action:
+Instead of getting defensive, I listened to his perspective and realized I had evaluated the situation solely from the vendor's technical standpoint, overlooking our product's core requirements.   To resolve the disagreement constructively, I took ownership of the issue. I organized a technical discussion with both the ASIC vendor and my Tech Lead. I clearly laid out our product's routing requirements, while the vendor confirmed that changing the underlying hardware forwarding behavior was not feasible. With both constraints on the table, we collaboratively brainstormed a software-based alternative: I designed and implemented a solution to dynamically install a higher-priority host route for directly connected neighbors, ensuring consistent routing behavior without modifying the hardware.
+
+Result:
+The software solution successfully resolved the routing test failure and satisfied the network engineering team's gating requirement. The switch passed validation smoothly.
+
+Reflection:
+This experience taught me that technical disagreements with a Tech Lead or teammate shouldn't be about winning an argument, but about aligning on product requirements. It showed me the importance of relying on solid evidence, being open to feedback when you are wrong, and working together to bridge the gap between hardware limitations and product needs.
+#+end_src
+
+*** 跨团队协调： Tell me about a time when you had to work with another team that had competing priorities or resisted collaborating.
+
+#+begin_src
+考察重点:
+1. 打破部门壁垒 (Breaking Silos)：
+   面对跨团队的协作阻力或不同的 KPI / 优先级时，你是选择推卸责任（“这是网卡团队不配合，我也没办法”），还是主动跨出自己的职责边界 (Ownership) 承担责任？
+2. 寻求共赢与对齐目标 (Aligning Shared Goals)：
+   你如何把“你单方面的紧急任务”转化为“双方共同的核心利益”？面试官希望看到你能站在对方的角度思考，找到共同的 Business Goal。
+3. 数据驱动沟通 (Data-driven Communication)：
+   在应对阻力时，你是否能拿出客观的测试数据、事实证据来打动对方，而不是空口辩论。
+4. 无授权领导力 (Leading without Authority)：
+   你无法直接指挥或命令另一个团队（因为你不是他们的 Manager），你如何通过影响力、沟通策略和数据去说服和推动他们配合你？
+#+end_src
+
+#+begin_src
+背景 (Situation)： 负责 ARS 特性，但高带宽测试下 AI 吞吐量只有 62%，时间很紧。
+任务与阻力 (Task & Resistance)： 我需要解决问题，但这不仅要改交换机，还要改 GPU NIC（网卡）。对方团队有他们自己的优先级，一开始不愿意配合。
+行动 (Action)： 我没有放弃，而是拿着测试数据去找他们，告诉他们这是共同的目标。我们一起开会、一起调参数
+结果与反思 (Result & Reflection)： 性能提升到 87%。学会了跨团队遇到阻力时，要用数据说话，把大家拉到同一个目标上。
+#+end_src
+
+#+begin_src
+Situation:
+I was working on the Adaptive Routing feature for our new network switch. The goal was to improve network performance for AI workloads. However, during testing, our AI workload only reached 62% of the 400G port bandwidth, which was way below our target.
+
+Task:
+As the feature owner, I needed to fix this performance issue before our deadline. But I quickly realized that switch-side changes alone were not enough. I also needed help from the GPU NIC team. Because they had their own tight schedules and different priorities, they were hesitant to put extra work into our issue.
+
+Action:
+Instead of working in silos, I took the first step to reach out. To collect solid evidence, I used a Spirent traffic generator to reproduce the issue and analyzed how the NIC's split-on-QP settings impacted traffic distribution.
+I shared the testing result with the teach leads. By presenting concrete data instead of assumptions, I got them on board. We then set up joint debugging sessions to tune both the switch and the NIC settings together.
+
+Result:
+Working closely together, we successfully improved the bandwidth from 62% to 87%, meeting our performance target.
+
+Reflection:
+This experience taught me that when working with other teams who have different priorities, technical arguments work best when backed by solid data. Using professional testing tools like Spirent to uncover the root cause helps bridge the gap and builds trust for cross-functional collaboration.
+
+#+end_src
+
+
+*** 处理不积极/表现不佳的同事： How would you handle a teammate who is consistently underperforming or not pulling their weight on a critical deliverable?
+
+#+begin_src
+考察重点:
+1. 同理心与沟通 (Empathy & Direct Communication)：
+   遇到队员表现不好，先假定对方是有困难，而不是主观偷懒。主动进行一对一的私下沟通（1-on-1），了解真实原因（是技术不熟悉、上下文缺失、还是个人原因）。
+
+2. 辅导与赋能 (Coaching & Empowerment)：
+   面对不熟悉业务或方法不对的实习生，不是直接替他干活，而是帮他调整思维方式（从“盲目啃旧技术”到“抓住核心业务逻辑”）。
+
+3. 影响力与结果交付 (Impact & Delivery)：
+   帮助实习生顺利完成项目（用 Python3 重写旧的 Expect 测试工具），展现了你的领导力。
+#+end_src
+
+#+begin_src
+核心关键词：
+Mentored an intern（带教实习生重构测试工具）
+Expect to Python3 migration（将旧的 Expect 语言用 Python3 重写以便扩展）
+Root cause analysis（发现滞后原因：实习生试图先读完厚书精通旧 Expect 再动手）
+Shift mindset（调整思维：重点在于理解测试的行为和目的，而不是纠结老语言语法）
+1-on-1 and scaffolding（通过 1-on-1 帮其理清需求与测试逻辑，快速上手）
+
+
+叙述主线：
+1. 背景 (Situation)： 在 Juniper 担任 Mentor 带实习生，任务是用 Python3 重写旧的 Expect 数据平面测试工具，以便未来扩展。
+2. 任务与挑战 (Task & Challenge)： 实习生进度落后。我主动了解原因，发现他卡在试图通读所有 Expect 书籍和语法细节上。
+3. 行动 (Action)： 我设立了 1-on-1。告诉他核心不在于精通过时的 Expect 语法，而在于理解测试背后的业务逻辑与目的。我带他梳理测试行为，指导他如何直接用 Python3 去实现这些测试需求。
+4. 结果与反思 (Result & Reflection)： 实习生调整了策略，顺利完成了 Python3 工具的重写。体会到作为 Mentor，不仅是给任务，更要帮新人转变工程思维，抓主要矛盾。
+#+end_src
+
+#+begin_src
+Situation:
+During my time at Juniper, I mentored an intern whose main project was to rewrite our old data-plane testing tool from Expect into Python3, making it easier to add new extensions in the future. Expect was a legacy language, and we needed a modern stack. However, halfway through, I noticed the intern was falling behind schedule.
+
+Task:
+As his mentor, I wanted to figure out what was blocking him and help him get back on track without taking over his work.
+
+Action:
+I set up a private one-on-one chat to understand the root cause. I learned that he was trying to read through books and master every detail of the old Expect language before writing any code, which was slowing him down significantly.
+I guided him to shift his mindset. I explained that learning the legacy Expect syntax wasn't the main goal. Instead, the key was to understand the underlying testing behavior and purpose. Even without knowing every detail of Expect, if you understand what the test is trying to achieve, you can design and rewrite it in Python3 directly.
+I worked with him to break down the existing scripts, clarify the core test requirements, and map out the Python structure together.
+
+Result:
+With this new approach, the intern quickly picked up the pace. He successfully rewrote the testing tool in Python3, which made future extensions much easier for the team.
+
+Reflection:
+This experience taught me that mentoring isn't just about technical guidance; it's about helping people focus on the right priorities. When someone gets stuck in the weeds of a legacy system, helping them see the core business logic can unlock their productivity.
+
+#+end_src
+
+
+*** TODO 面对有偏见的决策： Tell me about a time you noticed bias or unfairness in a team dynamic or decision-making process. What did you do?
+主要考察的是 DEI（Diversity, Equity, and Inclusion - 多元、公平与包容） 意识、Doing the right thing（做正确的事） 以及你的勇气和同理心。
+
+#+begin_src
+1. 敏锐的观察力 (Observing Bias)： 你是如何注意到这种不公平或偏见发生的（例如，某些有价值的观点因为发言者职位低或经验少而被忽视）？
+2. 挺身而出与包容性 (Inclusive Leadership)： 你没有冷眼旁观，而是主动站出来，为弱势的一方或被忽视的声音创造空间（Amplifying voices）。
+3. 推动建设性改变 (Constructive Action)： 引导团队回归理性、基于事实和技术本身做决策，而不是看“是谁说的”。
+#+end_src
+
+#+begin_src
+
+#+end_src
+
+** 客户/需求管理与 Pushback（Client & Stakeholder Management）
+考察你是否能做到“以用户为中心”，同时保持批判性思考，不盲目接受所有需求。
+*** 拒绝不合理需求： Have you ever had to say "no" to a client or a high-level stakeholder who requested a feature you believed was wrong or low priority?
+#+begin_src
+1. 同理心与倾听 (Empathy & Listening)：
+   面对客户或高层的诉求，首先要理解他们为什么想要这个功能（痛点是什么），而不是一上来就对立。
+2. 专业判断与说服 (Technical Judgment & Influence)：
+   用数据、架构利弊或维护成本去证明为什么这个需求在当前阶段是“错误”或“低优先级”的。
+3. 提供替代方案 (Providing Alternatives / Win-Win)：
+#+end_src
+
+#+begin_src
+核心关键词：
+1. Original optimization（把启动时间从 15 分钟优化到 6 分钟）
+2. Production packet loss（SDN 团队因线上 Buffer 配置错误导致丢包的痛点）
+3. Undo optimization（想要加回功能，但会导致启动时间倒退回 15 分钟）
+4. ASIC simulator limitations（供应商 ASIC 仿真器的硬限制：不支持硬件 Buffer 仿真、转发速率过低）
+5. Keep KVM lean（保持 KVM 轻量，把流量测试放到物理环境）
+
+
+叙述主线：
+1. 背景 (Situation)： 此前开发 KVM 虚拟交换机时，我主动精简了非必要的硬件 Buffer 操作，把启动时间从 15 分钟优化到了 6 分钟。
+2. 任务与冲突 (Task & Conflict)： 后来 SDN 团队因为线上出过 Buffer 配置引发的丢包，要求把 Buffer 仿真加回 KVM。但这会毁掉已有的 6 分钟优化成果。
+3. 行动 (Action)： 我私下与他们沟通，认可他们怕丢包的痛点。但我拿出证据说明这是 ASIC 仿真器的硬限制（Vendor 根本不支持硬件 Buffer 仿真，转发速率也极低）。强行加回来不仅测不出丢包，还会白白浪费 9 分钟启动时间。我建议保留 KVM 的轻量快速，把 Buffer 测试放到物理测试床。
+4. 结果与反思 (Result & Reflection)： 他们接受了技术解释。我们保留了 6 分钟的快速启动，避免了无意义的耗时。学会了 Pushback 要基于事实和对方真实痛点，引导大家用对工具。
+#+end_src
+
+#+begin_src
+Situation:
+When I originally built our KVM-based virtual switch, I deliberately stripped out unnecessary hardware buffer operations to optimize performance, which reduced the boot time from 15 minutes down to 6 minutes.
+
+Task:
+Later, the SDN engineering team experienced some production packet loss due to misconfigured buffers. Out of concern, they requested to bring the buffer initialization and simulation back into the KVM so they could test buffer changes. However, bringing these heavy operations back would undo my boot time optimization and push it back up to 15 minutes.
+
+Action:
+Instead of flatly refusing their request, I sat down with the SDN team to address their concerns. First, I validated their main pain point—they wanted to prevent production packet loss.
+
+However, I pushed back by pointing out a critical technical limitation: the ASIC simulator provided by the vendor simply did not support hardware buffer simulation, and its forwarding rate was far too low for real traffic testing. I showed them that adding those buffer operations back would add 9 extra minutes to every boot-up, without actually giving them the ability to simulate traffic or catch buffer errors.
+
+I guided them to keep the KVM lean for fast daily protocol testing, while moving deep buffer validation to physical testbeds.
+
+Result:
+The team recognized the ASIC simulator's limitations and agreed with my assessment. We kept the KVM boot time at 6 minutes, saving hours of daily developer wait time while ensuring they used the right platform for buffer testing.
+
+Reflection:
+This experience taught me that effective pushback isn't about being stubborn. It's about understanding the user's real fear, showing technical facts, and protecting engineering efficiency by guiding stakeholders to the right tool for the job.
+#+end_src
+
+*** 需求模糊/变更： How do you handle a situation where a client’s requirements keep changing mid-project?
+#+begin_src
+问题重点 (Core Focus)
+1. 敏捷应对重大变更 (Agile & Structured Response)： 面对来自生产环境（Production）突发的重大需求变更，不慌张、不抱怨，迅速切入专业应对流程。
+2. 严谨的技术可行性验证 (Feasibility & Risk Control)： 盲目接需求是危险的。你先跟 Vendor 确认硬件能力，再跟 Tech Lead 快速验证 Hardware Behavior（硬件行为），用极低成本排除项目风险。
+3. 预期管理与透明交付 (Expectation Management & Trade-offs)： 在确认可行性后，及时回到需求方和 Team Lead 面前，基于实际开发工作量重塑交付排期（Timeline），达成新的共识。
+#+end_src
+
+#+begin_src
+核心关键词：
+1. Global mode vs. Hybrid mode（从全局单模式到动态混合模式的需求变更）
+2. Production flexibility（生产环境对不同 GPU 拓扑灵活性的大幅提升需求）
+3. Vendor confirmation & Hardware behavior（找 Vendor 确认硬件可行性并做快速验证）
+4. Timeline & Trade-offs sync（与 Tech Lead 和需求方重新对齐交付日期）
+
+
+叙述主线：
+
+背景 (Situation)： 在开发 ARS 特性中途，原定需求只需支持全局单模式（如纯 Flowlet 或纯 Packet Spray）。但由于生产环境提出了对更多 GPU 拓扑灵活性要求，需求方突然要求改为支持 Hybrid Mode。
+任务与挑战 (Task & Challenge)： 这是一个重大的中途变更，如果盲目接下，可能因为硬件不支持或调优复杂度而导致项目延期。我需要迅速评估风险并控制交付流程。
+行动 (Action)：
+    第一步（找 Vendor）： 我第一时间联系 ASIC Vendor，确认底层硬件芯片是否原生支持 Hybrid Mode 转发行为；
+    第二步（技术验证）： 与 Tech Lead 开会，制定了一个快速验证思路，在正式开发前先对硬件行为做了一轮轻量级验证（PoC），确保没有隐藏坑；
+    第三步（对齐排期）： 确认技术可行后，我召集 Tech Lead 和需求方开会，透明展示了增加 Hybrid Mode 所需的新工作量，并重新协商了合理的交付日期。
+结果与反思 (Result & Reflection)： 成功交付了 Hybrid Mode，极大提升了 GPU 拓扑的灵活性。体会到处理变更的关键是“先验硬件/技术可行性，再透明对齐交付预期”。
+#+end_src
+
+#+begin_src
+Situation:
+Midway through developing our Adaptive Routing feature, the original plan was just to support a simple global mode—either purely Packet Spray or purely Flowlet mode. However, due to new production requirements for better GPU topology flexibility, the stakeholders suddenly asked us to support a dynamic Hybrid Mode instead.
+
+Task:
+This was a major mid-project change. If we accepted it blindly without checking hardware capabilities, we risked running into unexpected chip limitations and missing our project launch. I needed to quickly validate the feasibility and manage the updated delivery timeline.
+
+Action:
+First, I reached out to our ASIC vendor immediately to confirm whether the underlying hardware chip could actually support Hybrid Mode forwarding without performance penalties.
+Second, I met with my tech lead to design a quick verification test. Before diving into full development, we ran a rapid test to validate the actual hardware behavior and make sure there were no hidden bugs in the chip.
+Once we confirmed it was technically feasible, I gathered the tech lead and the stakeholders for a sync. I clearly explained the extra dev work required for Hybrid Mode and negotiated a realistic, updated delivery date with them.
+
+Result:
+We successfully delivered the Hybrid Mode feature, which gave our production environment much higher flexibility for different GPU topologies, while keeping the project timeline predictable.
+
+Reflection:
+This experience taught me that handling sudden requirement changes isn't just about saying yes or no. It's about taking structured steps—first verifying the technical feasibility with data and quick tests, and then transparently realigning on the timeline with your stakeholders.
+#+end_src
+
+
+*** 交付延期与沟通： Tell me about a time you realized your team was going to miss a deadline promised to a client or partner. How did you manage their expectations and align with your team?
+#+begin_src
+1. 早期风险识别 (Early Identification)：
+   不是到了 Deadline 当天才说“做不完”，而是在项目推进中通过里程碑检查，提前（Proactively） 发现延期隐患。
+
+2. 对内制定缓解方案 (Internal Action Plan)：
+   先跟 Tech Lead/团队内部梳理原因，看看能否通过分期交付（Phased Delivery / MVP） 或优先交付核心功能来减少延期影响。
+
+3. 对外透明沟通与预期管理 (Transparent Stakeholder Alignment)：
+   带着数据、原因以及替代方案（Plan B） 去找 Stakeholder，而不是只带一个坏消息去。
+#+end_src
+
+#+begin_src
+核心关键词：
+1. Promised target（原本向 Partner 承诺在 Q3 交付 85%+ 带宽提升的 ARS 版本）
+2. Diminishing returns / Complex cross-team interaction（后半段遇到 GPU NIC 配合调优的瓶颈，排期超限）
+3. Early risk escalation（提前发现如果硬卡 87% 目标，必然错过 Deadline）
+4. Phased delivery plan（替代方案：按原排期交付 80% 性能提升的 MVP，满足基础联调；两周后交付 87% 的最佳版本）
+
+叙述主线：
+    背景 (Situation)： 在做 ARS 性能调优时，我们向 Partner 团队承诺在月底交付能将 AI 吞吐量提升到 85%+ 的新版本。
+    任务与风险 (Task & Risk)： 在性能从 62% 提升到 78% 后，最后攻坚阶段发现瓶颈与 GPU NIC 的 split-on-QP 参数深度绑定。联合排查所需的时间比预期长，如果非要达到 85%+ 目标，必然错过交付 Deadline。
+    行动 (Action)：
+        我提早识别风险，没有隐瞒；
+        内部与团队确定替代方案：先打包交付已实现 78% 带宽提升的 Baseline 版本；
+        对外 transparency 沟通：带着数据去找 Partner，提出分期交付（Phased Delivery）——让他们先用 78% 的版本开展上层业务测试，我们争取两周内把性能冲到 87%。
+
+    结果与反思 (Result & Reflection)： Partner 非常认可这种带方案沟通的做法，业务没有因延期挂起，我们最终也如期交付了 87% 的完全版。
+#+end_src
+
+#+begin_src
+Situation:
+During our Adaptive Routing (ARS) performance tuning project, we promised to deliver an updated plan to our partner team by the end of the month, targeting an AI workload bandwidth of over 85%.
+
+Task:
+We easily boosted performance from 62% to 78%. However, pushing it past 85% required complex joint debugging with the GPU NIC team regarding split-on-QP settings. As we got closer to the deadline, I realized that solving this final bottleneck would take an extra two weeks, putting our promised release date at serious risk.
+
+Action:
+Instead of waiting until the deadline to report a failure, I took the initiative to manage expectations early.
+
+First, I aligned with my team to create a practical alternative: a phased delivery plan.
+
+Second, I set up a sync with our partner team. I was completely transparent about the cross-team performance bottleneck, but I brought a solution: "We can release a baseline version on our original deadline that already improves performance to 78%, so your team isn't blocked. Meanwhile, we will finish the remaining joint tuning and release the full 87% version two weeks later."
+
+Result:
+The partner team really appreciated the early heads-up and accepted the plan. They used the baseline version to start their integration testing on time, and we delivered the 87% final version on the new target date.
+
+Reflection:
+This experience taught me that when you risk missing a deadline, transparency is key. You shouldn't just present a delay—you should bring a realistic workaround or phased plan so your partners can keep moving forward.
+#+end_src
+
+** 应对模糊性与风险（Ambiguity, Risk & Managing Up）
+Google 的许多项目初期都是极度模糊的，考察你如何主动划定边界、推动进展。
+*** 处理模糊任务： Tell me about a time you were assigned a high-stakes project with vague requirements and no clear documentation. How did you start?
+#+begin_src
+1. 应对不确定性的能力 (Dealing with Ambiguity)
+
+2. 主动沟通与提问挖掘 (Proactive Discovery & Clarification)：
+   通过设计方案对比（Docker vs KVM），主动找 SDN 团队开会，挖掘出隐藏的硬性需求（Warm Restart / Hotfix 验证）。
+
+3. 理性技术权衡与分期交付 (Technical Trade-off & Phased Delivery)：
+   权衡架构轻重，制定清晰的实施方案，并与团队/干系人对齐 Q2/Q3 的交付节点（如先交付 Docker/Basic KVM，再完善全功能）。
+
+#+end_src
+
+#+begin_src
+1. High-level request（高层模糊需求：模拟 DC 网络，缺乏文档）
+2. Hypothesis driving（带着方案假设去沟通：先假设 Docker 方案）
+3. Root use-case discovery（挖出深层需求：不仅要测 BGP/LLDP 协议，还要测 Warm restart 和 Hotfix）
+4. Trade-off evaluation（权衡 Docker 的轻量 vs KVM+ASIC Simulator 对底层硬件行为的拟真度）
+5. Phased delivery alignment（与 Team/Stakeholders 对齐 Q2/Q3 分阶段交付排期）
+
+叙述主线：
+
+    背景 (Situation)： SDN 团队提出希望有一个工具来“模拟数据中心网络”。需求极其模糊，没有任何架构文档或规范。
+    任务与困境 (Task & Ambiguity)： 面对这种模糊性，我不能盲目动手。我需要主动澄清真实使用场景（Use Case），并在架构设计上做出权衡。
+    行动 (Action)：
+        主动沟通： 我没有等详细文档，而是主动约 SDN 团队开会。我先提出 Docker 方案（轻量、快、适合 BGP/LLDP），以此激发讨论；
+        挖掘痛点： 讨论中发现他们还需要验证配置变更和 Hotfix。其中 Warm Restart 需要与 ASIC 层交互，纯容器方案无法满足；
+        架构决策与排期： 我提出最终方案：使用 KVM 运行完整 Network OS 并结合 ASIC Simulator。同时与 Team Leader 和需求方对齐了交付节奏（Q2 先交付基础配置验证功能，Q3 交付完整的 Hotfix 验证）。
+    结果与反思 (Result & Reflection)： 成功搭建了高拟真的虚拟测试环境，为后续线上热补丁拦截了多次风险。体会到处理 Ambiguity 的核心是“带着假设去提问，用技术 Trade-off 落地方案”。
+#+end_src
+
+#+begin_src
+Situation:
+One example that comes to mind is when our SDN partner team came to us with a very high-level request: they wanted a way to "simulate our data center network." There were no clear specifications or documentation on what that actually entailed, and depending on their use cases, we could build this in several vastly different ways.
+
+Task:
+Instead of jumping straight into coding or waiting around for detailed specs, I took the initiative to drive requirement gathering, evaluate technical trade-offs, and define a clear delivery plan.
+
+Action:
+To narrow down the ambiguity, I reached out to the SDN team for a sync. Instead of asking generic questions, I came with concrete hypotheses. I asked if their main goal was lightweight protocol testing, like BGP and LLDP. If so, a Docker-based virtual switch would be ideal—lightweight, fast, and easy to deploy.
+
+However, through this alignment, I uncovered their real hidden pain points. They didn’t just want protocol testing; they needed to validate production configuration changes and software hotfixes. Specifically, some hotfixes involved warm restarts, which required deep interaction with the ASIC hardware layer.
+
+That insight changed our direction. A lightweight container wouldn't cut it. I proposed using KVM to run the full Network OS alongside an ASIC simulator. Although it was a heavier solution, it was the only way to accurately mimic physical hardware behavior. I then aligned with our team lead and the stakeholders on a phased timeline—delivering basic configuration testing in Q2, and the full KVM warm-restart capability in Q3.
+
+Result:
+This approach successfully delivered a realistic simulation environment that saved weeks of physical lab testing, allowing the SDN team to catch critical hotfix bugs early.
+
+Reflection:
+This experience taught me that dealing with ambiguity isn't about having all the answers upfront. It's about taking the initiative, asking targeted questions to uncover the real use case, and using data-driven trade-offs to guide stakeholders toward the right solution.
+#+end_src
+
+
+*** 承担风险与面对失败： Describe a time you took a calculated risk on a project and it failed. What was the impact, and what did you learn?
+#+begin_src
+1. Calculated Risk（计算过的风险）：
+2. Failure & Impact（失败与影响）：
+3. Action & Mitigation（快速救火与优雅解法）
+4. Lesson Learned（深刻反思
+#+end_src
+
+#+begin_src
+1. Maximize KVM density per host（目标：降低 CPU 消耗，提升单台宿主机的 KVM 部署密度）
+2. Counter polling CPU waste（发现 Counter 轮询线程在静默状态下白白消耗 vCPU）
+3. Calculated risk（关闭 Counter 轮询，因为大多数场景只测配置和协议）
+4. Unexpected failure（特定 CLI 配置指令硬依赖 Counter 状态，导致配置校验报错）
+5. Smart mitigation（写脚本按需开启 Counter + 缩短采样时间，平衡 CPU 与功能依赖）
+
+1. 背景与风险决策 (Situation & Risk)： 为了提升宿主机的 KVM 部署密度，我观察到 ASIC 仿真器的 Counter Polling 线程在静默状态下依然大量占用 CPU。我冒了一个计算过的风险：关闭 Counter 轮询。事前的逻辑是：KVM 主要用于配置和协议测试，不需要实时 Counter 统计。
+
+2. 失败与后果 (Failure & Impact)： 结果在测试中发现，某些 CLI 配置指令在下发时会校验 Counter 状态，Counter 关掉后导致配置直接报错，卡住了部分自动化测试。
+
+3. 救火与处理 (Mitigation)： 我迅速定位了问题，写了一个自动化脚本：在执行配置校验时动态开启 Counter，并精细化调整了采样间隔（Sampling Interval），以极小的 CPU/内存代价满足了 CLI 的校验要求。
+
+4. 反思与成长 (Reflection)： 我意识到系统内部往往存在隐式的逻辑依赖（Implicit Dependencies）。基础设施优化不能简单的“一刀切关掉功能”，而应该设计“按需加载（On-demand）与弹性配置”机制。
+#+end_src
+
+#+begin_src
+Situation:
+In our virtual switch project, one of our key engineering goals was to maximize the number of KVM instances we could host on a single physical machine. While profiling the system, I observed that the ASIC counter polling threads were consuming significant CPU usage even when the system was completely idle.
+
+Calculated Rationale:
+I decided to take a calculated risk by disabling the counter polling threads entirely. My rationale was that most of our internal users were using KVM strictly for control-plane protocol and interface configuration tests, where real-time traffic counters were rarely needed. Disabling it would free up CPU cores and significantly boost our KVM hosting density.
+
+Failure & Impact:
+However, my assumption failed during automated testing. It turned out that certain CLI configuration commands had an implicit dependency on counter states. When engineers tried to push specific configs, the CLI performed a background check on the counters, threw errors, and failed the configuration process. This temporarily blocked some of the team's testing pipelines.
+
+Mitigation:
+I immediately took ownership of the issue. Instead of just reverting back to the heavy CPU-consuming setup, I developed a smarter workaround. I wrote a script to dynamically enable the required counters on demand during CLI execution, while shortening the sampling interval to minimize memory and CPU overhead.
+
+Lesson Learned:
+This experience taught me that legacy or complex systems often have implicit dependencies that aren't obvious in initial profiling. I learned that optimizing infrastructure shouldn't be a simple binary choice—like turning a feature completely on or off. Instead, designing on-demand execution and tunable parameters is the best way to achieve both system stability and resource efficiency.
+#+end_src
+
+
+*** 向上管理： How do you manage up when your lead or manager gives you direction that you disagree with?
+
+** 领导力与影响他人（Leadership without Authority）
+即便你申请的不是管理岗（IC 角色），Google 也要求你具备“无授权领导力”（Leading without Authority）。
+*** 影响他人： Tell me about a time you had to convince a team or senior leaders to adopt your proposal without having direct authority over them.
+*** 项目引导： Describe a time when a project was falling behind or losing direction. How did you step in to guide the team back on track?
+*** 帮助他人成长： How do you help junior team members grow or onboard new engineers into your workflow?
+
+** 伦理、多样性与做正确的事（Ethics & Doing the Right Thing）
+*** 技术债与质量折扣： Tell me about a time you were pressured to launch a feature that had security, privacy, or code quality trade-offs. How did you balance speed versus quality?
+*** DEI（Diversity, Equity, Inclusion）： Give an example of how you actively created an inclusive environment in a diverse or remote team.
 ** Tell me about a time you dealt with ambiguity
 1. 问题: SDN team 一开始的需求很宽泛，想仿真到什么程度
 2. Action: identify use cases
 3. 发现 Docker VS 轻量快，但是不能解决 全部问题，trade off
 4. 反思: 需求清晰的时候，一定要与客户 确定 use cases, 从 use cases 上可以反映出他们的真实需求，以及我们的 系统架构 和 决策
+
+主动性,
+comminication:
+    customer, sync, use case 需求
+    stakeholder 交流，客户要求 什么 就按照 plan 做，组里的需求。Q2, Q3, paritially 交付
+
 #+begin_src
 Situation — The initial ambiguity
 
