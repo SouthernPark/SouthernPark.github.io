@@ -1,89 +1,4 @@
-#+STARTUP: showall indent
-#+STARTUP: hidestars
-#+TOC: nil  ;; Disable table of contents by default
-#+OPTIONS: toc:nil  ;; Disable TOC in HTML export
-
-#+BEGIN_EXPORT html
----
-layout: default
-title: How To Blog With Emacs Jeklly
----
-#+END_EXPORT
-
 #+title: Google
-
-* [[https://www.youtube.com/watch?v=we7ba0slWrc&list=PLllx_3tLoo4dJTidYzl1Ru_8PiANg6JzL&index=4][How to prepare for Google’s technical interview questions]]
-
-** coding
-
-#+begin_src
-1. explain and clarify your answers
-2. Verbalize and check your assumptions (ask for clarifying questions or need more information)
-3. after providing a solution to an interview, think about ways to improve your proposed answers
-#+end_src
-
-*** corner cases
-*** data structure
-
-
-** testing
-*** how to unit test the code you write
-*** what interesting inputs or test cases can you think of
-** system desgin
-Test your ability to combine knowledge, Theory, Experience and Judgment
-
-*** interfaces
-*** Distributed Systems
-*** Limitations
-*** Robustness
-*** Considering trade-offs
-** Operating Systems
-*** process
-*** threads
-*** Concurrency issue
-*** Locks
-*** Mutex
-*** Semaphroes
-*** Monitors
-*** Deadlock and livelock
-*** resources
-*** context switching
-** Data Structure and algorithm
-*** TODO NP-complete problem
-#+begin_src
-traveling salesman problem
-knapsack problem
-#+end_src
-*** Arrays
-*** Hash Tables
-*** Linked List
-*** TODO Graphs (important)
-**** represent the graph
-#+begin_src
-1. Objects and pointers
-2. Ajacent Matrix
-3. Ajacent list
-#+end_src
-
-pros and cons for the above presentation
-
-**** TODO Distance
-**** TODO Search
-Computational complexity
-trade offs
-how to implement
-***** BFS
-***** DFS
-**** Connectivity
-**** Cycle Detection
-*** Recursion
-*** Trees
-*** Stacks
-*** Priority Queues
-** Quantative skills
-*** elementary probability theory
-*** Combinatorics (组合)
-*** N choose K
 
 * BQ 题目
 Google 和 Amazon 处理方式的 不同:
@@ -872,3 +787,78 @@ Reflection — What I learned
 If I were to handle it again, I would try to agree on a debugging plan earlier, so we could test both hypotheses systematically.
 This experience taught me to focus on evidence and shared goals rather than trying to prove my own point."
 #+end_src
+
+
+* [[https://www.youtube.com/watch?v=we7ba0slWrc&list=PLllx_3tLoo4dJTidYzl1Ru_8PiANg6JzL&index=4][How to prepare for Google’s technical interview questions]]
+
+** coding
+
+#+begin_src
+1. explain and clarify your answers
+2. Verbalize and check your assumptions (ask for clarifying questions or need more information)
+3. after providing a solution to an interview, think about ways to improve your proposed answers
+#+end_src
+
+*** corner cases
+*** data structure
+
+
+** testing
+*** how to unit test the code you write
+*** what interesting inputs or test cases can you think of
+** system desgin
+Test your ability to combine knowledge, Theory, Experience and Judgment
+
+*** interfaces
+*** Distributed Systems
+*** Limitations
+*** Robustness
+*** Considering trade-offs
+** Operating Systems
+*** process
+*** threads
+*** Concurrency issue
+*** Locks
+*** Mutex
+*** Semaphroes
+*** Monitors
+*** Deadlock and livelock
+*** resources
+*** context switching
+** Data Structure and algorithm
+*** TODO NP-complete problem
+#+begin_src
+traveling salesman problem
+knapsack problem
+#+end_src
+*** Arrays
+*** Hash Tables
+*** Linked List
+*** TODO Graphs (important)
+**** represent the graph
+#+begin_src
+1. Objects and pointers
+2. Ajacent Matrix
+3. Ajacent list
+#+end_src
+
+pros and cons for the above presentation
+
+**** TODO Distance
+**** TODO Search
+Computational complexity
+trade offs
+how to implement
+***** BFS
+***** DFS
+**** Connectivity
+**** Cycle Detection
+*** Recursion
+*** Trees
+*** Stacks
+*** Priority Queues
+** Quantative skills
+*** elementary probability theory
+*** Combinatorics (组合)
+*** N choose K
+
