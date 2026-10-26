@@ -649,6 +649,59 @@ This experience taught me that legacy or complex systems often have implicit dep
 </div>
 <div id="outline-container-orgec61ed0" class="outline-4">
 <h4 id="orgec61ed0"><span class="section-number-4">2.3.3.</span> 向上管理： How do you manage up when your lead or manager gives you direction that you disagree with?</h4>
+<div class="outline-text-4" id="text-2-3-3">
+<div class="org-src-container">
+<pre class="src src-nil">1. 倾听背后的真正诉求 (Understand the Intent)： Lead / Stakeholder 提出不合理的方案（加回 Buffer 仿真），本质是因为他们被线上丢包痛点困扰，急于寻找安全感。
+2. 用数据和事实说服 (Fact-Based Alignment)： 私下沟通，拿出 ASIC 仿真器硬限制的数据（转发率过低、无法模拟 Hardware Buffer）以及对启动时间的影响（6 分钟退回 15 分钟）。
+3. 提供双赢的替代方案 (Provide Alternatives)： 不仅指出原有方案的不可行，还主动指明正确的验证路径（KVM 测协议/配置，物理测试床测 Buffer/流量）。
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">核心关键词：
+    Disagreed with Lead's direction（不同意 Lead 要求在 KVM 中加回 Buffer 仿真的指令）
+    Understand root pain point（理解 Lead 和 Partner 是因为线上丢包出过事故，急于找到验证手段）
+    Data &amp; technical facts（用数据 Pushback：ASIC 仿真器根本不支持硬件 Buffer 仿真，且会导致启动时间从 6 分钟退回 15 分钟）
+    Alternative solution（替代方案：KVM 保持轻量测协议，Buffer 测试切到物理环境）
+    Disagree and commit principle（恪守基于事实对齐、决策后坚决执行的原则）
+
+叙述主线：
+
+    具体场景与分歧 (Situation &amp; Conflict)： 之前在 KVM 项目中，SDN 团队因线上 Buffer 配置错误导致过丢包。我的 Tech Lead 为了回应这一痛点，要求我在 KVM 中加回全量 Buffer 初始化和仿真。但我之前好不容易把 boot time 从 15 分钟优化到 6 分钟，加回来不仅会毁掉效率，而且技术上根本不可行。
+
+    向上管理行动 (Action / Managing Up)：
+        第一步（理解意图）： 我先找 Lead 沟通，确认他的核心诉求是“防止线上再出丢包事故”，而不是非要用 KVM。
+        第二步（数据与事实）： 我没有直接拒绝，而是私下做了一份简短的技术评估呈给 Lead。我用硬数据说明：Vendor ASIC Simulator 架构上压根不支持 Hardware Buffer 仿真，强行加回代码只增加 9 分钟启动耗时，却零抓包能力。
+        第三步（替代方案）： 我提出了分工方案——KVM 专注于快速协议校验，深层 Buffer 测试导向物理测试床（Physical Testbed）。
+
+    结果与反思 (Result &amp; Lesson)： Lead 完全被数据说服，撤回了最初的指令。我们保留了 6 分钟启动的工程效率，同时帮助团队建立了正确的测试分工。我体会到向上管理的核心是“理解对方的恐慌，用数据和方案代替单纯的拒绝”。
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">Situation:
+A clear example of this was during our virtual switch project. After the SDN team experienced a production packet loss incident caused by misconfigured buffers, my Tech Lead directed me to add full hardware buffer initialization and simulation back into our KVM switch to address their safety concerns.
+
+Task:
+I strongly disagreed with this direction. Earlier, I had optimized the KVM boot time from 15 minutes down to 6 minutes by stripping out these heavy operations. Adding them back would completely undo that efficiency win. I needed to manage up effectively without damaging the relationship or hurting overall product performance.
+
+Action:
+Instead of rejecting the direction in a public meeting, I scheduled a 1-on-1 with my Lead to align privately:
+
+    First, I validated his real intent: I acknowledged that preventing production packet loss was critical and agreed with his ultimate goal of protecting network stability.
+
+    Second, I presented technical facts and data: I brought data showing a key architectural limitation—our vendor's ASIC simulator simply did not support hardware buffer simulation at the chip layer. I demonstrated that adding those operations back would add 9 extra minutes to every single boot-up, without actually catching a single buffer issue.
+
+    Third, I offered a better alternative: I suggested keeping the KVM lightweight for daily 6-minute protocol tests, while establishing a dedicated physical testbed pipeline specifically for hardware buffer validation.
+
+Result:
+My Tech Lead recognized the technical reality and fully supported my alternative strategy. We saved hundreds of developer hours daily by preserving the 6-minute KVM boot time, while ensuring the SDN team had a proper physical environment for buffer testing.
+
+Reflection:
+This experience reinforced my approach to managing up: Disagreement shouldn't be about proving your lead wrong. It’s about understanding their underlying goal, presenting clear facts and trade-offs, and offering a practical path forward that benefits the entire team.
+</pre>
+</div>
+</div>
 </div>
 </div>
 <div id="outline-container-org760c491" class="outline-3">
@@ -660,12 +713,192 @@ This experience taught me that legacy or complex systems often have implicit dep
 </div>
 <div id="outline-container-org2401ffa" class="outline-4">
 <h4 id="org2401ffa"><span class="section-number-4">2.4.1.</span> 影响他人： Tell me about a time you had to convince a team or senior leaders to adopt your proposal without having direct authority over them.</h4>
+<div class="outline-text-4" id="text-2-4-1">
+<div class="org-src-container">
+<pre class="src src-nil">1. 用数据说话（Data-Driven Narrative
+2. 降低他人采纳成本（Reducing Adoption Friction）
+3. 同理心与寻找共赢点（Aligning Incentives）： 理解对方的顾虑（如害怕测试不准、担心排期延误或学习成本高）
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">Cross-team resistance（GPU NIC 团队认为 ARS 调优是网络侧的事，不愿意调整 NIC 驱动/QP 参数）
+No direct authority（跨部门合作，无权直接指挥 NIC 团队）
+Data-driven PoC（自己先做抓包与数据分析，证明单独改交换机只有 62% 带宽，联合调优能到 87%）
+Shared win / WIIFM (What's in it for me)（将项目包装为共同提升 GPU 训练集群整体效能的成果）
+Low-risk trial（在离线试验集群上做最小化验证，消除对方风险顾虑）
+
+背景与无授权挑战 (Situation)： 在做自适应路由（ARS）调优时，为了达到最佳性能，需要 GPU NIC 团队配合调整网卡侧的 split-on-QP 参数。但 NIC 团队非常抗拒，认为这是网络团队的事，改动 NIC 参数风险高且不在他们的 OKR 中。
+
+行动 (Action)：
+
+    第一步（用数据说话）： 我没有找领导压他们，而是自己用 Spirent 流量发生器和抓包工具做了低成本 PoC。我拿着实验数据找 NIC 团队开会，清晰展示单独优化交换机带宽只能达到 62%，而配合 NIC 调优可以冲到 87%。
+
+    第二步（寻找共赢点）： 我向他们的 Tech Lead 说明，这个性能提升将直接转化为整个 GPU 集群训练效率的提升，是两个团队可以共同向 Leadership 汇报的重磅成果。
+
+    第三步（降低采纳风险）： 我主动承担了大部分测试和抓包工作，并承诺先在离线测试集群（Sandbox）上只做小范围验证，绝不影响生产集群。
+
+结果与反思 (Result &amp; Reflection)： NIC 团队被数据和诚意说服，同意配合调优。最终我们成功将带宽利用率提至 87%，且该成果被两个团队共同列入年度亮点。我体会到无授权领导力的关键是“用数据证明价值，用同理心把孤岛变成共赢”。
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">Situation:
+During our Adaptive Routing (ARS) performance tuning project, we realized that optimizing the network switches alone was not enough. To truly unlock peak network throughput, we needed the GPU NIC team to adjust their NIC-side driver settings—specifically the split-on-QP parameters. However, the NIC team was very reluctant. They viewed ARS as a network-only project and didn't want to risk changing NIC configurations that weren't part of their quarterly goals. Since I had no direct authority over them, I had to persuade them to collaborate.
+
+Task:
+My goal was to convince the GPU NIC team to prioritize this joint tuning, address their concerns about risk, and show them the mutual value of this effort.
+
+Action:
+
+    Build a data-driven case: Instead of setting up empty meetings or escalating to management, I ran a series of local tests using a Spirent traffic generator. I gathered hard packet-trace data showing that switch-side tuning capped our bandwidth at 62%, but combining it with NIC-side tuning would push throughput up to 87%.
+
+    Align on a shared win: I set up a 1-on-1 with the NIC team lead. Instead of framing it as "helping the network team," I demonstrated how this 25% performance jump would directly optimize the end-to-end training time for their GPU cluster—a major win that both our teams could share with senior leadership.
+
+    Minimize their risk and workload: To make it effortless for them, I took on the heavy lifting of trace analysis and test automation. I proposed a low-risk trial: testing the parameter changes strictly within an offline experimental cluster first, ensuring zero risk to active production workloads.
+
+Result:
+Seeing the clear data and low-friction proposal, the NIC team agreed to partner with us. Together, we successfully boosted cluster throughput from 62% to 87%. The project was highlighted by senior leadership as a primary example of cross-team collaboration.
+
+Reflection:
+This experience reinforced that leading without authority isn't about demanding cooperation. It’s about doing the homework upfront with solid data, aligning incentives so everyone wins, and lowering the friction for others to say "yes."
+</pre>
+</div>
+</div>
 </div>
 <div id="outline-container-org76f54e2" class="outline-4">
 <h4 id="org76f54e2"><span class="section-number-4">2.4.2.</span> 项目引导： Describe a time when a project was falling behind or losing direction. How did you step in to guide the team back on track?</h4>
+<div class="outline-text-4" id="text-2-4-2">
+<div class="org-src-container">
+<pre class="src src-nil">1. 精确识别脱轨根因
+   明确说明项目为什么会脱轨——不是大家不努力，而是缺乏统一的调试数据基线（Lack of baseline）、跨团队责任边界模糊（Siloed debugging）
+2. 结构化重组与优先级排定
+   停止盲目试错，建立数据驱动的分析框架（Data-Driven Framework），明确关键路径（Critical Path）。
+3. 建立透明的推进机制与里程碑
+   通过每日短会（Daily Standup）、清晰的任务拆解（Phased Milestones）和责任明确（RACI），带领团队重塑信任与进度。
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">Project falling behind / losing direction（ARS 调优项目进度滞后 3 周，性能卡在 60%+ 无法突破，团队方向迷茫）
+Siloed debugging &amp; Trial-and-error（脱轨根因：网络团队与 NIC 团队各自为战、凭借猜测盲目调参）
+Step in with structure（主动站出来：暂停盲目测试，建立基于抓包与 Spirent 的统一测量基线）
+Critical path &amp; Phased milestones（聚焦关键路径：把大目标拆解为算法侧、驱动侧和小范围 Sandbox 验证三步）
+On-track recovery（成功将带宽提至 87%，按时完成交付）
+
+叙述主线：
+
+    背景与危机 (Situation)： 在 ARS 性能调优项目中，由于涉及网络交换机和 GPU NIC 两个团队，项目进度比原计划滞后了 3 周。性能一直卡在 62% 无法提升，双方都在凭经验盲目试错（Trial-and-error），甚至互相质疑，项目面临失去方向和错过交付 Deadline 的风险。
+    任务与切入 (Task)： 作为项目的核心技术骨干，我不能坐视不理。我决定主动站出来（Step in），重构排查机制，带领团队重新找回方向。
+    救火行动 (Action)：
+
+        第一步（叫停盲目试错，建立统一数据基线）： 我召集双方团队开会，暂停了无休止的盲目调参。我利用 Spirent 流量发生器和抓包工具，建立了全链路的 Trace 分析框架，用硬数据定位出真正瓶颈在于 split-on-QP 与交换机 Hash 算法的冲突；
+
+        第二步（重新划定关键路径与任务拆解）： 我把庞杂的调试工作拆解为三个清晰的阶段里程碑（Milestones）：底层 Hash 算法修复 -&gt; NIC 参数对齐 -&gt; 离线 Sandbox 联调；
+
+        第三步（建立每日对齐机制）： 设立了 15 分钟的 Daily Sync， transparent 展示每天的数据变化，消除团队间的沟通壁垒。
+
+    结果与反思 (Result &amp; Reflection)： 团队恢复了信心与方向感，在两周内将性能一举提升至 87%，成功赶上了最终的交付节点。体会到当项目失去方向时，最好的领导力就是“用结构化分析替代凭空猜测，用数据为团队指明方向”。
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">Situation:
+During our Adaptive Routing (ARS) performance tuning initiative, the project was falling nearly three weeks behind schedule. The goal was to optimize network bandwidth for AI workloads, but throughput was stuck at 62%. Because the project involved both the network and GPU NIC teams, engineers were debugging in silos—trying random parameter tweaks based on guesswork without a unified strategy. The team was losing direction and morale was dropping.
+
+Task:
+Recognizing that we were at serious risk of missing our target release, I stepped in to bring structure back to the project, realign the cross-functional teams, and get the timeline back on track.
+
+Action:
+
+    Stop the chaos and establish a data baseline: I called a joint sync and proposed we temporarily pause random testing. Instead of guessing, I set up an end-to-end tracing framework using Spirent traffic generators. I gathered hard packet-trace data, which clearly proved that the bottleneck wasn't in general network congestion, but in a specific conflict between the switch's hashing algorithm and the NIC's split-on-QP setting.
+
+    Define a clear critical path and phased milestones: With the root cause identified, I redefined our roadmap into three manageable execution phases:
+
+        Phase 1: Fix switch hashing logic (2 days).
+
+        Phase 2: Align NIC QP parameters in a sandbox environment (3 days).
+
+        Phase 3: Run full-cluster workload validation (1 week).
+
+    Drive daily transparency: I instituted a quick, 15-minute daily standup strictly focused on metric changes from the previous 24 hours. This eliminated cross-team friction and gave everyone clear, daily goals.
+
+Result:
+With clear direction and data-driven steps, the team regained momentum. Within two weeks, we successfully boosted bandwidth utilization from 62% to 87%, recovering the lost time and delivering the project on schedule.
+
+Reflection:
+This experience taught me that when a project loses direction, stepping in isn't about working harder or pushing people more. It's about bringing clarity—replacing guesswork with hard data, establishing a clear critical path, and uniting the team around actionable milestones.
+</pre>
+</div>
+</div>
 </div>
 <div id="outline-container-org087521a" class="outline-4">
 <h4 id="org087521a"><span class="section-number-4">2.4.3.</span> 帮助他人成长： How do you help junior team members grow or onboard new engineers into your workflow?</h4>
+<div class="outline-text-4" id="text-2-4-3">
+<div class="org-src-container">
+<pre class="src src-nil">1. 结构化培养与能力拆解 (Structured Scaffolding)：
+   不直接喂答案或扔庞大的代码库，而是将“Expect 到 Python3 自动化迁移”拆解为具备渐进难度的阶段性目标（Milestones）。
+2. 从“语法教学”升级为“思维培养” (Mindset over Syntax)：
+   不仅教工具或语法，更重点培养其代码规范（Code Review）、自动化测试意识（CI/CD）和工程解耦思维。
+3. 心理安全感与独立性 (Psychological Safety &amp; Autonomy)：
+   给予安全试错空间，鼓励其独立做 Design Review，使其从“需要被指令驱动”快速成长为能够“独当一面的贡献者”。
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">核心关键词：
+
+    Structured Scaffolding（结构化脚手架：将 Expect 到 Python3 迁移项目拆解为阶段性任务）
+
+    Focus on Engineering Mindset（重思维轻单纯语法：强调 CI/CD、单元测试与代码可维护性）
+
+    Design Review &amp; Code Review（让实习生自己写 Design Doc，通过 Code Review 传授最佳实践）
+
+    Psychological Safety &amp; Autonomy（建立安全试错空间，最终实现独立交付）
+
+叙述主线：
+
+    理念与方法论 (Approach)： 我带新人/实习生不只是教语法或给任务，而是通过“结构化拆解（Scaffolding）+ 培养工程思维”帮助他们建立独立解决问题的能力。
+
+    具体案例 (Situation)： 我曾 Mentor 过一位实习生，他的任务是将我们老的 Expect 自动化测试脚本迁移升级到 Python3。
+
+    辅导行动 (Action)：
+
+        第一步（任务拆解与设计）： 我没有直接让他去改代码，而是让他先写一份小型的 Design Doc，思考模块化设计和异常处理。
+
+        第二步（工程思维培养）： 在 Code Review 中，我不仅关注 Python3 语法，更引导他建立单元测试（Unit Test）和 CI 集成意识，帮他从“写脚本”升级为“写高质量工程代码”。
+
+        第三步（建立反馈与安全空间）： 设立每周对齐（Weekly Sync），鼓励他在 Sandbox 环境中安全试错，并定期给予具体的 Positive/Constructive Feedback。
+
+    结果与反思 (Result &amp; Reflection)： 实习生不仅按时完成了 Python3 自动化框架迁移，还主动补充了自动化测试覆盖率。体会到最好的带人方式是“授人以渔，用好的机制激发其内在 Ownership”。
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">Approach:
+When onboarding new engineers or interns, my goal isn't just to help them complete a task—it's to help them build an engineering mindset, grow their technical autonomy, and feel supported in the team's workflow.
+
+Situation:
+A great example of this was when I mentored an intern who was assigned to migrate our legacy Expect-based network testing scripts over to Python 3.
+
+Action:
+To ensure he succeeded without feeling overwhelmed, I took a structured coaching approach:
+
+    Provide scaffolding, not just instructions: Instead of throwing the entire legacy codebase at him, I helped him break the project down into manageable milestones. Before writing code, I asked him to draft a short design doc detailing how he planned to structure the new Python modules. This helped him think through edge cases and system design early on.
+
+    Focus on engineering mindset over syntax: During Code Reviews, I didn't just correct Python syntax. I guided him on best practices like writing modular code, handling exceptions gracefully, and adding unit tests. I wanted him to transition from "writing scripts" to "building maintainable software."
+
+    Create psychological safety and independence: I set up a weekly sync for open feedback and encouraged him to experiment safely in a sandbox environment. When he hit blockers, I asked guiding questions to lead him to the solution rather than just giving him the answer.
+
+Result:
+The intern successfully delivered the Python 3 automation framework on time, improving our test pipeline reliability. More importantly, he gained the confidence to independently present his design to the broader team and take full ownership of future feature requests.
+
+Reflection:
+This experience reinforced that effective mentoring isn't about giving answers—it's about building a supportive environment where new engineers learn how to break down complex problems and grow into autonomous technical owners.
+</pre>
+</div>
+</div>
 </div>
 </div>
 <div id="outline-container-org6e95e57" class="outline-3">
@@ -674,6 +907,76 @@ This experience taught me that legacy or complex systems often have implicit dep
 </div>
 <div id="outline-container-org7fa4380" class="outline-4">
 <h4 id="org7fa4380"><span class="section-number-4">2.5.1.</span> 技术债与质量折扣： Tell me about a time you were pressured to launch a feature that had security, privacy, or code quality trade-offs. How did you balance speed versus quality?</h4>
+<div class="outline-text-4" id="text-2-5-1">
+<div class="org-src-container">
+<pre class="src src-nil">画清“不可妥协”与“可权衡”的界限 (Non-negotiable vs. Manageable Trade-off)：
+
+    不可妥协 (Hard Line)： Security、Privacy 和 Core System Crash Risk（绝对不能带着已知盲区上线）。
+
+    可权衡 (Manageable Debt)： 缺乏完美的模块抽象、缺失部分性能日志分析工具、测试手动覆盖率高。
+
+带上“数据与风险”去沟通 (Risk-Based Communication)：
+向 Business/Management 清晰展示：如果带病上线，最坏的 Failure Scenario 是什么（如 CI 管线频繁挂起，损失 100 个 Developer Hours/week）。
+
+闭环的技术债偿还计划 (Structured Payback Plan)：
+建立 Feature Flag / Technical Debt Tracker，在下一个 Sprints/Release 中显式排期偿还。
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">核心关键词：
+
+    Speed vs. Quality pressure（SDN 团队急需在 Q2 上线 KVM 虚拟交换机用于联调，时间极其紧迫）
+
+    Categorize trade-offs（区分硬底线与可接受技术债：安全/核心稳定性绝不妥协，代码模块化与自动化 Logging 可作为临时技术债）
+
+    Quantify risk &amp; Transparency（向 Leader 透明展示风险数据：如果跳过边界校验， nightly CI 失败率将上升 30%）
+
+    Scope reduction &amp; Feature Toggle（将非核心分析模块隔离，用 Feature Flag 锁住未完善功能）
+
+    Structured payback plan（把技术债显式列入 Q3 OKR 排期，并在上线后 3 周内还清）
+
+叙述主线：
+
+    背景与压力 (Situation)： 在 KVM 虚拟交换机上线前夕，SDN 团队为了赶一个大的 Milestone，向我们施加压力，要求提前两周交付。但当时我们在 ASIC 仿真器的异常日志捕获（Logging）和代码模块重构上还没有完全打磨好。
+
+    评估与原则 (Task &amp; Assessment)： 我没有盲目拒绝，也没有全盘接受。我建立了一个评估标准：核心隔离与安全性（Security/Core Stability）是底线，绝对不让步；而辅助性的代码重构和实时 Counter 分析，可以作为临时的“技术债（Technical Debt）”。
+
+    行动 (Action)：
+
+        第一步（透明化风险评估）： 我拉上 Lead 和 Partner 开会，用数据说话：“如果我们直接强行上线当前版本，虽然赶上了 Deadline，但由于缺少异常捕获，nightly CI 偶发挂起时将多消耗团队每周 50 小时的排查时间。”
+
+        第二步（制定折中与隔离方案）： 我提出了 MVP 交付方案：核心仿真与配置校验功能按时交付；同时将不成熟的 Counter 分析模块用 Feature Flag（功能开关）隐藏起来，防止它污染主流程。
+
+        第三步（明确偿还计划）： 我将这次产生的技术债显式记录在 Jira/Tracker 中，并在 Q3 的 Sprint 规划中锁定了 20% 的 Capacity，专门用于代码重构和补全测试。
+
+    结果与反思 (Result &amp; Reflection)： 我们既帮助 SDN 团队按时开始了业务联调，又保证了系统核心稳定性（Zero major crash），并且在接下来的 3 个周内还清了所有技术债。我体会到处理 Speed vs Quality 的核心是“原则明确，风险透明，有借有还”。
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-nil">Approach:
+When facing pressure to rush a launch, I believe a senior engineer shouldn't just be a blanket "no" or a passive "yes." My strategy is to draw a firm line between non-negotiable standards—like security, privacy, and core system stability—and acceptable, temporary technical debt, while ensuring any debt taken on has a clear payback plan.
+
+Situation:
+A clear example of this happened during our virtual switch project. Our partner team was facing a tight deadline and pressed us to release the KVM platform two weeks early so they could start their upper-layer software integration. However, our ASIC simulator integration still had unrefactored legacy logging code and lacked comprehensive edge-case error handling.
+
+Action:
+
+    Draw the line and quantify the risk: I reviewed the remaining work and categorized it. Core stability and safety checks were non-negotiable—I refused to bypass them. However, I identified that the refactoring of our non-critical logging modules could be temporarily deferred. I brought data to our leadership sync, showing: "If we launch without edge-case error isolation, a single unhandled exception could cause a deadlock, wasting up to 50 developer hours per week in troubleshooting."
+
+    Propose a balanced MVP with isolation: To meet their urgent timeline without risking core quality, I proposed a phased compromise. We enabled only the core configuration and simulation features for the early release. For the unrefined logging and counter modules, I wrapped them behind a Feature Flag so they remained safely disabled in production.
+
+    Commit to a strict payback plan: I made sure this technical debt was completely transparent. I logged it directly into our team backlog and secured a commitment from engineering leadership to allocate 20% of our next sprint capacity specifically to finish the refactoring and add full test coverage.
+
+Result:
+The partner team got their baseline environment on time to unblock their integration testing, and our platform maintained zero core crashes. True to our plan, my team refactored the legacy modules and closed out the technical debt within three weeks of the initial launch.
+
+Reflection:
+This experience taught me that balancing speed versus quality isn't about cutting corners. It’s about being deliberate: making risks transparent, isolating unrefined code, and ensuring that any technical debt you borrow is paid back promptly.
+</pre>
+</div>
+</div>
 </div>
 <div id="outline-container-org55163cd" class="outline-4">
 <h4 id="org55163cd"><span class="section-number-4">2.5.2.</span> DEI（Diversity, Equity, Inclusion）： Give an example of how you actively created an inclusive environment in a diverse or remote team.</h4>
