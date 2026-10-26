@@ -11,7 +11,7 @@ Google 非常看重 Inclusive（包容性）、Psychological Safety（心理安�
 
 #+begin_src
 问题重点:
-面试官想考察你在面对技术分歧时，是否会感情用事或盲目妥协，而是看你如何通过客观事实（Evidence）、以产品大局为重（Product Requirements），
+面试官想考察你在面对技术分歧时，是否会感情用事或盲目妥协，看你如何通过客观事实（Evidence）、以产品大局为重（Product Requirements），
 以及如何与 TL 建设性地沟通并最终解决问题。
 这完美契合 G&L 的 Collaborate with others 和 Have a growth mindset / Do the right thing。
 #+end_src
@@ -688,6 +688,71 @@ This experience taught me that balancing speed versus quality isn't about cuttin
 #+end_src
 
 *** DEI（Diversity, Equity, Inclusion）： Give an example of how you actively created an inclusive environment in a diverse or remote team.
+
+** Comfort Zone
+Continue and Fast Learning
+*** Tell me about a time you took on a task or project outside your comfort zone.
+#+begin_src
+1. 定义舒适区及其局限（Old Comfort Zone & Bottleneck）：
+   熟悉传统的 Hardware/ASIC TCAM-based CoPP，但它存在规则容量有限、粒度粗、缺乏动态可编程性（Stateful Inspection）等瓶颈。
+
+2. 跨出舒适区与快速学习（Stepping Out & Rapid Mastery）：
+   面对 DDoS 保护和精细化控制平面流量保护的需求，主动挑战 Linux Kernel 底层的 eBPF / XDP 技术栈。
+
+3. 落地高影响力成果（High-Impact Technical Delivery）：
+   将 eBPF 成功集成到 Control Plane 保护管线中，在 CPU 几乎零开销的前提下实现了微秒级的动态 Packet Rate-Limiting 和精细化 Observability。
+#+end_src
+
+
+#+begin_src
+Comfort Zone vs. Unfamiliar Territory（舒适区：ASIC 配置/TCAM/固件 SDK；陌生领域：Linux 内核 eBPF/XDP）
+
+Hardware limit & Non-negotiable requirement（ASIC 概率性 Policer 导致速率波动；客户绝不降级 Spec）
+
+Step out of comfort zone（放弃寄希望于芯片 Vendor 或跟客户谈判，主动跨界自学 Linux 内核技术）
+
+Hybrid HW/SW architecture（ASIC 做第一层粗颗粒抗顶 + eBPF/XDP 在驱动层做微秒级精细化限速）
+
+Full-stack mindset（成果：通过 qualification 测试，从纯硬件/固件思维升级为全栈系统思维）
+
+叙述主线：
+
+背景与舒适区 (Situation & Comfort Zone)： 我之前的 CoPP 经验完全集中在硬件层面（Hardware-level CoPP）。但在一次客户 Qualification 测试中，客户要求极其精准的 CPU 限速保护。我们的 ASIC Policer 因为采用概率性算法，导致速率存在波动。客户明确表示这是非谈判项，必须解决。
+
+主动跨出 (Task & Decision)： 过去面对这类问题，常见的思路是找芯片 Vendor 发 Patch 或者劝客户降低标准。但我意识到硬件一时改变不了，于是决定跳出硬件 CoPP 的舒适区，去探索之前没怎么接触过的软件侧限速技术（Software-level Rate Limiting）。
+
+行动 (Action)：
+
+    快速攻克新技术： 我深入研究了 Linux 内核侧的 eBPF/XDP 技术，学习如何在软件侧实现高效限速；
+
+    软硬结合架构： 我设计了双层防护——用 ASIC Policer 做第一层粗颗粒的大流量过滤，随后在 Linux 驱动层挂载 eBPF/XDP 程序，实现精细的 Token-bucket 限速；
+
+    集成验证： 将其集成进 Network OS，在 CPU 近乎零开销的前提下实现了平滑的限速。
+
+结果与反思 (Result & Reflection)： 成功消除了速率波动，交换机顺利通过 Qualification 测试。这次经历让我明白，不要被过去的硬件背景局限住，跨出舒适区去拥抱软件解决方案，能大大拓宽解决工程难题的思路。
+
+#+end_src
+
+#+begin_src
+Situation:
+During a customer qualification test, we were required to deliver precise CPU rate-limiting to protect the control plane. However, our switch ASIC policer used a probabilistic algorithm, which caused traffic rates to fluctuate. Up until that point, my technical comfort zone was almost entirely around hardware-level CoPP. When facing hardware constraints, the standard path within my comfort zone was either asking the chip vendor for a patch or asking the customer to relax their spec. But neither was an option—the requirement was non-negotiable.
+
+Task:
+Realizing we couldn't easily change the underlying ASIC behavior, I decided to step out of my hardware-centric comfort zone and explore software-level rate limiting on the Linux host side to work around the issue.
+
+Action:
+
+    Mastered software-side rate limiting: I researched kernel-level networking and learned how to use eBPF/XDP to build an in-kernel traffic meter.
+
+    Built a Hybrid HW/SW Defense: I used the ASIC hardware policer as a coarse first line of defense to drop massive traffic spikes, and then applied eBPF at the XDP driver layer for fine-grained software rate limiting before packets hit the CPU stack.
+
+Result & Reflection:
+This hybrid eBPF solution eliminated the rate fluctuations, and our switch passed the qualification test without compromising any customer requirements. Stepping out of my hardware comfort zone taught me that when hardware hits a limit, expanding into software capabilities opens up whole new ways to solve complex infrastructure problems.
+
+#+end_src
+
+
+*** Describe a situation where you had to learn a completely new technology or domain quickly under pressure.
 ** Tell me about a time you dealt with ambiguity
 1. 问题: SDN team 一开始的需求很宽泛，想仿真到什么程度
 2. Action: identify use cases
@@ -787,6 +852,14 @@ Reflection — What I learned
 If I were to handle it again, I would try to agree on a debugging plan earlier, so we could test both hypotheses systematically.
 This experience taught me to focus on evidence and shared goals rather than trying to prove my own point."
 #+end_src
+
+
+* Hypothelical 情景题
+
+
+* 反向提问
+** What is the biggest technical or operational friction point the team is currently facing that you hope a new hire will help solve?
+** I haven't worked at google before, What does 'success' look like for someone joining this team in the first 6 to 12 months?
 
 
 * [[https://www.youtube.com/watch?v=we7ba0slWrc&list=PLllx_3tLoo4dJTidYzl1Ru_8PiANg6JzL&index=4][How to prepare for Google’s technical interview questions]]
